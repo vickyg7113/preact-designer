@@ -1,0 +1,45 @@
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.app h1 {
+  margin-bottom: 1rem;
+}
+
+.app p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.app code {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.demo-content {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  text-align: left;
+}
+
+#demo-btn {
+  padding: 10px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+#demo-btn:hover {
+  background: #2563eb;
+}
