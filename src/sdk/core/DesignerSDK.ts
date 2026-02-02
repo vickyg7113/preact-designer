@@ -5,6 +5,7 @@ import { EditorFrame } from '../editor/EditorFrame';
 import { Storage } from '../utils/storage';
 import { getCurrentPage, generateId } from '../utils/dom';
 import { renderSDKOverlays } from '../components/SDKOverlays';
+import { apiClient } from '../api/client';
 import type {
   Guide,
   SDKConfig,
@@ -32,6 +33,7 @@ export class DesignerSDK {
   private isEditorMode = false;
   private sdkRoot: HTMLElement | null = null;
   private showLoading = false;
+  private loadingFallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(config: SDKConfig = {}) {
     this.config = config;
@@ -83,7 +85,7 @@ export class DesignerSDK {
     }
 
     this.ensureSDKRoot();
-    this.showLoading = false;
+    // Keep showLoading true - loading overlay stays centered until EDITOR_READY
     this.renderOverlays();
 
     localStorage.setItem('designerMode', 'true');
@@ -93,6 +95,15 @@ export class DesignerSDK {
       this.editorFrame.show();
       this.renderOverlays();
     }, isTagMode ? 100 : 300);
+
+    // Fallback: hide loading after 5s if EDITOR_READY never arrives
+    this.loadingFallbackTimer = setTimeout(() => {
+      this.loadingFallbackTimer = null;
+      if (this.showLoading) {
+        this.showLoading = false;
+        this.renderOverlays();
+      }
+    }, 5000);
   }
 
   disableEditor(): void {
@@ -106,6 +117,10 @@ export class DesignerSDK {
     this.editorMode.deactivate();
     this.editorFrame.destroy();
     this.featureHeatmapRenderer.destroy();
+    if (this.loadingFallbackTimer) {
+      clearTimeout(this.loadingFallbackTimer);
+      this.loadingFallbackTimer = null;
+    }
     this.showLoading = false;
 
     localStorage.removeItem('designerMode');
@@ -189,6 +204,10 @@ export class DesignerSDK {
         this.disableEditor();
         break;
       case 'EDITOR_READY':
+        if (this.loadingFallbackTimer) {
+          clearTimeout(this.loadingFallbackTimer);
+          this.loadingFallbackTimer = null;
+        }
         this.showLoading = false;
         this.renderOverlays();
         break;
@@ -208,13 +227,32 @@ export class DesignerSDK {
     });
   }
 
-  private handleSaveTagPage(message: SaveTagPageMessage): void {
+  private async handleSaveTagPage(message: SaveTagPageMessage): Promise<void> {
+    const payload = message.payload;
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const slug =
+      typeof window !== 'undefined'
+        ? `${window.location.hostname}${window.location.pathname}`
+        : '';
+
+    try {
+      await apiClient.post('/pages', {
+        name: payload.pageName,
+        slug,
+        description: payload.description,
+        status: 'active',
+      });
+    } catch (e) {
+      console.warn('[Visual Designer] Failed to create page via API:', e);
+      this.editorFrame.sendTagPageSavedAck();
+      return;
+    }
+
     const key = 'designerTaggedPages';
     try {
       const raw = localStorage.getItem(key) || '[]';
       const list: { pageName: string; url: string }[] = JSON.parse(raw);
-      const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-      list.push({ pageName: message.payload.pageName, url: currentUrl });
+      list.push({ pageName: payload.pageName, url: currentUrl });
       localStorage.setItem(key, JSON.stringify(list));
     } catch {
       // ignore

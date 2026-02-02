@@ -95,6 +95,7 @@ export type EditorMessageType =
   | 'SAVE_GUIDE'
   | 'SAVE_TAG_PAGE'
   | 'SAVE_TAG_FEATURE'
+  | 'EDIT_TAG_PAGE'
   | 'TAG_FEATURE_CLICKED'
   | 'ACTIVATE_SELECTOR'
   | 'CLEAR_SELECTION_CLICKED'
@@ -179,6 +180,11 @@ export interface SaveTagFeatureMessage {
   payload: TagFeaturePayload;
 }
 
+export interface EditTagPageMessage {
+  type: 'EDIT_TAG_PAGE';
+  payload: { pageName: string };
+}
+
 /**
  * Union type for all editor messages
  */
@@ -187,6 +193,7 @@ export type EditorMessage =
   | SaveGuideMessage
   | SaveTagPageMessage
   | SaveTagFeatureMessage
+  | EditTagPageMessage
   | TagFeatureClickMessage
   | ActivateSelectorMessage
   | ClearSelectionClickMessage

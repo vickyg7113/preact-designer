@@ -1,7 +1,9 @@
 import { DesignerSDK } from './core/DesignerSDK';
 import type { SDKConfig } from './types';
+import { apiClient, IUD_STORAGE_KEY } from './api/client';
 
 export { DesignerSDK };
+export { apiClient };
 export type { Guide, SDKConfig, GuideTargeting } from './types';
 
 let sdkInstance: DesignerSDK | null = null;
@@ -75,6 +77,7 @@ if (typeof window !== 'undefined') {
     const url = new URL(window.location.href);
     const designerParam = url.searchParams.get('designer');
     const modeParam = url.searchParams.get('mode');
+    const designerIudParam = url.searchParams.get('iud');
 
     if (designerParam === 'true') {
       if (modeParam) {
@@ -82,8 +85,10 @@ if (typeof window !== 'undefined') {
         localStorage.setItem('designerModeType', modeParam);
       }
       localStorage.setItem('designerMode', 'true');
+      if (designerIudParam) localStorage.setItem(IUD_STORAGE_KEY, designerIudParam);
       url.searchParams.delete('designer');
       url.searchParams.delete('mode');
+      url.searchParams.delete('iud');
       window.history.replaceState({}, '', url.toString());
       (window as any).__visualDesignerWasLaunched = true;
     }
@@ -109,6 +114,7 @@ if (typeof window !== 'undefined') {
     initialize: init,
     getInstance,
     DesignerSDK,
+    apiClient,
     _processQueue,
   };
 }

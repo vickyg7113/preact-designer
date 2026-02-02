@@ -4,6 +4,7 @@ import './launcher.css';
 type Mode = 'guide' | 'tag-page' | 'tag-feature';
 
 const STORAGE_KEY = 'visual-designer-last-url';
+const IUD_STORAGE_KEY = 'designerIud';
 
 function normalizeTargetUrl(input: string): string {
   const trimmed = (input || '').trim();
@@ -22,6 +23,7 @@ export function Launcher() {
   const [guideUrl, setGuideUrl] = useState(() => localStorage.getItem(STORAGE_KEY) || '');
   const [tagPageUrl, setTagPageUrl] = useState(() => localStorage.getItem(STORAGE_KEY) || '');
   const [tagFeatureUrl, setTagFeatureUrl] = useState(() => localStorage.getItem(STORAGE_KEY) || '');
+  const [designerIud, setDesignerIud] = useState(() => localStorage.getItem(IUD_STORAGE_KEY) || '');
   const [error, setError] = useState('');
   const [tagPageError, setTagPageError] = useState('');
   const [tagFeatureError, setTagFeatureError] = useState('');
@@ -63,6 +65,10 @@ export function Launcher() {
     const urlObj = new URL(targetUrl);
     urlObj.searchParams.set('designer', 'true');
     urlObj.searchParams.set('mode', mode);
+    if (designerIud.trim()) {
+      urlObj.searchParams.set('iud', designerIud.trim());
+      localStorage.setItem(IUD_STORAGE_KEY, designerIud.trim());
+    }
     const finalUrl = urlObj.toString();
 
     const win = window.open(finalUrl, '_blank');
@@ -72,7 +78,7 @@ export function Launcher() {
       else if (mode === 'tag-feature') setTagFeatureError(msg);
       else setError(msg);
     }
-  }, [mode, getUrlForMode]);
+  }, [mode, getUrlForMode, designerIud]);
 
   const handleSubmit = (e: Event) => {
     e.preventDefault();
@@ -85,6 +91,19 @@ export function Launcher() {
         <div class="launcher-header">
           <h1>Launch Visual Designer</h1>
           <p>Select a mode and launch the designer</p>
+        </div>
+
+        <div class="form-group">
+          <label for="designerIud">Designer IUD</label>
+          <input
+            type="text"
+            id="designerIud"
+            class="target-url-input"
+            placeholder="Designer IUD (stored in target localStorage, used for API headers)"
+            value={designerIud}
+            onInput={(e) => setDesignerIud((e.target as HTMLInputElement).value)}
+            autocomplete="off"
+          />
         </div>
 
         <div class="mode-selection">
@@ -139,8 +158,9 @@ export function Launcher() {
             <div class="info-box">
               <strong>How it works</strong>
               Enter any target URL (your app, staging, or your own simulator). The launcher opens the
-              URL in a new tab and appends <code>?designer=true&amp;mode=guide</code> so the SDK
-              enables editor mode when your app calls <code>init()</code>.
+              URL in a new tab and appends <code>?designer=true&amp;mode=guide</code> (plus{' '}
+              <code>iud</code> if provided). Designer IUD is stored in the target page's localStorage
+              and used for API headers.
             </div>
           </div>
         )}

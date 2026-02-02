@@ -170,6 +170,18 @@ init({ editorMode: true });
 
 ---
 
+## API Integration
+
+The SDK includes an API client for the Visual Designer backend (`https://devgw.revgain.ai/rg-pex`):
+
+- **iud header:** Read from `localStorage.designerIud` (set when launcher passes `?iud=` in URL)
+- **Tag Page:** When saving a tag page, the SDK calls `POST /pages` with `{ name, slug, description, status }`
+- **apiClient:** Exported for custom API calls (`window.VisualDesigner.apiClient`)
+
+**Launcher:** Enter a Designer IUD in the launcher to pass it to the target URL. The target page stores it in localStorage and uses it for API headers.
+
+---
+
 ## SDK Config Options
 
 | Option | Type | Description |

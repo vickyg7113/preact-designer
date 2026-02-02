@@ -1,4 +1,4 @@
-class X {
+class pe {
   static generateSelector(e) {
     if (e.id)
       return {
@@ -7,25 +7,25 @@ class X {
         method: "id"
       };
     if (e.hasAttribute("data-testid")) {
-      const r = e.getAttribute("data-testid");
+      const a = e.getAttribute("data-testid");
       return {
-        selector: `[data-testid="${this.escapeAttribute(r)}"]`,
+        selector: `[data-testid="${this.escapeAttribute(a)}"]`,
         confidence: "high",
         method: "data-testid"
       };
     }
     const n = this.getSemanticDataAttributes(e);
     if (n.length > 0) {
-      const r = n[0], s = e.getAttribute(r);
+      const a = n[0], l = e.getAttribute(a);
       return {
-        selector: `[${r}="${this.escapeAttribute(s)}"]`,
+        selector: `[${a}="${this.escapeAttribute(l)}"]`,
         confidence: "high",
         method: "data-attribute"
       };
     }
-    const i = this.generateAriaSelector(e);
-    if (i)
-      return { selector: i, confidence: "medium", method: "aria" };
+    const r = this.generateAriaSelector(e);
+    if (r)
+      return { selector: r, confidence: "medium", method: "aria" };
     const o = this.generatePathSelector(e);
     return o ? { selector: o, confidence: "medium", method: "path" } : {
       selector: e.tagName.toLowerCase(),
@@ -48,44 +48,44 @@ class X {
     }
   }
   static getSemanticDataAttributes(e) {
-    const n = ["data-id", "data-name", "data-role", "data-component", "data-element"], i = [];
+    const n = ["data-id", "data-name", "data-role", "data-component", "data-element"], r = [];
     for (const o of n)
-      e.hasAttribute(o) && i.push(o);
+      e.hasAttribute(o) && r.push(o);
     for (let o = 0; o < e.attributes.length; o++) {
-      const r = e.attributes[o];
-      r.name.startsWith("data-") && !i.includes(r.name) && i.push(r.name);
+      const a = e.attributes[o];
+      a.name.startsWith("data-") && !r.includes(a.name) && r.push(a.name);
     }
-    return i;
+    return r;
   }
   static generateAriaSelector(e) {
-    const n = e.getAttribute("role"), i = e.getAttribute("aria-label");
+    const n = e.getAttribute("role"), r = e.getAttribute("aria-label");
     if (n) {
       let o = `[role="${this.escapeAttribute(n)}"]`;
-      return i && (o += `[aria-label="${this.escapeAttribute(i)}"]`), o;
+      return r && (o += `[aria-label="${this.escapeAttribute(r)}"]`), o;
     }
     return null;
   }
   static generatePathSelector(e) {
     const n = [];
-    let i = e;
-    for (; i && i !== document.body && i !== document.documentElement; ) {
-      let o = i.tagName.toLowerCase();
-      if (i.id) {
-        o += `#${this.escapeSelector(i.id)}`, n.unshift(o);
+    let r = e;
+    for (; r && r !== document.body && r !== document.documentElement; ) {
+      let o = r.tagName.toLowerCase();
+      if (r.id) {
+        o += `#${this.escapeSelector(r.id)}`, n.unshift(o);
         break;
       }
-      if (i.className && typeof i.className == "string") {
-        const s = i.className.split(/\s+/).filter((l) => l && !l.startsWith("designer-")).slice(0, 2);
-        s.length > 0 && (o += "." + s.map((l) => this.escapeSelector(l)).join("."));
+      if (r.className && typeof r.className == "string") {
+        const l = r.className.split(/\s+/).filter((d) => d && !d.startsWith("designer-")).slice(0, 2);
+        l.length > 0 && (o += "." + l.map((d) => this.escapeSelector(d)).join("."));
       }
-      const r = i.parentElement;
-      if (r) {
-        const s = Array.from(r.children).filter(
-          (l) => l.tagName === i.tagName
+      const a = r.parentElement;
+      if (a) {
+        const l = Array.from(a.children).filter(
+          (d) => d.tagName === r.tagName
         );
-        s.length > 1 && (o += `:nth-of-type(${s.indexOf(i) + 1})`);
+        l.length > 1 && (o += `:nth-of-type(${l.indexOf(r) + 1})`);
       }
-      if (n.unshift(o), i = r, n.length >= 5) break;
+      if (n.unshift(o), r = a, n.length >= 5) break;
     }
     return n.length > 0 ? n.join(" > ") : null;
   }
@@ -96,10 +96,10 @@ class X {
     return e.replace(/"/g, '\\"').replace(/'/g, "\\'");
   }
 }
-function Ce(t) {
+function ut(t) {
   const e = t.getBoundingClientRect(), n = {};
-  for (let i = 0; i < t.attributes.length; i++) {
-    const o = t.attributes[i];
+  for (let r = 0; r < t.attributes.length; r++) {
+    const o = t.attributes[r];
     n[o.name] = o.value;
   }
   return {
@@ -111,25 +111,25 @@ function Ce(t) {
     boundingRect: e
   };
 }
-function te(t) {
+function Ee(t) {
   const e = window.getComputedStyle(t);
   return e.display !== "none" && e.visibility !== "hidden" && e.opacity !== "0" && t.getBoundingClientRect().height > 0 && t.getBoundingClientRect().width > 0;
 }
-function K() {
+function oe() {
   return window.location.pathname || "/";
 }
-function ne() {
+function ke() {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
-function Ie(t) {
+function gt(t) {
   const e = t.getBoundingClientRect();
   return e.top >= 0 && e.left >= 0 && e.bottom <= (window.innerHeight || document.documentElement.clientHeight) && e.right <= (window.innerWidth || document.documentElement.clientWidth);
 }
-function Te(t) {
-  Ie(t) || t.scrollIntoView({ behavior: "smooth", block: "center" });
+function mt(t) {
+  gt(t) || t.scrollIntoView({ behavior: "smooth", block: "center" });
 }
-const ie = "#designer-editor-frame, #designer-highlight-overlay, #designer-exit-editor-btn, #designer-red-border-overlay, #designer-studio-badge";
-class Le {
+const Ce = "#designer-editor-frame, #designer-highlight-overlay, #designer-exit-editor-btn, #designer-red-border-overlay, #designer-studio-badge";
+class ft {
   isActive = !1;
   highlightOverlay = null;
   messageCallback = null;
@@ -175,11 +175,11 @@ class Le {
     if (!this.isActive || !this.highlightOverlay) return;
     const n = e.target;
     if (!(!n || n === this.highlightOverlay)) {
-      if (n.closest(ie)) {
+      if (n.closest(Ce)) {
         this.hideHighlight();
         return;
       }
-      if (!te(n)) {
+      if (!Ee(n)) {
         this.hideHighlight();
         return;
       }
@@ -189,26 +189,26 @@ class Le {
   handleClick = (e) => {
     if (!this.isActive) return;
     const n = e.target;
-    n && (n.closest(ie) || (e.preventDefault(), e.stopPropagation(), e.stopImmediatePropagation(), te(n) && this.selectElement(n)));
+    n && (n.closest(Ce) || (e.preventDefault(), e.stopPropagation(), e.stopImmediatePropagation(), Ee(n) && this.selectElement(n)));
   };
   handleKeyDown = (e) => {
     this.isActive && e.key === "Escape" && (this.messageCallback?.({ type: "CANCEL" }), this.hideHighlight());
   };
   highlightElement(e) {
     if (!this.highlightOverlay) return;
-    const n = e.getBoundingClientRect(), i = window.pageXOffset || document.documentElement.scrollLeft, o = window.pageYOffset || document.documentElement.scrollTop;
-    this.highlightOverlay.style.display = "block", this.highlightOverlay.style.left = `${n.left + i}px`, this.highlightOverlay.style.top = `${n.top + o}px`, this.highlightOverlay.style.width = `${n.width}px`, this.highlightOverlay.style.height = `${n.height}px`;
+    const n = e.getBoundingClientRect(), r = window.pageXOffset || document.documentElement.scrollLeft, o = window.pageYOffset || document.documentElement.scrollTop;
+    this.highlightOverlay.style.display = "block", this.highlightOverlay.style.left = `${n.left + r}px`, this.highlightOverlay.style.top = `${n.top + o}px`, this.highlightOverlay.style.width = `${n.width}px`, this.highlightOverlay.style.height = `${n.height}px`;
   }
   hideHighlight() {
     this.highlightOverlay && (this.highlightOverlay.style.display = "none");
   }
   selectElement(e) {
     this.highlightElement(e);
-    const n = X.generateSelector(e), i = Ce(e);
+    const n = pe.generateSelector(e), r = ut(e);
     this.messageCallback?.({
       type: "ELEMENT_SELECTED",
       selector: n.selector,
-      elementInfo: i
+      elementInfo: r
     });
   }
   addEditorStyles() {
@@ -222,94 +222,94 @@ class Le {
     document.getElementById("designer-editor-styles")?.remove();
   }
 }
-var H, h, ge, T, re, ue, pe, fe, q, Y, j, D = {}, he = [], Me = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i, V = Array.isArray;
-function k(t, e) {
+var le, S, Ue, V, Te, Ve, je, Ye, ye, ue, ge, q = {}, Ke = [], pt = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i, de = Array.isArray;
+function F(t, e) {
   for (var n in e) t[n] = e[n];
   return t;
 }
-function J(t) {
+function _e(t) {
   t && t.parentNode && t.parentNode.removeChild(t);
 }
-function Be(t, e, n) {
-  var i, o, r, s = {};
-  for (r in e) r == "key" ? i = e[r] : r == "ref" ? o = e[r] : s[r] = e[r];
-  if (arguments.length > 2 && (s.children = arguments.length > 3 ? H.call(arguments, 2) : n), typeof t == "function" && t.defaultProps != null) for (r in t.defaultProps) s[r] === void 0 && (s[r] = t.defaultProps[r]);
-  return U(t, s, i, o, null);
+function yt(t, e, n) {
+  var r, o, a, l = {};
+  for (a in e) a == "key" ? r = e[a] : a == "ref" ? o = e[a] : l[a] = e[a];
+  if (arguments.length > 2 && (l.children = arguments.length > 3 ? le.call(arguments, 2) : n), typeof t == "function" && t.defaultProps != null) for (a in t.defaultProps) l[a] === void 0 && (l[a] = t.defaultProps[a]);
+  return ne(t, l, r, o, null);
 }
-function U(t, e, n, i, o) {
-  var r = { type: t, props: e, key: n, ref: i, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: o ?? ++ge, __i: -1, __u: 0 };
-  return o == null && h.vnode != null && h.vnode(r), r;
+function ne(t, e, n, r, o) {
+  var a = { type: t, props: e, key: n, ref: r, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: o ?? ++Ue, __i: -1, __u: 0 };
+  return o == null && S.vnode != null && S.vnode(a), a;
 }
-function z(t) {
+function X(t) {
   return t.children;
 }
-function N(t, e) {
+function ie(t, e) {
   this.props = t, this.context = e;
 }
-function M(t, e) {
-  if (e == null) return t.__ ? M(t.__, t.__i + 1) : null;
+function K(t, e) {
+  if (e == null) return t.__ ? K(t.__, t.__i + 1) : null;
   for (var n; e < t.__k.length; e++) if ((n = t.__k[e]) != null && n.__e != null) return n.__e;
-  return typeof t.type == "function" ? M(t) : null;
+  return typeof t.type == "function" ? K(t) : null;
 }
-function me(t) {
+function Xe(t) {
   var e, n;
   if ((t = t.__) != null && t.__c != null) {
     for (t.__e = t.__c.base = null, e = 0; e < t.__k.length; e++) if ((n = t.__k[e]) != null && n.__e != null) {
       t.__e = t.__c.base = n.__e;
       break;
     }
-    return me(t);
+    return Xe(t);
   }
 }
-function oe(t) {
-  (!t.__d && (t.__d = !0) && T.push(t) && !G.__r++ || re != h.debounceRendering) && ((re = h.debounceRendering) || ue)(G);
+function Ie(t) {
+  (!t.__d && (t.__d = !0) && V.push(t) && !ae.__r++ || Te != S.debounceRendering) && ((Te = S.debounceRendering) || Ve)(ae);
 }
-function G() {
-  for (var t, e, n, i, o, r, s, l = 1; T.length; ) T.length > l && T.sort(pe), t = T.shift(), l = T.length, t.__d && (n = void 0, i = void 0, o = (i = (e = t).__v).__e, r = [], s = [], e.__P && ((n = k({}, i)).__v = i.__v + 1, h.vnode && h.vnode(n), Q(e.__P, n, i, e.__n, e.__P.namespaceURI, 32 & i.__u ? [o] : null, r, o ?? M(i), !!(32 & i.__u), s), n.__v = i.__v, n.__.__k[n.__i] = n, ye(r, n, s), i.__e = i.__ = null, n.__e != o && me(n)));
-  G.__r = 0;
+function ae() {
+  for (var t, e, n, r, o, a, l, d = 1; V.length; ) V.length > d && V.sort(je), t = V.shift(), d = V.length, t.__d && (n = void 0, r = void 0, o = (r = (e = t).__v).__e, a = [], l = [], e.__P && ((n = F({}, r)).__v = r.__v + 1, S.vnode && S.vnode(n), be(e.__P, n, r, e.__n, e.__P.namespaceURI, 32 & r.__u ? [o] : null, a, o ?? K(r), !!(32 & r.__u), l), n.__v = r.__v, n.__.__k[n.__i] = n, Qe(a, n, l), r.__e = r.__ = null, n.__e != o && Xe(n)));
+  ae.__r = 0;
 }
-function be(t, e, n, i, o, r, s, l, g, d, c) {
-  var a, b, u, y, w, x, m, f = i && i.__k || he, S = e.length;
-  for (g = Ae(n, e, f, g, S), a = 0; a < S; a++) (u = n.__k[a]) != null && (b = u.__i == -1 ? D : f[u.__i] || D, u.__i = a, x = Q(t, u, b, o, r, s, l, g, d, c), y = u.__e, u.ref && b.ref != u.ref && (b.ref && Z(b.ref, null, u), c.push(u.ref, u.__c || y, u)), w == null && y != null && (w = y), (m = !!(4 & u.__u)) || b.__k === u.__k ? g = ve(u, g, t, m) : typeof u.type == "function" && x !== void 0 ? g = x : y && (g = y.nextSibling), u.__u &= -7);
-  return n.__e = w, g;
+function Je(t, e, n, r, o, a, l, d, u, c, g) {
+  var s, p, f, x, C, w, m, b = r && r.__k || Ke, D = e.length;
+  for (u = _t(n, e, b, u, D), s = 0; s < D; s++) (f = n.__k[s]) != null && (p = f.__i == -1 ? q : b[f.__i] || q, f.__i = s, w = be(t, f, p, o, a, l, d, u, c, g), x = f.__e, f.ref && p.ref != f.ref && (p.ref && ve(p.ref, null, f), g.push(f.ref, f.__c || x, f)), C == null && x != null && (C = x), (m = !!(4 & f.__u)) || p.__k === f.__k ? u = qe(f, u, t, m) : typeof f.type == "function" && w !== void 0 ? u = w : x && (u = x.nextSibling), f.__u &= -7);
+  return n.__e = C, u;
 }
-function Ae(t, e, n, i, o) {
-  var r, s, l, g, d, c = n.length, a = c, b = 0;
-  for (t.__k = new Array(o), r = 0; r < o; r++) (s = e[r]) != null && typeof s != "boolean" && typeof s != "function" ? (typeof s == "string" || typeof s == "number" || typeof s == "bigint" || s.constructor == String ? s = t.__k[r] = U(null, s, null, null, null) : V(s) ? s = t.__k[r] = U(z, { children: s }, null, null, null) : s.constructor === void 0 && s.__b > 0 ? s = t.__k[r] = U(s.type, s.props, s.key, s.ref ? s.ref : null, s.__v) : t.__k[r] = s, g = r + b, s.__ = t, s.__b = t.__b + 1, l = null, (d = s.__i = De(s, n, g, a)) != -1 && (a--, (l = n[d]) && (l.__u |= 2)), l == null || l.__v == null ? (d == -1 && (o > c ? b-- : o < c && b++), typeof s.type != "function" && (s.__u |= 4)) : d != g && (d == g - 1 ? b-- : d == g + 1 ? b++ : (d > g ? b-- : b++, s.__u |= 4))) : t.__k[r] = null;
-  if (a) for (r = 0; r < c; r++) (l = n[r]) != null && (2 & l.__u) == 0 && (l.__e == i && (i = M(l)), _e(l, l));
-  return i;
+function _t(t, e, n, r, o) {
+  var a, l, d, u, c, g = n.length, s = g, p = 0;
+  for (t.__k = new Array(o), a = 0; a < o; a++) (l = e[a]) != null && typeof l != "boolean" && typeof l != "function" ? (typeof l == "string" || typeof l == "number" || typeof l == "bigint" || l.constructor == String ? l = t.__k[a] = ne(null, l, null, null, null) : de(l) ? l = t.__k[a] = ne(X, { children: l }, null, null, null) : l.constructor === void 0 && l.__b > 0 ? l = t.__k[a] = ne(l.type, l.props, l.key, l.ref ? l.ref : null, l.__v) : t.__k[a] = l, u = a + p, l.__ = t, l.__b = t.__b + 1, d = null, (c = l.__i = bt(l, n, u, s)) != -1 && (s--, (d = n[c]) && (d.__u |= 2)), d == null || d.__v == null ? (c == -1 && (o > g ? p-- : o < g && p++), typeof l.type != "function" && (l.__u |= 4)) : c != u && (c == u - 1 ? p-- : c == u + 1 ? p++ : (c > u ? p-- : p++, l.__u |= 4))) : t.__k[a] = null;
+  if (s) for (a = 0; a < g; a++) (d = n[a]) != null && (2 & d.__u) == 0 && (d.__e == r && (r = K(d)), et(d, d));
+  return r;
 }
-function ve(t, e, n, i) {
-  var o, r;
+function qe(t, e, n, r) {
+  var o, a;
   if (typeof t.type == "function") {
-    for (o = t.__k, r = 0; o && r < o.length; r++) o[r] && (o[r].__ = t, e = ve(o[r], e, n, i));
+    for (o = t.__k, a = 0; o && a < o.length; a++) o[a] && (o[a].__ = t, e = qe(o[a], e, n, r));
     return e;
   }
-  t.__e != e && (i && (e && t.type && !e.parentNode && (e = M(t)), n.insertBefore(t.__e, e || null)), e = t.__e);
+  t.__e != e && (r && (e && t.type && !e.parentNode && (e = K(t)), n.insertBefore(t.__e, e || null)), e = t.__e);
   do
     e = e && e.nextSibling;
   while (e != null && e.nodeType == 8);
   return e;
 }
-function De(t, e, n, i) {
-  var o, r, s, l = t.key, g = t.type, d = e[n], c = d != null && (2 & d.__u) == 0;
-  if (d === null && l == null || c && l == d.key && g == d.type) return n;
-  if (i > (c ? 1 : 0)) {
-    for (o = n - 1, r = n + 1; o >= 0 || r < e.length; ) if ((d = e[s = o >= 0 ? o-- : r++]) != null && (2 & d.__u) == 0 && l == d.key && g == d.type) return s;
+function bt(t, e, n, r) {
+  var o, a, l, d = t.key, u = t.type, c = e[n], g = c != null && (2 & c.__u) == 0;
+  if (c === null && d == null || g && d == c.key && u == c.type) return n;
+  if (r > (g ? 1 : 0)) {
+    for (o = n - 1, a = n + 1; o >= 0 || a < e.length; ) if ((c = e[l = o >= 0 ? o-- : a++]) != null && (2 & c.__u) == 0 && d == c.key && u == c.type) return l;
   }
   return -1;
 }
-function ae(t, e, n) {
-  e[0] == "-" ? t.setProperty(e, n ?? "") : t[e] = n == null ? "" : typeof n != "number" || Me.test(e) ? n : n + "px";
+function De(t, e, n) {
+  e[0] == "-" ? t.setProperty(e, n ?? "") : t[e] = n == null ? "" : typeof n != "number" || pt.test(e) ? n : n + "px";
 }
-function R(t, e, n, i, o) {
-  var r, s;
+function ee(t, e, n, r, o) {
+  var a, l;
   e: if (e == "style") if (typeof n == "string") t.style.cssText = n;
   else {
-    if (typeof i == "string" && (t.style.cssText = i = ""), i) for (e in i) n && e in n || ae(t.style, e, "");
-    if (n) for (e in n) i && n[e] == i[e] || ae(t.style, e, n[e]);
+    if (typeof r == "string" && (t.style.cssText = r = ""), r) for (e in r) n && e in n || De(t.style, e, "");
+    if (n) for (e in n) r && n[e] == r[e] || De(t.style, e, n[e]);
   }
-  else if (e[0] == "o" && e[1] == "n") r = e != (e = e.replace(fe, "$1")), s = e.toLowerCase(), e = s in t || e == "onFocusOut" || e == "onFocusIn" ? s.slice(2) : e.slice(2), t.l || (t.l = {}), t.l[e + r] = n, n ? i ? n.u = i.u : (n.u = q, t.addEventListener(e, r ? j : Y, r)) : t.removeEventListener(e, r ? j : Y, r);
+  else if (e[0] == "o" && e[1] == "n") a = e != (e = e.replace(Ye, "$1")), l = e.toLowerCase(), e = l in t || e == "onFocusOut" || e == "onFocusIn" ? l.slice(2) : e.slice(2), t.l || (t.l = {}), t.l[e + a] = n, n ? r ? n.u = r.u : (n.u = ye, t.addEventListener(e, a ? ge : ue, a)) : t.removeEventListener(e, a ? ge : ue, a);
   else {
     if (o == "http://www.w3.org/2000/svg") e = e.replace(/xlink(H|:h)/, "h").replace(/sName$/, "s");
     else if (e != "width" && e != "height" && e != "href" && e != "list" && e != "form" && e != "tabIndex" && e != "download" && e != "rowSpan" && e != "colSpan" && e != "role" && e != "popover" && e in t) try {
@@ -320,157 +320,157 @@ function R(t, e, n, i, o) {
     typeof n == "function" || (n == null || n === !1 && e[4] != "-" ? t.removeAttribute(e) : t.setAttribute(e, e == "popover" && n == 1 ? "" : n));
   }
 }
-function se(t) {
+function Ae(t) {
   return function(e) {
     if (this.l) {
       var n = this.l[e.type + t];
-      if (e.t == null) e.t = q++;
+      if (e.t == null) e.t = ye++;
       else if (e.t < n.u) return;
-      return n(h.event ? h.event(e) : e);
+      return n(S.event ? S.event(e) : e);
     }
   };
 }
-function Q(t, e, n, i, o, r, s, l, g, d) {
-  var c, a, b, u, y, w, x, m, f, S, I, F, B, ee, O, A, $, E = e.type;
+function be(t, e, n, r, o, a, l, d, u, c) {
+  var g, s, p, f, x, C, w, m, b, D, A, B, M, G, y, L, P, R = e.type;
   if (e.constructor !== void 0) return null;
-  128 & n.__u && (g = !!(32 & n.__u), r = [l = e.__e = n.__e]), (c = h.__b) && c(e);
-  e: if (typeof E == "function") try {
-    if (m = e.props, f = "prototype" in E && E.prototype.render, S = (c = E.contextType) && i[c.__c], I = c ? S ? S.props.value : c.__ : i, n.__c ? x = (a = e.__c = n.__c).__ = a.__E : (f ? e.__c = a = new E(m, I) : (e.__c = a = new N(m, I), a.constructor = E, a.render = ze), S && S.sub(a), a.state || (a.state = {}), a.__n = i, b = a.__d = !0, a.__h = [], a._sb = []), f && a.__s == null && (a.__s = a.state), f && E.getDerivedStateFromProps != null && (a.__s == a.state && (a.__s = k({}, a.__s)), k(a.__s, E.getDerivedStateFromProps(m, a.__s))), u = a.props, y = a.state, a.__v = e, b) f && E.getDerivedStateFromProps == null && a.componentWillMount != null && a.componentWillMount(), f && a.componentDidMount != null && a.__h.push(a.componentDidMount);
+  128 & n.__u && (u = !!(32 & n.__u), a = [d = e.__e = n.__e]), (g = S.__b) && g(e);
+  e: if (typeof R == "function") try {
+    if (m = e.props, b = "prototype" in R && R.prototype.render, D = (g = R.contextType) && r[g.__c], A = g ? D ? D.props.value : g.__ : r, n.__c ? w = (s = e.__c = n.__c).__ = s.__E : (b ? e.__c = s = new R(m, A) : (e.__c = s = new ie(m, A), s.constructor = R, s.render = wt), D && D.sub(s), s.state || (s.state = {}), s.__n = r, p = s.__d = !0, s.__h = [], s._sb = []), b && s.__s == null && (s.__s = s.state), b && R.getDerivedStateFromProps != null && (s.__s == s.state && (s.__s = F({}, s.__s)), F(s.__s, R.getDerivedStateFromProps(m, s.__s))), f = s.props, x = s.state, s.__v = e, p) b && R.getDerivedStateFromProps == null && s.componentWillMount != null && s.componentWillMount(), b && s.componentDidMount != null && s.__h.push(s.componentDidMount);
     else {
-      if (f && E.getDerivedStateFromProps == null && m !== u && a.componentWillReceiveProps != null && a.componentWillReceiveProps(m, I), e.__v == n.__v || !a.__e && a.shouldComponentUpdate != null && a.shouldComponentUpdate(m, a.__s, I) === !1) {
-        for (e.__v != n.__v && (a.props = m, a.state = a.__s, a.__d = !1), e.__e = n.__e, e.__k = n.__k, e.__k.some(function(L) {
-          L && (L.__ = e);
-        }), F = 0; F < a._sb.length; F++) a.__h.push(a._sb[F]);
-        a._sb = [], a.__h.length && s.push(a);
+      if (b && R.getDerivedStateFromProps == null && m !== f && s.componentWillReceiveProps != null && s.componentWillReceiveProps(m, A), e.__v == n.__v || !s.__e && s.shouldComponentUpdate != null && s.shouldComponentUpdate(m, s.__s, A) === !1) {
+        for (e.__v != n.__v && (s.props = m, s.state = s.__s, s.__d = !1), e.__e = n.__e, e.__k = n.__k, e.__k.some(function($) {
+          $ && ($.__ = e);
+        }), B = 0; B < s._sb.length; B++) s.__h.push(s._sb[B]);
+        s._sb = [], s.__h.length && l.push(s);
         break e;
       }
-      a.componentWillUpdate != null && a.componentWillUpdate(m, a.__s, I), f && a.componentDidUpdate != null && a.__h.push(function() {
-        a.componentDidUpdate(u, y, w);
+      s.componentWillUpdate != null && s.componentWillUpdate(m, s.__s, A), b && s.componentDidUpdate != null && s.__h.push(function() {
+        s.componentDidUpdate(f, x, C);
       });
     }
-    if (a.context = I, a.props = m, a.__P = t, a.__e = !1, B = h.__r, ee = 0, f) {
-      for (a.state = a.__s, a.__d = !1, B && B(e), c = a.render(a.props, a.state, a.context), O = 0; O < a._sb.length; O++) a.__h.push(a._sb[O]);
-      a._sb = [];
+    if (s.context = A, s.props = m, s.__P = t, s.__e = !1, M = S.__r, G = 0, b) {
+      for (s.state = s.__s, s.__d = !1, M && M(e), g = s.render(s.props, s.state, s.context), y = 0; y < s._sb.length; y++) s.__h.push(s._sb[y]);
+      s._sb = [];
     } else do
-      a.__d = !1, B && B(e), c = a.render(a.props, a.state, a.context), a.state = a.__s;
-    while (a.__d && ++ee < 25);
-    a.state = a.__s, a.getChildContext != null && (i = k(k({}, i), a.getChildContext())), f && !b && a.getSnapshotBeforeUpdate != null && (w = a.getSnapshotBeforeUpdate(u, y)), A = c, c != null && c.type === z && c.key == null && (A = xe(c.props.children)), l = be(t, V(A) ? A : [A], e, n, i, o, r, s, l, g, d), a.base = e.__e, e.__u &= -161, a.__h.length && s.push(a), x && (a.__E = a.__ = null);
-  } catch (L) {
-    if (e.__v = null, g || r != null) if (L.then) {
-      for (e.__u |= g ? 160 : 128; l && l.nodeType == 8 && l.nextSibling; ) l = l.nextSibling;
-      r[r.indexOf(l)] = null, e.__e = l;
+      s.__d = !1, M && M(e), g = s.render(s.props, s.state, s.context), s.state = s.__s;
+    while (s.__d && ++G < 25);
+    s.state = s.__s, s.getChildContext != null && (r = F(F({}, r), s.getChildContext())), b && !p && s.getSnapshotBeforeUpdate != null && (C = s.getSnapshotBeforeUpdate(f, x)), L = g, g != null && g.type === X && g.key == null && (L = Ze(g.props.children)), d = Je(t, de(L) ? L : [L], e, n, r, o, a, l, d, u, c), s.base = e.__e, e.__u &= -161, s.__h.length && l.push(s), w && (s.__E = s.__ = null);
+  } catch ($) {
+    if (e.__v = null, u || a != null) if ($.then) {
+      for (e.__u |= u ? 160 : 128; d && d.nodeType == 8 && d.nextSibling; ) d = d.nextSibling;
+      a[a.indexOf(d)] = null, e.__e = d;
     } else {
-      for ($ = r.length; $--; ) J(r[$]);
-      W(e);
+      for (P = a.length; P--; ) _e(a[P]);
+      me(e);
     }
-    else e.__e = n.__e, e.__k = n.__k, L.then || W(e);
-    h.__e(L, e, n);
+    else e.__e = n.__e, e.__k = n.__k, $.then || me(e);
+    S.__e($, e, n);
   }
-  else r == null && e.__v == n.__v ? (e.__k = n.__k, e.__e = n.__e) : l = e.__e = Pe(n.__e, e, n, i, o, r, s, g, d);
-  return (c = h.diffed) && c(e), 128 & e.__u ? void 0 : l;
+  else a == null && e.__v == n.__v ? (e.__k = n.__k, e.__e = n.__e) : d = e.__e = vt(n.__e, e, n, r, o, a, l, u, c);
+  return (g = S.diffed) && g(e), 128 & e.__u ? void 0 : d;
 }
-function W(t) {
-  t && t.__c && (t.__c.__e = !0), t && t.__k && t.__k.forEach(W);
+function me(t) {
+  t && t.__c && (t.__c.__e = !0), t && t.__k && t.__k.forEach(me);
 }
-function ye(t, e, n) {
-  for (var i = 0; i < n.length; i++) Z(n[i], n[++i], n[++i]);
-  h.__c && h.__c(e, t), t.some(function(o) {
+function Qe(t, e, n) {
+  for (var r = 0; r < n.length; r++) ve(n[r], n[++r], n[++r]);
+  S.__c && S.__c(e, t), t.some(function(o) {
     try {
-      t = o.__h, o.__h = [], t.some(function(r) {
-        r.call(o);
+      t = o.__h, o.__h = [], t.some(function(a) {
+        a.call(o);
       });
-    } catch (r) {
-      h.__e(r, o.__v);
+    } catch (a) {
+      S.__e(a, o.__v);
     }
   });
 }
-function xe(t) {
-  return typeof t != "object" || t == null || t.__b && t.__b > 0 ? t : V(t) ? t.map(xe) : k({}, t);
+function Ze(t) {
+  return typeof t != "object" || t == null || t.__b && t.__b > 0 ? t : de(t) ? t.map(Ze) : F({}, t);
 }
-function Pe(t, e, n, i, o, r, s, l, g) {
-  var d, c, a, b, u, y, w, x = n.props || D, m = e.props, f = e.type;
-  if (f == "svg" ? o = "http://www.w3.org/2000/svg" : f == "math" ? o = "http://www.w3.org/1998/Math/MathML" : o || (o = "http://www.w3.org/1999/xhtml"), r != null) {
-    for (d = 0; d < r.length; d++) if ((u = r[d]) && "setAttribute" in u == !!f && (f ? u.localName == f : u.nodeType == 3)) {
-      t = u, r[d] = null;
+function vt(t, e, n, r, o, a, l, d, u) {
+  var c, g, s, p, f, x, C, w = n.props || q, m = e.props, b = e.type;
+  if (b == "svg" ? o = "http://www.w3.org/2000/svg" : b == "math" ? o = "http://www.w3.org/1998/Math/MathML" : o || (o = "http://www.w3.org/1999/xhtml"), a != null) {
+    for (c = 0; c < a.length; c++) if ((f = a[c]) && "setAttribute" in f == !!b && (b ? f.localName == b : f.nodeType == 3)) {
+      t = f, a[c] = null;
       break;
     }
   }
   if (t == null) {
-    if (f == null) return document.createTextNode(m);
-    t = document.createElementNS(o, f, m.is && m), l && (h.__m && h.__m(e, r), l = !1), r = null;
+    if (b == null) return document.createTextNode(m);
+    t = document.createElementNS(o, b, m.is && m), d && (S.__m && S.__m(e, a), d = !1), a = null;
   }
-  if (f == null) x === m || l && t.data == m || (t.data = m);
+  if (b == null) w === m || d && t.data == m || (t.data = m);
   else {
-    if (r = r && H.call(t.childNodes), !l && r != null) for (x = {}, d = 0; d < t.attributes.length; d++) x[(u = t.attributes[d]).name] = u.value;
-    for (d in x) if (u = x[d], d != "children") {
-      if (d == "dangerouslySetInnerHTML") a = u;
-      else if (!(d in m)) {
-        if (d == "value" && "defaultValue" in m || d == "checked" && "defaultChecked" in m) continue;
-        R(t, d, null, u, o);
+    if (a = a && le.call(t.childNodes), !d && a != null) for (w = {}, c = 0; c < t.attributes.length; c++) w[(f = t.attributes[c]).name] = f.value;
+    for (c in w) if (f = w[c], c != "children") {
+      if (c == "dangerouslySetInnerHTML") s = f;
+      else if (!(c in m)) {
+        if (c == "value" && "defaultValue" in m || c == "checked" && "defaultChecked" in m) continue;
+        ee(t, c, null, f, o);
       }
     }
-    for (d in m) u = m[d], d == "children" ? b = u : d == "dangerouslySetInnerHTML" ? c = u : d == "value" ? y = u : d == "checked" ? w = u : l && typeof u != "function" || x[d] === u || R(t, d, u, x[d], o);
-    if (c) l || a && (c.__html == a.__html || c.__html == t.innerHTML) || (t.innerHTML = c.__html), e.__k = [];
-    else if (a && (t.innerHTML = ""), be(e.type == "template" ? t.content : t, V(b) ? b : [b], e, n, i, f == "foreignObject" ? "http://www.w3.org/1999/xhtml" : o, r, s, r ? r[0] : n.__k && M(n, 0), l, g), r != null) for (d = r.length; d--; ) J(r[d]);
-    l || (d = "value", f == "progress" && y == null ? t.removeAttribute("value") : y != null && (y !== t[d] || f == "progress" && !y || f == "option" && y != x[d]) && R(t, d, y, x[d], o), d = "checked", w != null && w != t[d] && R(t, d, w, x[d], o));
+    for (c in m) f = m[c], c == "children" ? p = f : c == "dangerouslySetInnerHTML" ? g = f : c == "value" ? x = f : c == "checked" ? C = f : d && typeof f != "function" || w[c] === f || ee(t, c, f, w[c], o);
+    if (g) d || s && (g.__html == s.__html || g.__html == t.innerHTML) || (t.innerHTML = g.__html), e.__k = [];
+    else if (s && (t.innerHTML = ""), Je(e.type == "template" ? t.content : t, de(p) ? p : [p], e, n, r, b == "foreignObject" ? "http://www.w3.org/1999/xhtml" : o, a, l, a ? a[0] : n.__k && K(n, 0), d, u), a != null) for (c = a.length; c--; ) _e(a[c]);
+    d || (c = "value", b == "progress" && x == null ? t.removeAttribute("value") : x != null && (x !== t[c] || b == "progress" && !x || b == "option" && x != w[c]) && ee(t, c, x, w[c], o), c = "checked", C != null && C != t[c] && ee(t, c, C, w[c], o));
   }
   return t;
 }
-function Z(t, e, n) {
+function ve(t, e, n) {
   try {
     if (typeof t == "function") {
-      var i = typeof t.__u == "function";
-      i && t.__u(), i && e == null || (t.__u = t(e));
+      var r = typeof t.__u == "function";
+      r && t.__u(), r && e == null || (t.__u = t(e));
     } else t.current = e;
   } catch (o) {
-    h.__e(o, n);
+    S.__e(o, n);
   }
 }
-function _e(t, e, n) {
-  var i, o;
-  if (h.unmount && h.unmount(t), (i = t.ref) && (i.current && i.current != t.__e || Z(i, null, e)), (i = t.__c) != null) {
-    if (i.componentWillUnmount) try {
-      i.componentWillUnmount();
-    } catch (r) {
-      h.__e(r, e);
+function et(t, e, n) {
+  var r, o;
+  if (S.unmount && S.unmount(t), (r = t.ref) && (r.current && r.current != t.__e || ve(r, null, e)), (r = t.__c) != null) {
+    if (r.componentWillUnmount) try {
+      r.componentWillUnmount();
+    } catch (a) {
+      S.__e(a, e);
     }
-    i.base = i.__P = null;
+    r.base = r.__P = null;
   }
-  if (i = t.__k) for (o = 0; o < i.length; o++) i[o] && _e(i[o], e, n || typeof t.type != "function");
-  n || J(t.__e), t.__c = t.__ = t.__e = void 0;
+  if (r = t.__k) for (o = 0; o < r.length; o++) r[o] && et(r[o], e, n || typeof t.type != "function");
+  n || _e(t.__e), t.__c = t.__ = t.__e = void 0;
 }
-function ze(t, e, n) {
+function wt(t, e, n) {
   return this.constructor(t, n);
 }
-function P(t, e, n) {
-  var i, o, r, s;
-  e == document && (e = document.documentElement), h.__ && h.__(t, e), o = (i = !1) ? null : e.__k, r = [], s = [], Q(e, t = e.__k = Be(z, null, [t]), o || D, D, e.namespaceURI, o ? null : e.firstChild ? H.call(e.childNodes) : null, r, o ? o.__e : e.firstChild, i, s), ye(r, t, s);
+function O(t, e, n) {
+  var r, o, a, l;
+  e == document && (e = document.documentElement), S.__ && S.__(t, e), o = (r = !1) ? null : e.__k, a = [], l = [], be(e, t = e.__k = yt(X, null, [t]), o || q, q, e.namespaceURI, o ? null : e.firstChild ? le.call(e.childNodes) : null, a, o ? o.__e : e.firstChild, r, l), Qe(a, t, l);
 }
-H = he.slice, h = { __e: function(t, e, n, i) {
-  for (var o, r, s; e = e.__; ) if ((o = e.__c) && !o.__) try {
-    if ((r = o.constructor) && r.getDerivedStateFromError != null && (o.setState(r.getDerivedStateFromError(t)), s = o.__d), o.componentDidCatch != null && (o.componentDidCatch(t, i || {}), s = o.__d), s) return o.__E = o;
-  } catch (l) {
-    t = l;
+le = Ke.slice, S = { __e: function(t, e, n, r) {
+  for (var o, a, l; e = e.__; ) if ((o = e.__c) && !o.__) try {
+    if ((a = o.constructor) && a.getDerivedStateFromError != null && (o.setState(a.getDerivedStateFromError(t)), l = o.__d), o.componentDidCatch != null && (o.componentDidCatch(t, r || {}), l = o.__d), l) return o.__E = o;
+  } catch (d) {
+    t = d;
   }
   throw t;
-} }, ge = 0, N.prototype.setState = function(t, e) {
+} }, Ue = 0, ie.prototype.setState = function(t, e) {
   var n;
-  n = this.__s != null && this.__s != this.state ? this.__s : this.__s = k({}, this.state), typeof t == "function" && (t = t(k({}, n), this.props)), t && k(n, t), t != null && this.__v && (e && this._sb.push(e), oe(this));
-}, N.prototype.forceUpdate = function(t) {
-  this.__v && (this.__e = !0, t && this.__h.push(t), oe(this));
-}, N.prototype.render = z, T = [], ue = typeof Promise == "function" ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, pe = function(t, e) {
+  n = this.__s != null && this.__s != this.state ? this.__s : this.__s = F({}, this.state), typeof t == "function" && (t = t(F({}, n), this.props)), t && F(n, t), t != null && this.__v && (e && this._sb.push(e), Ie(this));
+}, ie.prototype.forceUpdate = function(t) {
+  this.__v && (this.__e = !0, t && this.__h.push(t), Ie(this));
+}, ie.prototype.render = X, V = [], Ve = typeof Promise == "function" ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, je = function(t, e) {
   return t.__v.__b - e.__v.__b;
-}, G.__r = 0, fe = /(PointerCapture)$|Capture$/i, q = 0, Y = se(!1), j = se(!0);
-var Fe = 0;
-function v(t, e, n, i, o, r) {
+}, ae.__r = 0, Ye = /(PointerCapture)$|Capture$/i, ye = 0, ue = Ae(!1), ge = Ae(!0);
+var St = 0;
+function i(t, e, n, r, o, a) {
   e || (e = {});
-  var s, l, g = e;
-  if ("ref" in g) for (l in g = {}, e) l == "ref" ? s = e[l] : g[l] = e[l];
-  var d = { type: t, props: g, key: n, ref: s, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --Fe, __i: -1, __u: 0, __source: o, __self: r };
-  if (typeof t == "function" && (s = t.defaultProps)) for (l in s) g[l] === void 0 && (g[l] = s[l]);
-  return h.vnode && h.vnode(d), d;
+  var l, d, u = e;
+  if ("ref" in u) for (d in u = {}, e) d == "ref" ? l = e[d] : u[d] = e[d];
+  var c = { type: t, props: u, key: n, ref: l, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --St, __i: -1, __u: 0, __source: o, __self: a };
+  if (typeof t == "function" && (l = t.defaultProps)) for (d in l) u[d] === void 0 && (u[d] = l[d]);
+  return S.vnode && S.vnode(c), c;
 }
-const p = {
+const _ = {
   fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif",
   primary: "#3b82f6",
   text: "#111827",
@@ -488,39 +488,39 @@ const p = {
     loading: 1000002
   }
 };
-function Oe({ guide: t, top: e, left: n, arrowStyle: i, onDismiss: o }) {
-  return /* @__PURE__ */ v(
+function xt({ guide: t, top: e, left: n, arrowStyle: r, onDismiss: o }) {
+  return /* @__PURE__ */ i(
     "div",
     {
       className: "designer-guide-tooltip",
       "data-guide-id": t.id,
       style: {
         position: "absolute",
-        background: p.bg,
-        border: `2px solid ${p.primary}`,
-        borderRadius: p.borderRadius,
+        background: _.bg,
+        border: `2px solid ${_.primary}`,
+        borderRadius: _.borderRadius,
         padding: "12px 16px",
         boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)",
-        zIndex: p.zIndex.tooltip,
+        zIndex: _.zIndex.tooltip,
         maxWidth: 300,
-        fontFamily: p.fontFamily,
+        fontFamily: _.fontFamily,
         fontSize: 14,
         lineHeight: 1.5,
-        color: p.text,
+        color: _.text,
         top: `${e}px`,
         left: `${n}px`,
         pointerEvents: "auto"
       },
       children: [
-        /* @__PURE__ */ v("div", { style: { marginBottom: 8 }, children: t.content }),
-        /* @__PURE__ */ v(
+        /* @__PURE__ */ i("div", { style: { marginBottom: 8 }, children: t.content }),
+        /* @__PURE__ */ i(
           "button",
           {
             type: "button",
             onClick: o,
             style: {
-              background: p.primary,
-              color: p.bg,
+              background: _.primary,
+              color: _.bg,
               border: "none",
               borderRadius: 4,
               padding: "6px 12px",
@@ -532,7 +532,7 @@ function Oe({ guide: t, top: e, left: n, arrowStyle: i, onDismiss: o }) {
             children: "Got it"
           }
         ),
-        /* @__PURE__ */ v(
+        /* @__PURE__ */ i(
           "div",
           {
             className: "designer-guide-arrow",
@@ -541,7 +541,7 @@ function Oe({ guide: t, top: e, left: n, arrowStyle: i, onDismiss: o }) {
               width: 0,
               height: 0,
               borderStyle: "solid",
-              ...i
+              ...r
             }
           }
         )
@@ -549,39 +549,39 @@ function Oe({ guide: t, top: e, left: n, arrowStyle: i, onDismiss: o }) {
     }
   );
 }
-function Re(t) {
+function Et(t) {
   const e = { position: "absolute" };
   switch (t) {
     case "top":
-      return { ...e, bottom: "-8px", left: "50%", transform: "translateX(-50%)", borderWidth: "8px 8px 0 8px", borderColor: `${p.primary} transparent transparent transparent` };
+      return { ...e, bottom: "-8px", left: "50%", transform: "translateX(-50%)", borderWidth: "8px 8px 0 8px", borderColor: `${_.primary} transparent transparent transparent` };
     case "bottom":
-      return { ...e, top: "-8px", left: "50%", transform: "translateX(-50%)", borderWidth: "0 8px 8px 8px", borderColor: `transparent transparent ${p.primary} transparent` };
+      return { ...e, top: "-8px", left: "50%", transform: "translateX(-50%)", borderWidth: "0 8px 8px 8px", borderColor: `transparent transparent ${_.primary} transparent` };
     case "left":
-      return { ...e, right: "-8px", top: "50%", transform: "translateY(-50%)", borderWidth: "8px 0 8px 8px", borderColor: `transparent transparent transparent ${p.primary}` };
+      return { ...e, right: "-8px", top: "50%", transform: "translateY(-50%)", borderWidth: "8px 0 8px 8px", borderColor: `transparent transparent transparent ${_.primary}` };
     default:
-      return { ...e, left: "-8px", top: "50%", transform: "translateY(-50%)", borderWidth: "8px 8px 8px 0", borderColor: `transparent ${p.primary} transparent transparent` };
+      return { ...e, left: "-8px", top: "50%", transform: "translateY(-50%)", borderWidth: "8px 8px 8px 0", borderColor: `transparent ${_.primary} transparent transparent` };
   }
 }
-function Ue(t, e, n, i) {
-  const o = t.getBoundingClientRect(), r = window.pageXOffset || document.documentElement.scrollLeft, s = window.pageYOffset || document.documentElement.scrollTop, l = window.innerWidth, g = window.innerHeight;
-  let d = 0, c = 0;
+function kt(t, e, n, r) {
+  const o = t.getBoundingClientRect(), a = window.pageXOffset || document.documentElement.scrollLeft, l = window.pageYOffset || document.documentElement.scrollTop, d = window.innerWidth, u = window.innerHeight;
+  let c = 0, g = 0;
   switch (e) {
     case "top":
-      d = o.top + s - i - 12, c = o.left + r + o.width / 2 - n / 2;
+      c = o.top + l - r - 12, g = o.left + a + o.width / 2 - n / 2;
       break;
     case "bottom":
-      d = o.bottom + s + 12, c = o.left + r + o.width / 2 - n / 2;
+      c = o.bottom + l + 12, g = o.left + a + o.width / 2 - n / 2;
       break;
     case "left":
-      d = o.top + s + o.height / 2 - i / 2, c = o.left + r - n - 12;
+      c = o.top + l + o.height / 2 - r / 2, g = o.left + a - n - 12;
       break;
     default:
-      d = o.top + s + o.height / 2 - i / 2, c = o.right + r + 12;
+      c = o.top + l + o.height / 2 - r / 2, g = o.right + a + 12;
       break;
   }
-  return c < r ? c = r + 10 : c + n > r + l && (c = r + l - n - 10), d < s ? d = s + 10 : d + i > s + g && (d = s + g - i - 10), { top: d, left: c, arrowStyle: Re(e) };
+  return g < a ? g = a + 10 : g + n > a + d && (g = a + d - n - 10), c < l ? c = l + 10 : c + r > l + u && (c = l + u - r - 10), { top: c, left: g, arrowStyle: Et(e) };
 }
-class Ne {
+class Ct {
   container = null;
   onDismiss = () => {
   };
@@ -592,20 +592,20 @@ class Ne {
   }
   renderGuides(e) {
     this.lastGuides = e;
-    const n = K(), i = e.filter(
-      (r) => r.page === n && r.status === "active" && !this.dismissedThisSession.has(r.id)
+    const n = oe(), r = e.filter(
+      (a) => a.page === n && a.status === "active" && !this.dismissedThisSession.has(a.id)
     );
-    if (i.length === 0 || (this.ensureContainer(), !this.container)) return;
+    if (r.length === 0 || (this.ensureContainer(), !this.container)) return;
     const o = [];
-    for (const r of i) {
-      const s = X.findElement(r.selector);
-      if (!s) continue;
-      Te(s);
-      const l = Ue(s, r.placement, 280, 80);
-      o.push({ guide: r, target: s, pos: l });
+    for (const a of r) {
+      const l = pe.findElement(a.selector);
+      if (!l) continue;
+      mt(l);
+      const d = kt(l, a.placement, 280, 80);
+      o.push({ guide: a, target: l, pos: d });
     }
-    P(
-      /* @__PURE__ */ v(
+    O(
+      /* @__PURE__ */ i(
         "div",
         {
           id: "designer-guides-container",
@@ -616,18 +616,18 @@ class Ne {
             width: "100%",
             height: "100%",
             pointerEvents: "none",
-            zIndex: p.zIndex.guides
+            zIndex: _.zIndex.guides
           },
-          children: o.map(({ guide: r, pos: s }) => /* @__PURE__ */ v(
-            Oe,
+          children: o.map(({ guide: a, pos: l }) => /* @__PURE__ */ i(
+            xt,
             {
-              guide: r,
-              top: s.top,
-              left: s.left,
-              arrowStyle: s.arrowStyle,
-              onDismiss: () => this.dismissGuide(r.id)
+              guide: a,
+              top: l.top,
+              left: l.left,
+              arrowStyle: l.arrowStyle,
+              onDismiss: () => this.dismissGuide(a.id)
             },
-            r.id
+            a.id
           ))
         }
       ),
@@ -641,7 +641,7 @@ class Ne {
     this.dismissedThisSession.add(e), this.onDismiss(e), this.renderGuides(this.lastGuides);
   }
   clear() {
-    this.dismissedThisSession.clear(), this.container && P(null, this.container);
+    this.dismissedThisSession.clear(), this.container && O(null, this.container);
   }
   ensureContainer() {
     if (!this.container) {
@@ -657,27 +657,27 @@ class Ne {
     }
   }
 }
-const de = [
+const Le = [
   "rgba(251, 191, 36, 0.35)",
   "rgba(34, 197, 94, 0.35)",
   "rgba(249, 115, 22, 0.35)"
 ];
-function Ge({ feature: t, color: e, rect: n }) {
-  const i = window.pageXOffset || document.documentElement.scrollLeft, o = window.pageYOffset || document.documentElement.scrollTop;
-  return /* @__PURE__ */ v(
+function Tt({ feature: t, color: e, rect: n }) {
+  const r = window.pageXOffset || document.documentElement.scrollLeft, o = window.pageYOffset || document.documentElement.scrollTop;
+  return /* @__PURE__ */ i(
     "div",
     {
       className: "designer-feature-heatmap-overlay",
       title: t.featureName,
       style: {
         position: "absolute",
-        left: n.left + i,
+        left: n.left + r,
         top: n.top + o,
         width: n.width,
         height: n.height,
         backgroundColor: e,
         pointerEvents: "none",
-        zIndex: p.zIndex.overlay,
+        zIndex: _.zIndex.overlay,
         boxSizing: "border-box",
         borderRadius: 4,
         border: `2px solid ${e}`
@@ -685,31 +685,31 @@ function Ge({ feature: t, color: e, rect: n }) {
     }
   );
 }
-function le(t) {
+function Re(t) {
   return (t || "").replace(/^https?:\/\//i, "").replace(/\/$/, "").trim() || "";
 }
-function He() {
+function It() {
   try {
     return window.location.href || "";
   } catch {
     return "";
   }
 }
-class Ve {
+class Dt {
   container = null;
   lastEnabled = !1;
   render(e, n) {
     if (this.lastEnabled = n, this.clear(), !n || e.length === 0) return;
-    const i = He(), o = le(i), r = e.filter((l) => l.url && le(l.url) === o);
-    if (r.length === 0 || (this.ensureContainer(), !this.container)) return;
-    const s = r.map((l, g) => {
-      const d = X.findElement(l.selector);
-      if (!d) return null;
-      const c = d.getBoundingClientRect(), a = de[g % de.length];
-      return { feature: l, rect: c, color: a };
+    const r = It(), o = Re(r), a = e.filter((d) => d.url && Re(d.url) === o);
+    if (a.length === 0 || (this.ensureContainer(), !this.container)) return;
+    const l = a.map((d, u) => {
+      const c = pe.findElement(d.selector);
+      if (!c) return null;
+      const g = c.getBoundingClientRect(), s = Le[u % Le.length];
+      return { feature: d, rect: g, color: s };
     }).filter(Boolean);
-    P(
-      /* @__PURE__ */ v(
+    O(
+      /* @__PURE__ */ i(
         "div",
         {
           id: "designer-feature-heatmap-container",
@@ -720,21 +720,21 @@ class Ve {
             width: "100%",
             height: "100%",
             pointerEvents: "none",
-            zIndex: p.zIndex.overlay - 1
+            zIndex: _.zIndex.overlay - 1
           },
-          children: s.map(({ feature: l, rect: g, color: d }) => /* @__PURE__ */ v(
-            Ge,
+          children: l.map(({ feature: d, rect: u, color: c }) => /* @__PURE__ */ i(
+            Tt,
             {
-              feature: l,
-              color: d,
+              feature: d,
+              color: c,
               rect: {
-                left: g.left,
-                top: g.top,
-                width: g.width,
-                height: g.height
+                left: u.left,
+                top: u.top,
+                width: u.width,
+                height: u.height
               }
             },
-            l.id
+            d.id
           ))
         }
       ),
@@ -745,7 +745,7 @@ class Ve {
     this.render(e, this.lastEnabled);
   }
   clear() {
-    this.container && P(null, this.container);
+    this.container && O(null, this.container);
   }
   destroy() {
     this.clear(), this.container?.remove(), this.container = null;
@@ -764,13 +764,1065 @@ class Ve {
     }
   }
 }
-class $e {
+var Q, k, ce, Be, se = 0, tt = [], T = S, ze = T.__b, He = T.__r, Me = T.diffed, Pe = T.__c, Fe = T.unmount, $e = T.__;
+function we(t, e) {
+  T.__h && T.__h(k, t, se || e), se = 0;
+  var n = k.__H || (k.__H = { __: [], __h: [] });
+  return t >= n.__.length && n.__.push({}), n.__[t];
+}
+function E(t) {
+  return se = 1, At(it, t);
+}
+function At(t, e, n) {
+  var r = we(Q++, 2);
+  if (r.t = t, !r.__c && (r.__ = [it(void 0, e), function(d) {
+    var u = r.__N ? r.__N[0] : r.__[0], c = r.t(u, d);
+    u !== c && (r.__N = [c, r.__[1]], r.__c.setState({}));
+  }], r.__c = k, !k.__f)) {
+    var o = function(d, u, c) {
+      if (!r.__c.__H) return !0;
+      var g = r.__c.__H.__.filter(function(p) {
+        return !!p.__c;
+      });
+      if (g.every(function(p) {
+        return !p.__N;
+      })) return !a || a.call(this, d, u, c);
+      var s = r.__c.props !== d;
+      return g.forEach(function(p) {
+        if (p.__N) {
+          var f = p.__[0];
+          p.__ = p.__N, p.__N = void 0, f !== p.__[0] && (s = !0);
+        }
+      }), a && a.call(this, d, u, c) || s;
+    };
+    k.__f = !0;
+    var a = k.shouldComponentUpdate, l = k.componentWillUpdate;
+    k.componentWillUpdate = function(d, u, c) {
+      if (this.__e) {
+        var g = a;
+        a = void 0, o(d, u, c), a = g;
+      }
+      l && l.call(this, d, u, c);
+    }, k.shouldComponentUpdate = o;
+  }
+  return r.__N || r.__;
+}
+function H(t, e) {
+  var n = we(Q++, 3);
+  !T.__s && nt(n.__H, e) && (n.__ = t, n.u = e, k.__H.__h.push(n));
+}
+function Lt(t, e) {
+  var n = we(Q++, 7);
+  return nt(n.__H, e) && (n.__ = t(), n.__H = e, n.__h = t), n.__;
+}
+function J(t, e) {
+  return se = 8, Lt(function() {
+    return t;
+  }, e);
+}
+function Rt() {
+  for (var t; t = tt.shift(); ) if (t.__P && t.__H) try {
+    t.__H.__h.forEach(re), t.__H.__h.forEach(fe), t.__H.__h = [];
+  } catch (e) {
+    t.__H.__h = [], T.__e(e, t.__v);
+  }
+}
+T.__b = function(t) {
+  k = null, ze && ze(t);
+}, T.__ = function(t, e) {
+  t && e.__k && e.__k.__m && (t.__m = e.__k.__m), $e && $e(t, e);
+}, T.__r = function(t) {
+  He && He(t), Q = 0;
+  var e = (k = t.__c).__H;
+  e && (ce === k ? (e.__h = [], k.__h = [], e.__.forEach(function(n) {
+    n.__N && (n.__ = n.__N), n.u = n.__N = void 0;
+  })) : (e.__h.forEach(re), e.__h.forEach(fe), e.__h = [], Q = 0)), ce = k;
+}, T.diffed = function(t) {
+  Me && Me(t);
+  var e = t.__c;
+  e && e.__H && (e.__H.__h.length && (tt.push(e) !== 1 && Be === T.requestAnimationFrame || ((Be = T.requestAnimationFrame) || Bt)(Rt)), e.__H.__.forEach(function(n) {
+    n.u && (n.__H = n.u), n.u = void 0;
+  })), ce = k = null;
+}, T.__c = function(t, e) {
+  e.some(function(n) {
+    try {
+      n.__h.forEach(re), n.__h = n.__h.filter(function(r) {
+        return !r.__ || fe(r);
+      });
+    } catch (r) {
+      e.some(function(o) {
+        o.__h && (o.__h = []);
+      }), e = [], T.__e(r, n.__v);
+    }
+  }), Pe && Pe(t, e);
+}, T.unmount = function(t) {
+  Fe && Fe(t);
+  var e, n = t.__c;
+  n && n.__H && (n.__H.__.forEach(function(r) {
+    try {
+      re(r);
+    } catch (o) {
+      e = o;
+    }
+  }), n.__H = void 0, e && T.__e(e, n.__v));
+};
+var Oe = typeof requestAnimationFrame == "function";
+function Bt(t) {
+  var e, n = function() {
+    clearTimeout(r), Oe && cancelAnimationFrame(e), setTimeout(t);
+  }, r = setTimeout(n, 35);
+  Oe && (e = requestAnimationFrame(n));
+}
+function re(t) {
+  var e = k, n = t.__c;
+  typeof n == "function" && (t.__c = void 0, n()), k = e;
+}
+function fe(t) {
+  var e = k;
+  t.__c = t.__(), k = e;
+}
+function nt(t, e) {
+  return !t || t.length !== e.length || e.some(function(n, r) {
+    return n !== t[r];
+  });
+}
+function it(t, e) {
+  return typeof e == "function" ? e(t) : e;
+}
+const h = {
+  root: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1.5rem",
+    maxWidth: "100%",
+    minHeight: "100%"
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: "1rem",
+    borderBottom: "1px solid rgba(226,232,240,0.8)"
+  },
+  headerTitle: {
+    fontSize: "1.25rem",
+    fontWeight: 700,
+    color: "#1e293b",
+    letterSpacing: "-0.025em"
+  },
+  closeBtn: {
+    width: "2.25rem",
+    height: "2.25rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "0.75rem",
+    color: "#94a3b8",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    transition: "all 0.2s"
+  },
+  emptyState: {
+    textAlign: "center",
+    padding: "3rem 1.5rem",
+    background: "linear-gradient(to bottom right, #f8fafc, rgba(239,246,255,0.5))",
+    border: "2px dashed #e2e8f0",
+    borderRadius: "1rem"
+  },
+  emptyStateIcon: {
+    width: "4rem",
+    height: "4rem",
+    margin: "0 auto 1rem",
+    borderRadius: "1rem",
+    background: "linear-gradient(to bottom right, #dbeafe, #bfdbfe)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  emptyStateText: {
+    color: "#475569",
+    fontSize: "0.875rem",
+    marginBottom: "1.25rem",
+    lineHeight: 1.625
+  },
+  primaryBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.5rem",
+    padding: "0.75rem 1.5rem",
+    borderRadius: "0.75rem",
+    fontSize: "0.875rem",
+    fontWeight: 600,
+    color: "#fff",
+    background: "linear-gradient(to right, #3b82f6, #2563eb)",
+    boxShadow: "0 4px 6px -1px rgba(59,130,246,0.3)",
+    border: "none",
+    cursor: "pointer",
+    transition: "all 0.2s"
+  },
+  secondaryBtn: {
+    flex: 1,
+    padding: "0.75rem 1.25rem",
+    borderRadius: "0.75rem",
+    fontSize: "0.875rem",
+    fontWeight: 600,
+    background: "#f1f5f9",
+    color: "#334155",
+    border: "1px solid #e2e8f0",
+    cursor: "pointer",
+    transition: "all 0.2s"
+  },
+  section: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.5rem"
+  },
+  label: {
+    fontSize: "0.875rem",
+    fontWeight: 600,
+    color: "#475569"
+  },
+  selectorBox: {
+    padding: "0.625rem 1rem",
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: "0.75rem",
+    fontFamily: "ui-monospace, monospace",
+    fontSize: "0.75rem",
+    color: "#334155",
+    wordBreak: "break-all"
+  },
+  elementInfo: {
+    padding: "1rem",
+    background: "rgba(239,246,255,0.9)",
+    border: "1px solid #bfdbfe",
+    borderRadius: "0.75rem"
+  },
+  elementInfoTitle: {
+    display: "block",
+    marginBottom: "0.5rem",
+    fontSize: "0.75rem",
+    fontWeight: 700,
+    color: "#1d4ed8",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em"
+  },
+  elementInfoText: {
+    fontSize: "0.875rem",
+    color: "rgba(29,78,216,0.9)"
+  },
+  textarea: {
+    width: "100%",
+    padding: "0.75rem 1rem",
+    border: "1px solid #e2e8f0",
+    borderRadius: "0.75rem",
+    fontSize: "0.875rem",
+    color: "#0f172a",
+    background: "#fff",
+    minHeight: "100px",
+    lineHeight: 1.625,
+    resize: "vertical",
+    fontFamily: "inherit"
+  },
+  input: {
+    width: "100%",
+    padding: "0.75rem 1rem",
+    border: "1px solid #e2e8f0",
+    borderRadius: "0.75rem",
+    fontSize: "0.875rem",
+    color: "#0f172a",
+    background: "#fff",
+    fontFamily: "inherit"
+  },
+  placementGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: "0.5rem"
+  },
+  placementBtn: (t) => ({
+    padding: "0.75rem 1rem",
+    borderRadius: "0.75rem",
+    fontSize: "0.875rem",
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "all 0.2s",
+    ...t ? { background: "#3b82f6", color: "#fff", border: "none", boxShadow: "0 4px 6px -1px rgba(59,130,246,0.3)" } : { background: "#fff", color: "#475569", border: "1px solid #e2e8f0" }
+  }),
+  errorBox: {
+    padding: "0.75rem 1rem",
+    background: "#fef2f2",
+    border: "1px solid #fee2e2",
+    borderRadius: "0.75rem",
+    color: "#b91c1c",
+    fontSize: "0.875rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem"
+  },
+  actionRow: {
+    display: "flex",
+    gap: "0.75rem",
+    paddingTop: "1rem",
+    marginTop: "0.5rem",
+    borderTop: "1px solid rgba(226,232,240,0.8)"
+  },
+  panel: {
+    display: "flex",
+    flexDirection: "column",
+    minHeight: "100%",
+    background: "#fff"
+  },
+  panelHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "1rem 1.5rem",
+    borderBottom: "1px solid rgba(226,232,240,0.8)",
+    background: "rgba(248,250,252,0.5)"
+  },
+  panelBody: {
+    flex: 1,
+    padding: "1.5rem",
+    overflowY: "auto"
+  },
+  iconBtn: {
+    width: "2.25rem",
+    height: "2.25rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "0.75rem",
+    color: "#94a3b8",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    transition: "all 0.2s"
+  },
+  card: {
+    background: "#fff",
+    borderRadius: "1rem",
+    padding: "1.25rem",
+    border: "1px solid rgba(226,232,240,0.8)",
+    boxShadow: "0 1px 3px 0 rgba(0,0,0,0.05)",
+    transition: "all 0.2s"
+  },
+  badge: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "9999px",
+    fontSize: "0.75rem",
+    fontWeight: 700,
+    padding: "0.125rem 0.625rem",
+    flexShrink: 0
+  },
+  sectionLabel: {
+    fontSize: "11px",
+    fontWeight: 700,
+    color: "#94a3b8",
+    textTransform: "uppercase",
+    letterSpacing: "0.1em",
+    marginBottom: "0.75rem"
+  },
+  tabRow: {
+    display: "flex",
+    gap: 0,
+    borderBottom: "1px solid rgba(226,232,240,0.8)",
+    padding: "0 1.5rem",
+    background: "#fff"
+  },
+  tab: (t) => ({
+    padding: "1rem 1.25rem",
+    fontSize: "0.875rem",
+    fontWeight: t ? 600 : 500,
+    color: t ? "#2563eb" : "#64748b",
+    cursor: "pointer",
+    position: "relative",
+    background: "none",
+    border: "none",
+    fontFamily: "inherit",
+    borderBottom: t ? "2px solid #3b82f6" : "2px solid transparent"
+  }),
+  heatmapRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "1.25rem 0",
+    borderTop: "1px solid rgba(226,232,240,0.8)",
+    marginTop: "1.5rem"
+  },
+  toggle: (t) => ({
+    position: "relative",
+    width: "3rem",
+    height: "1.75rem",
+    borderRadius: "9999px",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    background: t ? "#10b981" : "#cbd5e1",
+    border: "none"
+  }),
+  toggleThumb: (t) => ({
+    position: "absolute",
+    top: "0.25rem",
+    left: t ? "1.5rem" : "0.25rem",
+    width: "1.25rem",
+    height: "1.25rem",
+    background: "#fff",
+    borderRadius: "9999px",
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+    transition: "all 0.2s"
+  }),
+  link: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.375rem",
+    color: "#2563eb",
+    fontSize: "0.875rem",
+    fontWeight: 500,
+    textDecoration: "none",
+    cursor: "pointer",
+    background: "none",
+    border: "none",
+    fontFamily: "inherit"
+  },
+  footer: {
+    display: "flex",
+    gap: "0.75rem",
+    padding: "1rem 1.5rem",
+    borderTop: "1px solid rgba(226,232,240,0.8)",
+    background: "rgba(248,250,252,0.5)",
+    marginTop: "auto"
+  },
+  radioLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+    cursor: "pointer",
+    padding: "0.75rem",
+    borderRadius: "0.75rem",
+    border: "1px solid #e2e8f0",
+    transition: "all 0.2s"
+  },
+  searchWrap: {
+    position: "relative",
+    marginBottom: "1rem"
+  },
+  searchIcon: {
+    position: "absolute",
+    left: "1rem",
+    top: "50%",
+    transform: "translateY(-50%)",
+    color: "#94a3b8",
+    fontSize: "1rem"
+  },
+  searchInput: {
+    width: "100%",
+    padding: "0.75rem 1rem 0.75rem 2.75rem",
+    border: "1px solid #e2e8f0",
+    borderRadius: "0.75rem",
+    fontSize: "0.875rem",
+    color: "#0f172a",
+    background: "#fff",
+    fontFamily: "inherit"
+  },
+  pageItem: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "1.25rem",
+    background: "#fff",
+    borderRadius: "1rem",
+    border: "1px solid rgba(226,232,240,0.8)",
+    marginBottom: "0.5rem",
+    transition: "all 0.2s"
+  },
+  iconBtnSm: {
+    width: "2rem",
+    height: "2rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "0.5rem",
+    color: "#94a3b8",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    transition: "all 0.2s"
+  },
+  comingSoon: {
+    padding: "2rem 0",
+    textAlign: "center"
+  },
+  comingSoonIcon: {
+    width: "4rem",
+    height: "4rem",
+    margin: "0 auto 1rem",
+    borderRadius: "1rem",
+    background: "#f1f5f9",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  }
+}, zt = `
+iconify-icon { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; }
+`, Ht = ["top", "right", "bottom", "left"];
+function Mt({ onMessage: t, elementSelected: e }) {
+  const [n, r] = E(""), [o, a] = E(null), [l, d] = E(""), [u, c] = E("right"), [g, s] = E(""), [p, f] = E(!1);
+  H(() => {
+    t({ type: "EDITOR_READY" });
+  }, []), H(() => {
+    e ? (r(e.selector), a(e.elementInfo), f(!0), d(""), s("")) : (r(""), a(null), f(!1), d(""), s(""));
+  }, [e]);
+  const x = () => {
+    const m = l.trim();
+    if (!m) {
+      s("Please enter guide content");
+      return;
+    }
+    if (!n) {
+      s("No element selected");
+      return;
+    }
+    s(""), t({
+      type: "SAVE_GUIDE",
+      guide: {
+        page: oe(),
+        selector: n,
+        content: m,
+        placement: u,
+        status: "active"
+      }
+    });
+  }, C = () => {
+    r(""), a(null), f(!1), d(""), s(""), t({ type: "CLEAR_SELECTION_CLICKED" });
+  }, w = (m) => {
+    const b = [];
+    return m.tagName && b.push(`Tag: ${m.tagName}`), m.id && b.push(`ID: ${m.id}`), m.className && b.push(`Class: ${m.className}`), m.textContent && b.push(`Text: ${m.textContent}`), b.join(" | ");
+  };
+  return /* @__PURE__ */ i("div", { style: h.root, children: [
+    /* @__PURE__ */ i("div", { style: h.header, children: [
+      /* @__PURE__ */ i("h2", { style: h.headerTitle, children: "Create Guide" }),
+      /* @__PURE__ */ i(
+        "button",
+        {
+          type: "button",
+          style: h.closeBtn,
+          onClick: () => t({ type: "CANCEL" }),
+          "aria-label": "Close",
+          children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:close", style: { fontSize: "1.25rem" } })
+        }
+      )
+    ] }),
+    p ? /* @__PURE__ */ i("div", { style: { display: "flex", flexDirection: "column", gap: "1.25rem" }, children: [
+      /* @__PURE__ */ i("div", { style: h.section, children: [
+        /* @__PURE__ */ i("label", { style: h.label, children: "Selector" }),
+        /* @__PURE__ */ i("div", { style: h.selectorBox, children: n || "-" })
+      ] }),
+      o && /* @__PURE__ */ i("div", { style: h.elementInfo, children: [
+        /* @__PURE__ */ i("strong", { style: h.elementInfoTitle, children: "Element Info" }),
+        /* @__PURE__ */ i("div", { style: h.elementInfoText, children: w(o) })
+      ] }),
+      /* @__PURE__ */ i("div", { style: h.section, children: [
+        /* @__PURE__ */ i("label", { for: "guideContent", style: h.label, children: "Guide Content" }),
+        /* @__PURE__ */ i(
+          "textarea",
+          {
+            id: "guideContent",
+            style: h.textarea,
+            placeholder: "Enter the guide text that will be shown to users...",
+            value: l,
+            onInput: (m) => d(m.target.value)
+          }
+        )
+      ] }),
+      /* @__PURE__ */ i("div", { style: h.section, children: [
+        /* @__PURE__ */ i("label", { style: h.label, children: "Placement" }),
+        /* @__PURE__ */ i("div", { style: h.placementGrid, children: Ht.map((m) => /* @__PURE__ */ i(
+          "button",
+          {
+            type: "button",
+            style: h.placementBtn(u === m),
+            onClick: () => c(m),
+            children: m.charAt(0).toUpperCase() + m.slice(1)
+          },
+          m
+        )) })
+      ] }),
+      g && /* @__PURE__ */ i("div", { style: h.errorBox, children: [
+        /* @__PURE__ */ i("iconify-icon", { icon: "mdi:alert-circle" }),
+        g
+      ] }),
+      /* @__PURE__ */ i("div", { style: h.actionRow, children: [
+        /* @__PURE__ */ i("button", { type: "button", style: h.secondaryBtn, onClick: () => t({ type: "CANCEL" }), children: "Cancel" }),
+        /* @__PURE__ */ i("button", { type: "button", style: h.secondaryBtn, onClick: C, children: "Clear Selection" }),
+        /* @__PURE__ */ i("button", { type: "button", style: { ...h.primaryBtn, flex: 1 }, onClick: x, children: "Save Guide" })
+      ] })
+    ] }) : /* @__PURE__ */ i("div", { style: h.emptyState, children: [
+      /* @__PURE__ */ i("div", { style: h.emptyStateIcon, children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:cursor-default-click", style: { fontSize: "1.875rem", color: "#3b82f6" } }) }),
+      /* @__PURE__ */ i("p", { style: h.emptyStateText, children: "Click on an element in the page to create a guide" }),
+      /* @__PURE__ */ i("button", { type: "button", style: h.primaryBtn, onClick: () => t({ type: "ACTIVATE_SELECTOR" }), children: [
+        /* @__PURE__ */ i("iconify-icon", { icon: "mdi:selection-marker" }),
+        "Select element"
+      ] })
+    ] })
+  ] });
+}
+const rt = "designerTaggedPages";
+function j() {
+  try {
+    const t = window.location;
+    return (t.host || t.hostname || "") + (t.pathname || "/") + (t.search || "") + (t.hash || "");
+  } catch {
+    return window.location.href || "";
+  }
+}
+function Y(t) {
+  return (t || "").replace(/^https?:\/\//i, "").replace(/\/$/, "") || "";
+}
+function he() {
+  try {
+    const t = localStorage.getItem(rt) || "[]";
+    return JSON.parse(t);
+  } catch {
+    return [];
+  }
+}
+function Pt() {
+  try {
+    const t = window.location, e = (t.pathname || "/").replace(/^\//, ""), n = t.search || "", r = t.hash || "";
+    return "//*/" + e + n + r;
+  } catch {
+    return "//*/";
+  }
+}
+function Ft({ onMessage: t, tagPageSavedAckCounter: e }) {
+  const [n, r] = E("overviewUntagged"), [o, a] = E(""), [l, d] = E(""), [u, c] = E(!1), [g, s] = E("create"), [p, f] = E(""), [x, C] = E(""), [w, m] = E("suggested"), [b, D] = E(""), [A, B] = E(!1), M = J(() => {
+    const v = Y(j());
+    return he().some((W) => W && Y(W.url) === v);
+  }, []), G = J(() => {
+    const v = Y(j());
+    return he().filter((z) => z && Y(z.url) === v);
+  }, []), y = J(() => {
+    const v = M();
+    r(v ? "overviewTagged" : "overviewUntagged"), a(j() || "(current page)"), c(!1);
+  }, [M]), L = J(() => {
+    r("taggedPagesDetailView"), d("");
+  }, []), P = J(() => {
+    r("tagPageFormView"), c(!0), D(Pt()), f(""), C(""), s("create"), m("suggested"), B(!1);
+  }, []);
+  H(() => {
+    t({ type: "EDITOR_READY" });
+  }, []), H(() => {
+    y();
+  }, [y]), H(() => {
+    e != null && e > 0 && y();
+  }, [e, y]), H(() => {
+    let v = j();
+    const z = () => {
+      const xe = j();
+      xe !== v && (v = xe, y());
+    }, W = () => z(), U = () => z();
+    window.addEventListener("hashchange", W), window.addEventListener("popstate", U);
+    const ht = setInterval(z, 1500);
+    return () => {
+      window.removeEventListener("hashchange", W), window.removeEventListener("popstate", U), clearInterval(ht);
+    };
+  }, [y]);
+  const R = () => {
+    const v = p.trim();
+    if (!v) {
+      B(!0);
+      return;
+    }
+    B(!1);
+    const z = {
+      pageSetup: g,
+      pageName: v,
+      description: x.trim() || void 0,
+      includeRules: [{ ruleType: w, selectionUrl: b.trim() || "" }]
+    };
+    t({ type: "SAVE_TAG_PAGE", payload: z });
+  }, $ = (v) => {
+    if (!window.confirm(`Delete page "${v}"?`)) return;
+    const z = Y(j()), W = he().filter(
+      (U) => !(U && U.pageName === v && Y(U.url) === z)
+    );
+    try {
+      localStorage.setItem(rt, JSON.stringify(W)), G().length === 0 ? y() : n === "taggedPagesDetailView" && r("taggedPagesDetailView");
+    } catch {
+    }
+  }, Se = G().filter(
+    (v) => (v.pageName || "").toLowerCase().includes(l.toLowerCase().trim())
+  ), Z = { display: "flex", flexDirection: "column", flex: 1, gap: "1rem" };
+  return /* @__PURE__ */ i("div", { style: h.panel, children: [
+    /* @__PURE__ */ i("div", { style: h.panelHeader, children: [
+      /* @__PURE__ */ i("h2", { style: { ...h.headerTitle, fontSize: "1.125rem" }, children: "Tag Page" }),
+      /* @__PURE__ */ i("div", { style: { display: "flex", gap: "0.25rem" }, children: [
+        /* @__PURE__ */ i("button", { type: "button", style: h.iconBtn, title: "Menu", children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:dots-horizontal", style: { fontSize: "1.125rem" } }) }),
+        /* @__PURE__ */ i("button", { type: "button", style: h.iconBtn, title: "Minimize", onClick: () => t({ type: "CANCEL" }), children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:window-minimize", style: { fontSize: "1.125rem" } }) })
+      ] })
+    ] }),
+    /* @__PURE__ */ i("div", { style: h.panelBody, children: [
+      n === "overviewTagged" && /* @__PURE__ */ i("div", { style: Z, children: [
+        /* @__PURE__ */ i("div", { style: h.sectionLabel, children: "PAGES OVERVIEW" }),
+        /* @__PURE__ */ i("div", { style: { ...h.card, marginBottom: "1rem", cursor: "pointer" }, onClick: L, children: /* @__PURE__ */ i("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1, minWidth: 0 }, children: [
+          /* @__PURE__ */ i("div", { style: { display: "flex", gap: "1rem", flex: 1, minWidth: 0 }, children: [
+            /* @__PURE__ */ i("span", { style: { ...h.badge, background: "#10b981", color: "#fff" }, children: "Tagged" }),
+            /* @__PURE__ */ i("div", { style: { minWidth: 0 }, children: [
+              /* @__PURE__ */ i("div", { style: { fontSize: "0.875rem", fontWeight: 600, color: "#1e293b" }, children: "Current URL" }),
+              /* @__PURE__ */ i("div", { style: { fontSize: "0.875rem", color: "#64748b", marginTop: "0.125rem", wordBreak: "break-all" }, children: o })
+            ] })
+          ] }),
+          /* @__PURE__ */ i("iconify-icon", { icon: "mdi:chevron-right", style: { color: "#94a3b8", fontSize: "1.25rem", flexShrink: 0 } })
+        ] }) }),
+        /* @__PURE__ */ i("button", { type: "button", style: { ...h.primaryBtn, width: "100%" }, onClick: P, children: "Tag Page" })
+      ] }),
+      n === "taggedPagesDetailView" && /* @__PURE__ */ i("div", { style: Z, children: [
+        /* @__PURE__ */ i(
+          "a",
+          {
+            href: "#",
+            style: h.link,
+            onClick: (v) => {
+              v.preventDefault(), y();
+            },
+            children: [
+              /* @__PURE__ */ i("iconify-icon", { icon: "mdi:arrow-left" }),
+              " Back to overview"
+            ]
+          }
+        ),
+        /* @__PURE__ */ i("div", { style: { display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }, children: [
+          /* @__PURE__ */ i("span", { style: { ...h.badge, background: "#3b82f6", color: "#fff", minWidth: "1.5rem", height: "1.5rem" }, children: Se.length }),
+          /* @__PURE__ */ i("h3", { style: { fontSize: "1rem", fontWeight: 700, color: "#1e293b" }, children: "Current URL" })
+        ] }),
+        /* @__PURE__ */ i("p", { style: { fontSize: "0.875rem", color: "#64748b", marginBottom: "1rem" }, children: "List of tagged Pages on this URL" }),
+        /* @__PURE__ */ i("div", { style: h.searchWrap, children: [
+          /* @__PURE__ */ i("iconify-icon", { icon: "mdi:magnify", style: h.searchIcon }),
+          /* @__PURE__ */ i(
+            "input",
+            {
+              type: "text",
+              placeholder: "Search Pages",
+              value: l,
+              onInput: (v) => d(v.target.value),
+              style: h.searchInput
+            }
+          ),
+          l && /* @__PURE__ */ i("button", { type: "button", style: { position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#94a3b8", fontSize: "0.75rem", cursor: "pointer" }, onClick: () => d(""), children: "Clear" })
+        ] }),
+        Se.map((v) => /* @__PURE__ */ i("div", { style: { ...h.pageItem, marginBottom: "0.5rem" }, children: [
+          /* @__PURE__ */ i("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#1e293b", flex: 1 }, children: v.pageName || "Unnamed" }),
+          /* @__PURE__ */ i("div", { style: { display: "flex", gap: "0.25rem" }, children: [
+            /* @__PURE__ */ i("button", { type: "button", style: h.iconBtnSm, title: "Edit", onClick: () => t({ type: "EDIT_TAG_PAGE", payload: { pageName: v.pageName } }), children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:pencil" }) }),
+            /* @__PURE__ */ i("button", { type: "button", style: h.iconBtnSm, title: "Delete", onClick: () => $(v.pageName), children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:delete-outline" }) })
+          ] })
+        ] }, v.pageName)),
+        /* @__PURE__ */ i("button", { type: "button", style: { ...h.primaryBtn, width: "100%", marginTop: "1rem" }, onClick: P, children: "Tag Page" })
+      ] }),
+      n === "overviewUntagged" && /* @__PURE__ */ i("div", { style: { ...Z, textAlign: "center", padding: "2.5rem 1.5rem" }, children: [
+        /* @__PURE__ */ i("div", { style: { ...h.emptyStateIcon, width: "6rem", height: "6rem", marginBottom: "1.5rem", background: "linear-gradient(to bottom right, #dbeafe, #bfdbfe, #93c5fd)" }, children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:tag-plus", style: { fontSize: "3rem", color: "#3b82f6" } }) }),
+        /* @__PURE__ */ i("h3", { style: { fontSize: "1.25rem", fontWeight: 700, color: "#1e293b", marginBottom: "0.5rem" }, children: "Let's start tagging!" }),
+        /* @__PURE__ */ i("p", { style: { fontSize: "0.875rem", color: "#64748b", marginBottom: "2rem", lineHeight: 1.625, maxWidth: "20rem", margin: "0 auto 2rem" }, children: "Start by first tagging this page and then features to get going." }),
+        /* @__PURE__ */ i("button", { type: "button", style: { ...h.primaryBtn, width: "100%", maxWidth: "20rem", margin: "0 auto" }, onClick: P, children: "Tag Page" })
+      ] }),
+      n === "tagPageFormView" && /* @__PURE__ */ i("div", { style: { ...Z, gap: "1.5rem" }, children: [
+        /* @__PURE__ */ i(
+          "a",
+          {
+            href: "#",
+            style: h.link,
+            onClick: (v) => {
+              v.preventDefault(), y(), c(!1);
+            },
+            children: [
+              /* @__PURE__ */ i("iconify-icon", { icon: "mdi:arrow-left" }),
+              " Back"
+            ]
+          }
+        ),
+        /* @__PURE__ */ i("div", { children: [
+          /* @__PURE__ */ i("div", { style: h.sectionLabel, children: "PAGE SETUP" }),
+          /* @__PURE__ */ i("div", { style: { display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.25rem" }, children: [
+            /* @__PURE__ */ i("label", { style: h.radioLabel, children: [
+              /* @__PURE__ */ i("input", { type: "radio", name: "pageSetup", value: "create", checked: g === "create", onChange: () => s("create"), style: { accentColor: "#3b82f6" } }),
+              /* @__PURE__ */ i("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Create New Page" })
+            ] }),
+            /* @__PURE__ */ i("label", { style: h.radioLabel, children: [
+              /* @__PURE__ */ i("input", { type: "radio", name: "pageSetup", value: "merge", checked: g === "merge", onChange: () => s("merge"), style: { accentColor: "#3b82f6" } }),
+              /* @__PURE__ */ i("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Merge with Existing" })
+            ] })
+          ] }),
+          /* @__PURE__ */ i("div", { style: { display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.5rem" }, children: [
+            /* @__PURE__ */ i("div", { children: [
+              /* @__PURE__ */ i("label", { style: { display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }, children: [
+                "Page Name ",
+                /* @__PURE__ */ i("span", { style: { color: "#ef4444" }, children: "*" })
+              ] }),
+              /* @__PURE__ */ i(
+                "input",
+                {
+                  type: "text",
+                  placeholder: "Enter page name",
+                  value: p,
+                  onInput: (v) => f(v.target.value),
+                  style: h.input
+                }
+              ),
+              A && /* @__PURE__ */ i("p", { style: { fontSize: "0.875rem", color: "#dc2626", marginTop: "0.375rem", display: "flex", alignItems: "center", gap: "0.25rem" }, children: [
+                /* @__PURE__ */ i("iconify-icon", { icon: "mdi:alert-circle" }),
+                " Please enter a page name."
+              ] })
+            ] }),
+            /* @__PURE__ */ i("div", { children: [
+              /* @__PURE__ */ i("label", { style: { display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }, children: "Description" }),
+              /* @__PURE__ */ i(
+                "textarea",
+                {
+                  placeholder: "Click to add description",
+                  value: x,
+                  onInput: (v) => C(v.target.value),
+                  style: { ...h.textarea, minHeight: "5rem" }
+                }
+              )
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ i("div", { children: [
+          /* @__PURE__ */ i("div", { style: { ...h.sectionLabel, display: "flex", alignItems: "center", gap: "0.25rem" }, children: [
+            "INCLUDE PAGE RULES",
+            /* @__PURE__ */ i("span", { style: { color: "#94a3b8" }, title: "Define how this page is identified", children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:information-outline" }) })
+          ] }),
+          /* @__PURE__ */ i("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }, children: [
+            /* @__PURE__ */ i("span", { style: { fontSize: "0.875rem", fontWeight: 600, color: "#334155" }, children: "Include Rule 1" }),
+            /* @__PURE__ */ i("button", { type: "button", style: h.iconBtnSm, children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:delete-outline" }) })
+          ] }),
+          /* @__PURE__ */ i("div", { style: { display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.25rem" }, children: [
+            /* @__PURE__ */ i("label", { style: h.radioLabel, children: [
+              /* @__PURE__ */ i("input", { type: "radio", name: "ruleType", value: "suggested", checked: w === "suggested", onChange: () => m("suggested"), style: { accentColor: "#3b82f6" } }),
+              /* @__PURE__ */ i("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Suggested Match" })
+            ] }),
+            /* @__PURE__ */ i("label", { style: h.radioLabel, children: [
+              /* @__PURE__ */ i("input", { type: "radio", name: "ruleType", value: "exact", checked: w === "exact", onChange: () => m("exact"), style: { accentColor: "#3b82f6" } }),
+              /* @__PURE__ */ i("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Exact Match" })
+            ] }),
+            /* @__PURE__ */ i("label", { style: h.radioLabel, children: [
+              /* @__PURE__ */ i("input", { type: "radio", name: "ruleType", value: "builder", checked: w === "builder", onChange: () => m("builder"), style: { accentColor: "#3b82f6" } }),
+              /* @__PURE__ */ i("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Rule Builder" })
+            ] })
+          ] }),
+          /* @__PURE__ */ i("div", { children: [
+            /* @__PURE__ */ i("label", { style: { display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }, children: "Selection URL" }),
+            /* @__PURE__ */ i("input", { type: "text", placeholder: "e.g. //*/path/to/page", value: b, onInput: (v) => D(v.target.value), style: h.input })
+          ] })
+        ] })
+      ] })
+    ] }),
+    u && /* @__PURE__ */ i("div", { style: h.footer, children: [
+      /* @__PURE__ */ i("button", { type: "button", style: h.secondaryBtn, onClick: y, children: "Cancel" }),
+      /* @__PURE__ */ i("button", { type: "button", style: { ...h.primaryBtn, flex: 1 }, onClick: R, children: "Save" })
+    ] })
+  ] });
+}
+const $t = "designerTaggedFeatures", Ne = "designerHeatmapEnabled";
+function Ot() {
+  try {
+    const t = window.location;
+    return (t.host || t.hostname || "") + (t.pathname || "/") + (t.search || "") + (t.hash || "");
+  } catch {
+    return window.location.href || "";
+  }
+}
+function Ge(t) {
+  return (t || "").replace(/^https?:\/\//i, "").replace(/\/$/, "") || "";
+}
+function Nt() {
+  try {
+    const t = localStorage.getItem($t) || "[]";
+    return JSON.parse(t);
+  } catch {
+    return [];
+  }
+}
+function Gt() {
+  const t = Ge(Ot());
+  return Nt().filter((e) => e && Ge(e.url) === t);
+}
+function Wt({ onMessage: t, elementSelected: e, tagFeatureSavedAckCounter: n }) {
+  const [r, o] = E(!1), [a, l] = E(""), [d, u] = E(null), [c, g] = E(""), [s, p] = E(!1), [f, x] = E(0), [C, w] = E(!1), [m, b] = E("features"), D = () => {
+    x(Gt().length);
+  }, A = () => {
+    o(!1), l(""), u(null), g(""), p(!1), D();
+  };
+  H(() => {
+    t({ type: "EDITOR_READY" });
+  }, []), H(() => {
+    D();
+  }, []), H(() => {
+    const y = localStorage.getItem(Ne) === "true";
+    w(y);
+  }, []), H(() => {
+    e ? (l(e.selector), u(e.elementInfo), o(!0), g(""), p(!1)) : A();
+  }, [e]), H(() => {
+    n != null && n > 0 && A();
+  }, [n]);
+  const B = () => {
+    const y = !C;
+    w(y);
+    try {
+      localStorage.setItem(Ne, String(y));
+    } catch {
+    }
+    t({ type: "HEATMAP_TOGGLE", enabled: y });
+  }, M = () => {
+    const y = c.trim();
+    if (!y) {
+      p(!0);
+      return;
+    }
+    p(!1), t({
+      type: "SAVE_TAG_FEATURE",
+      payload: {
+        featureName: y,
+        selector: a,
+        elementInfo: d || void 0
+      }
+    });
+  }, G = (y) => {
+    const L = [];
+    y.tagName && L.push(`Tag: ${y.tagName}`), y.id && L.push(`ID: ${y.id}`), y.className && L.push(`Class: ${y.className}`);
+    const P = (y.textContent || "").slice(0, 80);
+    return P && L.push(`Text: ${P}`), L.join(" | ");
+  };
+  return /* @__PURE__ */ i("div", { style: h.panel, children: [
+    /* @__PURE__ */ i("div", { style: h.panelHeader, children: [
+      /* @__PURE__ */ i("h2", { style: { ...h.headerTitle, fontSize: "1.125rem" }, children: "Manage Pages, Features & AI" }),
+      /* @__PURE__ */ i("div", { style: { display: "flex", gap: "0.25rem" }, children: [
+        /* @__PURE__ */ i("button", { type: "button", style: h.iconBtn, title: "Menu", children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:dots-horizontal", style: { fontSize: "1.125rem" } }) }),
+        /* @__PURE__ */ i("button", { type: "button", style: h.iconBtn, title: "Minimize", onClick: () => t({ type: "CANCEL" }), children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:window-minimize", style: { fontSize: "1.125rem" } }) })
+      ] })
+    ] }),
+    /* @__PURE__ */ i("div", { style: { display: "flex", gap: 0, borderBottom: "1px solid rgba(226,232,240,0.8)", padding: "0 1.5rem", background: "#fff" }, children: ["features", "pages", "ai-agents"].map((y) => /* @__PURE__ */ i(
+      "button",
+      {
+        type: "button",
+        style: h.tab(m === y),
+        onClick: () => b(y),
+        children: y.charAt(0).toUpperCase() + y.slice(1).replace("-", " ")
+      },
+      y
+    )) }),
+    /* @__PURE__ */ i("div", { style: { flex: 1, overflowY: "auto", padding: "1.5rem", background: "linear-gradient(to bottom, rgba(248,250,252,0.8), #fff)" }, children: r ? /* @__PURE__ */ i("div", { style: { display: "flex", flexDirection: "column", minHeight: "100%" }, children: [
+      /* @__PURE__ */ i("div", { style: { padding: "1.5rem", flex: 1, display: "flex", flexDirection: "column", gap: "1.25rem" }, children: [
+        /* @__PURE__ */ i("a", { href: "#", style: h.link, onClick: (y) => {
+          y.preventDefault(), A();
+        }, children: [
+          /* @__PURE__ */ i("iconify-icon", { icon: "mdi:arrow-left" }),
+          " Back to overview"
+        ] }),
+        /* @__PURE__ */ i("h3", { style: { fontSize: "1.125rem", fontWeight: 700, color: "#1e293b" }, children: "Tag Feature" }),
+        /* @__PURE__ */ i("div", { style: h.section, children: [
+          /* @__PURE__ */ i("label", { style: h.label, children: "Selector" }),
+          /* @__PURE__ */ i("div", { style: h.selectorBox, children: a || "-" })
+        ] }),
+        d && /* @__PURE__ */ i("div", { style: h.section, children: [
+          /* @__PURE__ */ i("label", { style: h.label, children: "Element info" }),
+          /* @__PURE__ */ i("div", { style: h.elementInfo, children: /* @__PURE__ */ i("div", { style: h.elementInfoText, children: G(d) }) })
+        ] }),
+        /* @__PURE__ */ i("div", { style: h.section, children: [
+          /* @__PURE__ */ i("label", { style: h.label, children: [
+            "Feature Name ",
+            /* @__PURE__ */ i("span", { style: { color: "#ef4444" }, children: "*" })
+          ] }),
+          /* @__PURE__ */ i(
+            "input",
+            {
+              type: "text",
+              placeholder: "Enter feature name",
+              value: c,
+              onInput: (y) => g(y.target.value),
+              style: h.input
+            }
+          ),
+          s && /* @__PURE__ */ i("p", { style: { fontSize: "0.875rem", color: "#dc2626", display: "flex", alignItems: "center", gap: "0.25rem" }, children: [
+            /* @__PURE__ */ i("iconify-icon", { icon: "mdi:alert-circle" }),
+            " Please enter a feature name."
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ i("div", { style: h.footer, children: [
+        /* @__PURE__ */ i("button", { type: "button", style: h.secondaryBtn, onClick: A, children: "Cancel" }),
+        /* @__PURE__ */ i("button", { type: "button", style: h.secondaryBtn, onClick: () => t({ type: "CLEAR_SELECTION_CLICKED" }), children: "Clear Selection" }),
+        /* @__PURE__ */ i("button", { type: "button", style: h.primaryBtn, onClick: M, children: "Save" })
+      ] })
+    ] }) : /* @__PURE__ */ i(X, { children: [
+      m === "features" && /* @__PURE__ */ i("div", { style: { display: "flex", flexDirection: "column", gap: "1rem" }, children: [
+        /* @__PURE__ */ i("div", { style: h.sectionLabel, children: "FEATURES OVERVIEW" }),
+        /* @__PURE__ */ i("div", { style: { ...h.card, marginBottom: "0.75rem" }, children: /* @__PURE__ */ i("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" }, children: [
+          /* @__PURE__ */ i("div", { style: { display: "flex", gap: "1rem", flex: 1, minWidth: 0 }, children: [
+            /* @__PURE__ */ i("span", { style: { ...h.badge, background: "#14b8a6", color: "#fff", minWidth: "1.75rem", height: "1.75rem" }, children: "0" }),
+            /* @__PURE__ */ i("div", { style: { flex: 1, minWidth: 0 }, children: [
+              /* @__PURE__ */ i("div", { style: { fontSize: "0.875rem", fontWeight: 600, color: "#1e293b", marginBottom: "0.125rem" }, children: "Suggested Features" }),
+              /* @__PURE__ */ i("div", { style: { fontSize: "0.75rem", color: "#64748b", lineHeight: 1.375 }, children: "List of untagged elements on this page" })
+            ] })
+          ] }),
+          /* @__PURE__ */ i("iconify-icon", { icon: "mdi:chevron-right", style: { color: "#94a3b8", fontSize: "1.25rem", flexShrink: 0 } })
+        ] }) }),
+        /* @__PURE__ */ i("div", { style: { ...h.card, marginBottom: "0.75rem" }, children: /* @__PURE__ */ i("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" }, children: [
+          /* @__PURE__ */ i("div", { style: { display: "flex", gap: "1rem", flex: 1, minWidth: 0 }, children: [
+            /* @__PURE__ */ i("span", { style: { ...h.badge, background: "#3b82f6", color: "#fff", minWidth: "1.75rem", height: "1.75rem" }, children: f }),
+            /* @__PURE__ */ i("div", { style: { flex: 1, minWidth: 0 }, children: [
+              /* @__PURE__ */ i("div", { style: { fontSize: "0.875rem", fontWeight: 600, color: "#1e293b", marginBottom: "0.125rem" }, children: "Tagged Features" }),
+              /* @__PURE__ */ i("div", { style: { fontSize: "0.75rem", color: "#64748b", lineHeight: 1.375 }, children: "List of tagged Features on this page" })
+            ] })
+          ] }),
+          /* @__PURE__ */ i("iconify-icon", { icon: "mdi:chevron-right", style: { color: "#94a3b8", fontSize: "1.25rem", flexShrink: 0 } })
+        ] }) }),
+        /* @__PURE__ */ i("div", { style: h.heatmapRow, children: [
+          /* @__PURE__ */ i("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Heatmap" }),
+          /* @__PURE__ */ i("div", { style: { display: "flex", alignItems: "center", gap: "0.75rem" }, children: [
+            /* @__PURE__ */ i(
+              "button",
+              {
+                role: "switch",
+                tabIndex: 0,
+                style: h.toggle(C),
+                onClick: B,
+                onKeyDown: (y) => y.key === "Enter" && B(),
+                children: /* @__PURE__ */ i("span", { style: h.toggleThumb(C) })
+              }
+            ),
+            /* @__PURE__ */ i("button", { type: "button", style: { ...h.iconBtn, border: "1px solid #e2e8f0", borderRadius: "0.75rem" }, children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:plus", style: { fontSize: "1.125rem" } }) })
+          ] })
+        ] }),
+        /* @__PURE__ */ i("div", { style: { display: "flex", gap: "0.75rem", marginTop: "1.5rem" }, children: [
+          /* @__PURE__ */ i("button", { type: "button", style: { ...h.primaryBtn, flex: 1 }, onClick: () => t({ type: "TAG_FEATURE_CLICKED" }), children: "Tag Feature" }),
+          /* @__PURE__ */ i("button", { type: "button", style: h.secondaryBtn, onClick: () => t({ type: "CLEAR_SELECTION_CLICKED" }), children: "Clear Selection" })
+        ] })
+      ] }),
+      m === "pages" && /* @__PURE__ */ i("div", { style: h.comingSoon, children: [
+        /* @__PURE__ */ i("div", { style: h.comingSoonIcon, children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:file-document-multiple", style: { fontSize: "1.875rem", color: "#94a3b8" } }) }),
+        /* @__PURE__ */ i("p", { style: { color: "#64748b", fontSize: "0.875rem" }, children: "Pages view — coming soon" })
+      ] }),
+      m === "ai-agents" && /* @__PURE__ */ i("div", { style: h.comingSoon, children: [
+        /* @__PURE__ */ i("div", { style: h.comingSoonIcon, children: /* @__PURE__ */ i("iconify-icon", { icon: "mdi:robot", style: { fontSize: "1.875rem", color: "#94a3b8" } }) }),
+        /* @__PURE__ */ i("p", { style: { color: "#64748b", fontSize: "0.875rem" }, children: "AI Agents — coming soon" })
+      ] })
+    ] }) })
+  ] });
+}
+class Ut {
   iframe = null;
   dragHandle = null;
   gripButton = null;
   messageCallback = null;
   isReady = !1;
   mode = null;
+  elementSelectedState = null;
+  tagPageSavedAckCounter = 0;
+  tagFeatureSavedAckCounter = 0;
   isDragging = !1;
   dragStartX = 0;
   dragStartY = 0;
@@ -795,19 +1847,19 @@ class $e {
       height: 800px;
       max-height: 90vh;
       border: none;
-      border-radius: 12px;
+      border-radius: 16px;
       background: white;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
       z-index: 999999;
       display: none;
       overflow: hidden;
     `, this.createDragHandle(), this.loadEditorHtml(), window.addEventListener("message", this.handleMessage);
-    const i = () => {
+    const r = () => {
       document.body ? (document.body.appendChild(this.iframe), this.dragHandle && document.body.appendChild(this.dragHandle), this.iframe && (this.iframe.onload = () => {
-        this.isReady = !0, this.sendMessage({ type: "EDITOR_READY" }), this.updateDragHandlePosition();
-      })) : document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", i) : setTimeout(i, 100);
+        this.isReady = !0, this.renderEditorContent(), this.updateDragHandlePosition();
+      })) : document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", r) : setTimeout(r, 100);
     };
-    i();
+    r();
   }
   /**
    * Show editor frame
@@ -822,22 +1874,22 @@ class $e {
     this.iframe && (this.iframe.style.display = "none"), this.dragHandle && (this.dragHandle.style.display = "none");
   }
   /**
-   * Send message to editor iframe
+   * Send element selected to editor (updates Preact component props)
    */
   sendElementSelected(e) {
-    this.sendMessage(e), this.show();
+    this.elementSelectedState = { selector: e.selector, elementInfo: e.elementInfo }, this.renderEditorContent(), this.show();
   }
   /**
-   * Notify editor iframe that selection was cleared (selector deactivated)
+   * Notify editor that selection was cleared (selector deactivated)
    */
   sendClearSelectionAck() {
-    this.sendMessage({ type: "CLEAR_SELECTION_ACK" });
+    this.elementSelectedState = null, this.renderEditorContent();
   }
   sendTagPageSavedAck() {
-    this.sendMessage({ type: "TAG_PAGE_SAVED_ACK" });
+    this.tagPageSavedAckCounter += 1, this.renderEditorContent();
   }
   sendTagFeatureSavedAck() {
-    this.sendMessage({ type: "TAG_FEATURE_SAVED_ACK" });
+    this.tagFeatureSavedAckCounter += 1, this.renderEditorContent();
   }
   /**
    * Destroy editor frame
@@ -857,24 +1909,55 @@ class $e {
     n && n.postMessage(e, "*");
   }
   /**
-   * Load editor HTML content
+   * Load editor HTML content (minimal shell - Preact renders the UI)
    */
   loadEditorHtml() {
-    this.loadEditorHtmlFallback();
+    const e = this.getMinimalEditorHtml(), n = new Blob([e], { type: "text/html" }), r = URL.createObjectURL(n);
+    this.iframe && (this.iframe.src = r);
   }
   /**
-   * Fallback: Load editor HTML inline (embedded version)
+   * Render Preact editor component into iframe
    */
-  loadEditorHtmlFallback() {
-    const e = this.getEditorHtmlContent(), n = new Blob([e], { type: "text/html" }), i = URL.createObjectURL(n);
-    this.iframe && (this.iframe.src = i);
+  renderEditorContent() {
+    if (!this.iframe || !this.isReady) return;
+    const e = this.iframe.contentDocument, n = e?.getElementById("designer-editor-root");
+    if (!e || !n) return;
+    const r = (o) => this.messageCallback?.(o);
+    this.mode === "tag-page" ? O(
+      /* @__PURE__ */ i(
+        Ft,
+        {
+          onMessage: r,
+          tagPageSavedAckCounter: this.tagPageSavedAckCounter
+        }
+      ),
+      n
+    ) : this.mode === "tag-feature" ? O(
+      /* @__PURE__ */ i(
+        Wt,
+        {
+          onMessage: r,
+          elementSelected: this.elementSelectedState,
+          tagFeatureSavedAckCounter: this.tagFeatureSavedAckCounter
+        }
+      ),
+      n
+    ) : O(
+      /* @__PURE__ */ i(
+        Mt,
+        {
+          onMessage: r,
+          elementSelected: this.elementSelectedState
+        }
+      ),
+      n
+    );
   }
   /**
-   * Get embedded editor HTML content
-   * This is a fallback - in production, load from a static file
+   * Minimal HTML shell - Preact components provide the UI
    */
-  getEditorHtmlContent() {
-    return this.mode === "tag-page" ? this.getTagPageHtmlContent() : this.mode === "tag-feature" ? this.getTagFeatureHtmlContent() : `<!DOCTYPE html>
+  getMinimalEditorHtml() {
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -882,798 +1965,11 @@ class $e {
   <title>Visual Designer Editor</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://code.iconify.design/iconify-icon/3.0.2/iconify-icon.min.js"><\/script>
-  <style>
-    iconify-icon { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; background: #f8fafc; color: #111827; line-height: 1.5; height: 100%; overflow-y: auto; }
-    .editor-container { display: flex; flex-direction: column; gap: 20px; max-width: 100%; min-height: 100%; }
-    .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 2px solid #e2e8f0; margin-bottom: 4px; }
-    .header h2 { font-size: 18px; font-weight: 600; color: #0f172a; letter-spacing: -0.01em; }
-    .close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #64748b; padding: 4px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s; }
-    .close-btn:hover { color: #0f172a; background: #f1f5f9; }
-    .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-    .form-group:last-of-type { margin-bottom: 0; }
-    label { font-size: 13px; font-weight: 600; color: #475569; letter-spacing: 0.01em; }
-    input[type="text"], textarea { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: 'Montserrat', inherit; transition: border-color 0.2s, box-shadow 0.2s; background: #fff; }
-    input[type="text"]:focus, textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
-    textarea { resize: vertical; min-height: 88px; line-height: 1.5; }
-    .selector-preview { padding: 10px 14px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-family: 'Monaco', 'Courier New', monospace; color: #475569; word-break: break-all; line-height: 1.4; }
-    .element-info { padding: 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 12px; }
-    .element-info strong { display: block; margin-bottom: 6px; color: #1e40af; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .placement-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .placement-btn { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
-    .placement-btn:hover { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; }
-    .placement-btn.active { border-color: #3b82f6; background: #3b82f6; color: white; }
-    .actions { display: flex; gap: 10px; padding-top: 16px; margin-top: 16px; border-top: 1px solid #e2e8f0; }
-    .btn { flex: 1; padding: 11px 18px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .btn-primary { background: #3b82f6; color: white; }
-    .btn-primary:hover { background: #2563eb; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35); }
-    .btn-secondary { background: #f1f5f9; color: #475569; }
-    .btn-secondary:hover { background: #e2e8f0; color: #0f172a; }
-    .empty-state { text-align: center; padding: 40px 20px; color: #64748b; font-size: 14px; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 12px; }
-    .empty-state .select-element-btn { margin-top: 16px; padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', inherit; }
-    .empty-state .select-element-btn:hover { background: #2563eb; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35); }
-    .error { padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 13px; display: none; margin-top: 12px; }
-    .error.show { display: block; }
-  </style>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%);color:#0f172a;line-height:1.6;height:100%;overflow-y:auto;-webkit-font-smoothing:antialiased}</style>
+  <style>${zt}</style>
 </head>
 <body>
-  <div class="editor-container">
-    <div class="header">
-      <h2>Create Guide</h2>
-      <button class="close-btn" id="closeBtn" aria-label="Close"><iconify-icon icon="mdi:close"></iconify-icon></button>
-    </div>
-    <div id="emptyState" class="empty-state">
-      <div>Click on an element in the page to create a guide</div>
-      <button type="button" class="select-element-btn" id="selectElementBtn">Select element</button>
-    </div>
-    <div id="editorForm" style="display: none;">
-      <div class="form-group">
-        <label>Selector</label>
-        <div class="selector-preview" id="selectorPreview">-</div>
-      </div>
-      <div class="element-info" id="elementInfo" style="display: none;">
-        <strong>Element Info</strong>
-        <div id="elementInfoContent"></div>
-      </div>
-      <div class="form-group">
-        <label for="guideContent">Guide Content</label>
-        <textarea id="guideContent" placeholder="Enter the guide text that will be shown to users..." required></textarea>
-      </div>
-      <div class="form-group">
-        <label>Placement</label>
-        <div class="placement-group">
-          <button class="placement-btn" data-placement="top">Top</button>
-          <button class="placement-btn" data-placement="right">Right</button>
-          <button class="placement-btn" data-placement="bottom">Bottom</button>
-          <button class="placement-btn" data-placement="left">Left</button>
-        </div>
-      </div>
-      <div class="error" id="errorMessage"></div>
-      <div class="actions">
-        <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-        <button class="btn btn-secondary" id="clearSelectionBtn">Clear Selection</button>
-        <button class="btn btn-primary" id="saveBtn">Save Guide</button>
-      </div>
-    </div>
-  </div>
-  <script>
-    let selectedPlacement = 'right';
-    let currentSelector = '';
-    let currentElementInfo = null;
-    const placementButtons = document.querySelectorAll('.placement-btn');
-    placementButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        placementButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedPlacement = btn.dataset.placement;
-      });
-    });
-    document.querySelector('[data-placement="right"]').classList.add('active');
-    document.getElementById('closeBtn').addEventListener('click', () => sendMessage({ type: 'CANCEL' }));
-    document.getElementById('cancelBtn').addEventListener('click', () => sendMessage({ type: 'CANCEL' }));
-    document.getElementById('selectElementBtn').addEventListener('click', () => sendMessage({ type: 'ACTIVATE_SELECTOR' }));
-    document.getElementById('clearSelectionBtn').addEventListener('click', () => sendMessage({ type: 'CLEAR_SELECTION_CLICKED' }));
-    document.getElementById('saveBtn').addEventListener('click', () => {
-      const content = document.getElementById('guideContent').value.trim();
-      if (!content) { showError('Please enter guide content'); return; }
-      if (!currentSelector) { showError('No element selected'); return; }
-      sendMessage({ type: 'SAVE_GUIDE', guide: { page: window.location.pathname || '/', selector: currentSelector, content: content, placement: selectedPlacement, status: 'active' } });
-    });
-    window.addEventListener('message', (event) => {
-      const message = event.data;
-      if (message.type === 'ELEMENT_SELECTED') {
-        currentSelector = message.selector;
-        currentElementInfo = message.elementInfo;
-        document.getElementById('emptyState').style.display = 'none';
-        document.getElementById('editorForm').style.display = 'block';
-        document.getElementById('selectorPreview').textContent = currentSelector;
-        if (currentElementInfo) {
-          const infoContent = document.getElementById('elementInfoContent');
-          infoContent.innerHTML = '<div><strong>Tag:</strong> ' + currentElementInfo.tagName + '</div>' + (currentElementInfo.id ? '<div><strong>ID:</strong> ' + currentElementInfo.id + '</div>' : '') + (currentElementInfo.className ? '<div><strong>Class:</strong> ' + currentElementInfo.className + '</div>' : '') + (currentElementInfo.textContent ? '<div><strong>Text:</strong> ' + currentElementInfo.textContent + '</div>' : '');
-          document.getElementById('elementInfo').style.display = 'block';
-        }
-        document.getElementById('guideContent').value = '';
-        hideError();
-      }
-      if (message.type === 'CLEAR_SELECTION_ACK') {
-        currentSelector = '';
-        currentElementInfo = null;
-        document.getElementById('emptyState').style.display = 'block';
-        document.getElementById('editorForm').style.display = 'none';
-        document.getElementById('selectorPreview').textContent = '-';
-        document.getElementById('elementInfo').style.display = 'none';
-        hideError();
-      }
-    });
-    function sendMessage(message) { window.parent.postMessage(message, '*'); }
-    function showError(message) { const errorEl = document.getElementById('errorMessage'); errorEl.textContent = message; errorEl.classList.add('show'); }
-    function hideError() { const errorEl = document.getElementById('errorMessage'); errorEl.classList.remove('show'); }
-    window.addEventListener('load', () => sendMessage({ type: 'EDITOR_READY' }));
-  <\/script>
-</body>
-  </html>`;
-  }
-  /**
-   * Get Tag Page HTML content: overview (tagged / untagged) + form view
-   */
-  getTagPageHtmlContent() {
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tag Page - Visual Designer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://code.iconify.design/iconify-icon/3.0.2/iconify-icon.min.js"><\/script>
-  <style>
-    iconify-icon { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif; background: #fff; color: #111827; height: 100%; overflow-y: auto; line-height: 1.5; }
-    .tag-page-container { display: flex; flex-direction: column; min-height: 100%; }
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
-    .header h2 { font-size: 17px; font-weight: 600; color: #0f172a; }
-    .header-actions { display: flex; align-items: center; gap: 8px; }
-    .header-actions span { cursor: pointer; color: #64748b; font-size: 18px; padding: 4px 8px; border-radius: 6px; }
-    .header-actions span:hover { background: #f1f5f9; color: #0f172a; }
-    .content { flex: 1; padding: 20px; overflow-y: auto; }
-    .tag-page-view { display: none; }
-    .tag-page-view.active { display: flex; flex-direction: column; flex: 1; }
-    .section-title { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-    .overview-tagged .current-url-card {
-      display: flex; align-items: center; justify-content: space-between;
-      background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px;
-      margin-bottom: 16px; cursor: pointer; transition: box-shadow 0.2s, border-color 0.2s;
-    }
-    .overview-tagged .current-url-card:hover { border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .current-url-card .left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
-    .pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; flex-shrink: 0; }
-    .pill-tagged { background: #10b981; color: #fff; }
-    .pill-untagged { background: #f59e0b; color: #fff; }
-    .current-url-card .label { font-size: 14px; font-weight: 600; color: #0f172a; }
-    .current-url-card .url { font-size: 13px; color: #64748b; margin-top: 4px; word-break: break-all; }
-    .current-url-card .chevron { color: #94a3b8; font-size: 18px; flex-shrink: 0; }
-    .overview-untagged { text-align: center; padding: 32px 24px; }
-    .overview-untagged .illustration {
-      width: 120px; height: 100px; margin: 0 auto 24px; background: linear-gradient(135deg, #e0e7ff 0%, #fce7f3 50%, #fef3c7 100%);
-      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 48px;
-    }
-    .overview-untagged h3 { font-size: 18px; font-weight: 600; color: #0f172a; margin-bottom: 8px; }
-    .overview-untagged p { font-size: 14px; color: #64748b; margin-bottom: 24px; line-height: 1.5; }
-    .tag-page-btn { width: 100%; padding: 12px 20px; background: #14b8a6; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', inherit; margin-top: 8px; }
-    .tag-page-btn:hover { background: #0d9488; box-shadow: 0 4px 12px rgba(20,184,166,0.35); }
-    .tagged-detail .back-link { display: block; color: #3b82f6; font-size: 13px; margin-bottom: 16px; text-decoration: none; }
-    .tagged-detail .back-link:hover { text-decoration: underline; }
-    .tagged-detail .current-url-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .tagged-detail .current-url-header .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 8px; border-radius: 999px; background: #8b5cf6; color: #fff; font-size: 12px; font-weight: 600; }
-    .tagged-detail .current-url-header h3 { font-size: 16px; font-weight: 600; color: #0f172a; }
-    .tagged-detail .current-url-subtitle { font-size: 13px; color: #64748b; margin-bottom: 16px; }
-    .tagged-detail .search-wrap { position: relative; margin-bottom: 16px; }
-    .tagged-detail .search-wrap input { width: 100%; padding: 10px 36px 10px 36px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: 'Montserrat', inherit; }
-    .tagged-detail .search-wrap .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; pointer-events: none; }
-    .tagged-detail .search-wrap .clear-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 4px 8px; background: none; border: none; color: #64748b; font-size: 12px; cursor: pointer; }
-    .tagged-detail .search-wrap .clear-btn:hover { color: #0f172a; }
-    .tagged-detail .page-list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; background: #fff; cursor: pointer; transition: border-color 0.2s; }
-    .tagged-detail .page-list-item:hover { border-color: #cbd5e1; }
-    .tagged-detail .page-list-item .name { font-size: 14px; font-weight: 500; color: #0f172a; flex: 1; }
-    .tagged-detail .page-list-item .actions { display: flex; gap: 8px; }
-    .tagged-detail .page-list-item .actions span { padding: 4px; cursor: pointer; color: #64748b; font-size: 14px; border-radius: 4px; }
-    .tagged-detail .page-list-item .actions span:hover { color: #0f172a; background: #f1f5f9; }
-    .tagged-detail .page-list-item .actions .delete:hover { color: #dc2626; background: #fef2f2; }
-    .tag-page-form .section { margin-bottom: 24px; }
-    .radio-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-    .radio-item { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .radio-item input { width: 16px; height: 16px; accent-color: #3b82f6; }
-    .radio-item label { font-size: 14px; color: #0f172a; cursor: pointer; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
-    .form-group label .required { color: #dc2626; }
-    .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: 'Montserrat', inherit; }
-    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
-    .form-group textarea { resize: vertical; min-height: 80px; }
-    .rule-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .rule-header span { font-size: 13px; font-weight: 600; color: #0f172a; }
-    .rule-delete { cursor: pointer; color: #64748b; padding: 4px; border-radius: 4px; }
-    .rule-delete:hover { color: #dc2626; background: #fef2f2; }
-    .info-icon { color: #64748b; font-size: 14px; margin-left: 4px; cursor: help; }
-    .error { font-size: 13px; color: #dc2626; margin-top: 6px; display: none; }
-    .error.show { display: block; }
-    .actions { display: flex; gap: 12px; padding: 16px 20px; border-top: 1px solid #e2e8f0; background: #fff; margin-top: auto; }
-    .btn { flex: 1; padding: 12px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', inherit; transition: all 0.2s; }
-    .btn-cancel { background: #f1f5f9; color: #475569; }
-    .btn-cancel:hover { background: #e2e8f0; color: #0f172a; }
-    .btn-save { background: #14b8a6; color: #fff; }
-    .btn-save:hover { background: #0d9488; box-shadow: 0 4px 12px rgba(20,184,166,0.35); }
-  </style>
-</head>
-<body>
-  <div class="tag-page-container">
-    <div class="header">
-      <h2>Tag Page</h2>
-      <div class="header-actions">
-        <span title="Menu"><iconify-icon icon="mdi:dots-horizontal"></iconify-icon></span>
-        <span class="minimize-btn" id="minimizeBtn" title="Minimize"><iconify-icon icon="mdi:window-minimize"></iconify-icon></span>
-      </div>
-    </div>
-    <div class="content">
-      <!-- Overview: current URL already tagged -->
-      <div id="overviewTagged" class="tag-page-view overview-tagged">
-        <div class="section-title">PAGES OVERVIEW</div>
-        <div class="current-url-card" id="currentUrlCardTagged">
-          <div class="left">
-            <span class="pill pill-tagged">Tagged</span>
-            <div>
-              <div class="label">Current URL</div>
-              <div class="url" id="currentUrlDisplayTagged">-</div>
-            </div>
-          </div>
-          <span class="chevron"><iconify-icon icon="mdi:chevron-right"></iconify-icon></span>
-        </div>
-        <button type="button" class="tag-page-btn" id="tagPageBtnFromTagged">Tag Page</button>
-      </div>
-      <!-- Tagged URL detail: list of tagged pages for current URL -->
-      <div id="taggedPagesDetailView" class="tag-page-view tagged-detail">
-        <a href="#" class="back-link" id="backFromTaggedDetail"><iconify-icon icon="mdi:arrow-left"></iconify-icon> Back to overview</a>
-        <div class="current-url-header">
-          <span class="badge" id="taggedCountBadge">0</span>
-          <h3>Current URL</h3>
-        </div>
-        <div class="current-url-subtitle">List of tagged Pages on this URL</div>
-        <div class="search-wrap">
-          <span class="search-icon"><iconify-icon icon="mdi:magnify"></iconify-icon></span>
-          <input type="text" id="searchPagesInput" placeholder="Search Pages" />
-          <button type="button" class="clear-btn" id="clearSearchBtn" style="display:none;">Clear</button>
-        </div>
-        <div id="taggedPagesList"></div>
-        <button type="button" class="tag-page-btn" id="tagPageBtnFromDetail" style="margin-top:16px;">Tag Page</button>
-      </div>
-      <!-- Overview: current URL not tagged -->
-      <div id="overviewUntagged" class="tag-page-view overview-untagged">
-        <div class="illustration" aria-hidden="true"><iconify-icon icon="mdi:calendar" style="font-size:48px;"></iconify-icon></div>
-        <h3>Let's start tagging!</h3>
-        <p>Start by first tagging this page and then features to get going.</p>
-        <button type="button" class="tag-page-btn" id="tagPageBtnFromUntagged">Tag Page</button>
-      </div>
-      <!-- Form: create/edit page -->
-      <div id="tagPageFormView" class="tag-page-view tag-page-form">
-        <a href="#" class="back-link" id="backFromTagPageForm" style="display:block;color:#3b82f6;font-size:13px;margin-bottom:16px;"><iconify-icon icon="mdi:arrow-left"></iconify-icon> Back</a>
-        <div class="section">
-          <div class="section-title">PAGE SETUP</div>
-          <div class="radio-group">
-            <div class="radio-item">
-              <input type="radio" id="createNew" name="pageSetup" value="create" checked>
-              <label for="createNew">Create New Page</label>
-            </div>
-            <div class="radio-item">
-              <input type="radio" id="mergeExisting" name="pageSetup" value="merge">
-              <label for="mergeExisting">Merge with Existing</label>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Page Name <span class="required">*</span></label>
-            <input type="text" id="pageName" placeholder="Enter page name" required>
-            <div class="error" id="pageNameError">This page name is already in use. Try another?</div>
-          </div>
-          <div class="form-group">
-            <label>Description</label>
-            <textarea id="pageDescription" placeholder="Click to add description"></textarea>
-          </div>
-        </div>
-        <div class="section">
-          <div class="section-title">INCLUDE PAGE RULES <span class="info-icon" title="Define how this page is identified"><iconify-icon icon="mdi:information-outline"></iconify-icon></span></div>
-          <div class="rule-header">
-            <span>Include Rule 1</span>
-            <span class="rule-delete" id="deleteRule1" title="Delete rule"><iconify-icon icon="mdi:delete-outline"></iconify-icon></span>
-          </div>
-          <div class="radio-group">
-            <div class="radio-item">
-              <input type="radio" id="suggestedMatch" name="ruleType" value="suggested" checked>
-              <label for="suggestedMatch">Suggested Match</label>
-            </div>
-            <div class="radio-item">
-              <input type="radio" id="exactMatch" name="ruleType" value="exact">
-              <label for="exactMatch">Exact Match</label>
-            </div>
-            <div class="radio-item">
-              <input type="radio" id="ruleBuilder" name="ruleType" value="builder">
-              <label for="ruleBuilder">Rule Builder</label>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Selection URL</label>
-            <input type="text" id="selectionUrl" placeholder="e.g. //*/path/to/page">
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="actions" id="tagPageFormActions" style="display: none;">
-      <button class="btn btn-cancel" id="cancelBtn">Cancel</button>
-      <button class="btn btn-save" id="saveBtn">Save</button>
-    </div>
-  </div>
-  <script>
-    function sendMessage(m) { window.parent.postMessage(m, '*'); }
-    var STORAGE_KEY = 'designerTaggedPages';
-    function getCurrentUrl() {
-      try {
-        var p = window.parent.location;
-        return (p.host || p.hostname || '') + (p.pathname || '/') + (p.search || '') + (p.hash || '');
-      } catch (e) { return window.location.href || ''; }
-    }
-    function normalizeUrl(u) {
-      u = (u || '').replace(/^https?:\\/\\//i, '').replace(/\\/$/, '');
-      return u || '';
-    }
-    function getTaggedPages() {
-      try {
-        var raw = localStorage.getItem(STORAGE_KEY) || '[]';
-        return JSON.parse(raw);
-      } catch (e) { return []; }
-    }
-    function isCurrentUrlTagged() {
-      var current = normalizeUrl(getCurrentUrl());
-      var list = getTaggedPages();
-      return list.some(function(p) { return p && normalizeUrl(p.url) === current; });
-    }
-    function showView(viewId) {
-      document.querySelectorAll('.tag-page-view').forEach(function(el) { el.classList.remove('active'); });
-      var el = document.getElementById(viewId);
-      if (el) el.classList.add('active');
-      document.getElementById('tagPageFormActions').style.display = viewId === 'tagPageFormView' ? 'flex' : 'none';
-    }
-    function refreshOverview() {
-      var tagged = isCurrentUrlTagged();
-      showView(tagged ? 'overviewTagged' : 'overviewUntagged');
-      document.getElementById('currentUrlDisplayTagged').textContent = getCurrentUrl() || '(current page)';
-    }
-    function getPagesForCurrentUrl() {
-      var current = normalizeUrl(getCurrentUrl());
-      return getTaggedPages().filter(function(p) { return p && normalizeUrl(p.url) === current; });
-    }
-    function renderTaggedPagesList(filter) {
-      var pages = getPagesForCurrentUrl();
-      var q = (filter || '').toLowerCase().trim();
-      if (q) pages = pages.filter(function(p) { return (p.pageName || '').toLowerCase().indexOf(q) !== -1; });
-      var list = document.getElementById('taggedPagesList');
-      list.innerHTML = '';
-      pages.forEach(function(p) {
-        var name = p.pageName || 'Unnamed';
-        var item = document.createElement('div');
-        item.className = 'page-list-item';
-        item.innerHTML = '<span class="name">' + escapeHtml(name) + '</span>' +
-          '<div class="actions">' +
-          '<span class="edit" title="Edit" data-page-name="' + escapeHtml(name) + '"><iconify-icon icon="mdi:pencil"></iconify-icon></span>' +
-          '<span class="delete" title="Delete" data-page-name="' + escapeHtml(name) + '"><iconify-icon icon="mdi:delete-outline"></iconify-icon></span>' +
-          '</div>';
-        list.appendChild(item);
-      });
-    }
-    function escapeHtml(s) {
-      var div = document.createElement('div');
-      div.textContent = s;
-      return div.innerHTML;
-    }
-    function showTaggedDetailView() {
-      var pages = getPagesForCurrentUrl();
-      showView('taggedPagesDetailView');
-      document.getElementById('taggedCountBadge').textContent = String(pages.length);
-      document.getElementById('searchPagesInput').value = '';
-      document.getElementById('clearSearchBtn').style.display = 'none';
-      renderTaggedPagesList('');
-    }
-    document.getElementById('minimizeBtn').addEventListener('click', function() { sendMessage({ type: 'CANCEL' }); });
-    function getSuggestedSelectionUrl() {
-      try {
-        var p = window.parent.location;
-        var path = (p.pathname || '/').replace(/^\\//, '');
-        var search = p.search || '';
-        var hash = p.hash || '';
-        return '//*/' + path + search + hash;
-      } catch (e) { return '//*/'; }
-    }
-    function showTagPageForm() {
-      showView('tagPageFormView');
-      document.getElementById('tagPageFormActions').style.display = 'flex';
-      document.getElementById('selectionUrl').value = getSuggestedSelectionUrl();
-    }
-    document.getElementById('currentUrlCardTagged').addEventListener('click', showTaggedDetailView);
-    document.getElementById('searchPagesInput').addEventListener('input', function() {
-      var val = this.value;
-      document.getElementById('clearSearchBtn').style.display = val ? 'block' : 'none';
-      renderTaggedPagesList(val);
-    });
-    document.getElementById('clearSearchBtn').addEventListener('click', function() {
-      document.getElementById('searchPagesInput').value = '';
-      this.style.display = 'none';
-      renderTaggedPagesList('');
-    });
-    document.getElementById('taggedPagesList').addEventListener('click', function(e) {
-      var target = e.target;
-      if (!target || !target.closest) return;
-      var editBtn = target.closest('.edit');
-      var deleteBtn = target.closest('.delete');
-      if (editBtn) {
-        var pageName = editBtn.getAttribute('data-page-name');
-        if (pageName) sendMessage({ type: 'EDIT_TAG_PAGE', payload: { pageName: pageName } });
-      }
-      if (deleteBtn) {
-        var pageName = deleteBtn.getAttribute('data-page-name');
-        if (pageName && window.confirm('Delete page "' + pageName + '"?')) {
-          var current = normalizeUrl(getCurrentUrl());
-          var list = getTaggedPages().filter(function(p) {
-            return !(p && p.pageName === pageName && normalizeUrl(p.url) === current);
-          });
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-            var remaining = getPagesForCurrentUrl();
-            if (remaining.length === 0) {
-              refreshOverview();
-            } else {
-              document.getElementById('taggedCountBadge').textContent = String(remaining.length);
-              renderTaggedPagesList(document.getElementById('searchPagesInput').value);
-            }
-          } catch (err) {}
-        }
-      }
-    });
-    document.getElementById('tagPageBtnFromTagged').addEventListener('click', showTagPageForm);
-    document.getElementById('tagPageBtnFromUntagged').addEventListener('click', showTagPageForm);
-    document.getElementById('tagPageBtnFromDetail').addEventListener('click', showTagPageForm);
-    document.getElementById('backFromTaggedDetail').addEventListener('click', function(e) { e.preventDefault(); refreshOverview(); });
-    document.getElementById('backFromTagPageForm').addEventListener('click', function(e) { e.preventDefault(); refreshOverview(); document.getElementById('tagPageFormActions').style.display = 'none'; });
-    document.getElementById('cancelBtn').addEventListener('click', function() { refreshOverview(); });
-    document.getElementById('saveBtn').addEventListener('click', function() {
-      var pageName = document.getElementById('pageName').value.trim();
-      var pageNameError = document.getElementById('pageNameError');
-      if (!pageName) { pageNameError.classList.add('show'); return; }
-      pageNameError.classList.remove('show');
-      var pageSetup = document.querySelector('input[name="pageSetup"]:checked').value;
-      var description = document.getElementById('pageDescription').value.trim();
-      var ruleType = document.querySelector('input[name="ruleType"]:checked').value;
-      var selectionUrl = document.getElementById('selectionUrl').value.trim();
-      sendMessage({
-        type: 'SAVE_TAG_PAGE',
-        payload: {
-          pageSetup: pageSetup,
-          pageName: pageName,
-          description: description || undefined,
-          includeRules: [{ ruleType: ruleType, selectionUrl: selectionUrl || '' }]
-        }
-      });
-    });
-    window.addEventListener('message', function(event) {
-      var d = event.data;
-      if (d && d.type === 'TAG_PAGE_SAVED_ACK') { refreshOverview(); }
-    });
-    var lastKnownUrl = '';
-    function checkUrlChange() {
-      var current = getCurrentUrl();
-      if (current !== lastKnownUrl) {
-        lastKnownUrl = current;
-        refreshOverview();
-      }
-    }
-    function startUrlChangeDetection() {
-      lastKnownUrl = getCurrentUrl();
-      try {
-        window.parent.addEventListener('hashchange', checkUrlChange);
-        window.parent.addEventListener('popstate', checkUrlChange);
-      } catch (e) {}
-      setInterval(checkUrlChange, 1500);
-    }
-    window.addEventListener('load', function() {
-      refreshOverview();
-      lastKnownUrl = getCurrentUrl();
-      startUrlChangeDetection();
-      sendMessage({ type: 'EDITOR_READY' });
-    });
-  <\/script>
-</body>
-</html>`;
-  }
-  /**
-   * Get Tag Feature HTML content: Features tab overview + selector form when "Tag Feature" is clicked
-   */
-  getTagFeatureHtmlContent() {
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tag Feature - Visual Designer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://code.iconify.design/iconify-icon/3.0.2/iconify-icon.min.js"><\/script>
-  <style>
-    iconify-icon { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #111827; height: 100%; overflow-y: auto; line-height: 1.5; }
-    .tag-feature-container { display: flex; flex-direction: column; min-height: 100%; background: #fff; }
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
-    .header h2 { font-size: 17px; font-weight: 600; color: #0f172a; }
-    .header-actions { display: flex; align-items: center; gap: 8px; }
-    .header-actions span { cursor: pointer; color: #64748b; font-size: 18px; padding: 4px 8px; border-radius: 6px; }
-    .header-actions span:hover { background: #f1f5f9; color: #0f172a; }
-    .tabs { display: flex; gap: 0; border-bottom: 1px solid #e2e8f0; padding: 0 20px; }
-    .tab { padding: 14px 20px; background: none; border: none; font-size: 14px; font-weight: 500; color: #64748b; cursor: pointer; position: relative; font-family: 'Montserrat', inherit; }
-    .tab:hover { color: #0f172a; }
-    .tab.active { color: #0f172a; font-weight: 600; }
-    .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: #14b8a6; border-radius: 3px 3px 0 0; }
-    .content { flex: 1; overflow-y: auto; padding: 24px 20px; background: #f8fafc; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .section-title { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; margin-top: 20px; }
-    .section-title:first-child { margin-top: 0; }
-    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
-    .card:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .card-content { display: flex; align-items: center; justify-content: space-between; }
-    .card-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
-    .badge { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; font-size: 12px; font-weight: 600; min-width: 28px; height: 28px; padding: 0 10px; color: #fff; flex-shrink: 0; }
-    .badge-teal { background: #14b8a6; }
-    .badge-purple { background: #8b5cf6; }
-    .card-text { flex: 1; min-width: 0; }
-    .card-title { font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
-    .card-description { font-size: 13px; color: #64748b; line-height: 1.4; }
-    .chevron { color: #94a3b8; font-size: 18px; flex-shrink: 0; }
-    .heatmap-row { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; border-top: 1px solid #e2e8f0; margin-top: 24px; }
-    .heatmap-label { font-size: 14px; font-weight: 500; color: #0f172a; }
-    .heatmap-controls { display: flex; align-items: center; gap: 12px; }
-    .toggle-switch { position: relative; width: 44px; height: 24px; background: #cbd5e1; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
-    .toggle-switch.active { background: #10b981; }
-    .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-    .toggle-switch.active::after { transform: translateX(20px); }
-    .plus-icon { width: 28px; height: 28px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; font-size: 18px; transition: all 0.2s; background: #fff; }
-    .plus-icon:hover { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
-    .tag-feature-btn { width: 100%; padding: 12px 20px; background: #14b8a6; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', inherit; margin-top: 24px; box-shadow: 0 2px 8px rgba(20,184,166,0.25); }
-    .tag-feature-btn:hover { background: #0d9488; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(20,184,166,0.35); }
-    .overview-actions { display: flex; gap: 12px; margin-top: 24px; }
-    .overview-actions .tag-feature-btn { margin-top: 0; flex: 1; }
-    .clear-selection-btn { padding: 12px 20px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', inherit; transition: all 0.2s; }
-    .clear-selection-btn:hover { background: #e2e8f0; color: #0f172a; }
-    .view { display: none; }
-    .view.active { display: flex; flex-direction: column; min-height: 100%; }
-    .selector-form .form-group { margin-bottom: 16px; }
-    .selector-form label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
-    .selector-form label .required { color: #dc2626; }
-    .selector-form input { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: 'Montserrat', inherit; }
-    .selector-preview { padding: 10px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-family: monospace; color: #475569; word-break: break-all; }
-    .element-info { padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 12px; color: #1e40af; margin-top: 8px; }
-    .error { font-size: 13px; color: #dc2626; margin-top: 6px; display: none; }
-    .error.show { display: block; }
-    .form-actions { display: flex; gap: 12px; padding: 16px 20px; border-top: 1px solid #e2e8f0; margin-top: auto; }
-    .btn { flex: 1; padding: 12px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
-    .btn-cancel { background: #f1f5f9; color: #475569; }
-    .btn-cancel:hover { background: #e2e8f0; color: #0f172a; }
-    .btn-save { background: #14b8a6; color: #fff; }
-    .btn-save:hover { background: #0d9488; box-shadow: 0 4px 12px rgba(20,184,166,0.35); }
-    .back-link { color: #3b82f6; font-size: 13px; cursor: pointer; margin-bottom: 16px; }
-    .back-link:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <div class="tag-feature-container">
-    <div class="header">
-      <h2>Manage Pages, Features, and AI agents</h2>
-      <div class="header-actions">
-        <span title="Menu"><iconify-icon icon="mdi:dots-horizontal"></iconify-icon></span>
-        <span id="minimizeBtn" title="Minimize"><iconify-icon icon="mdi:window-minimize"></iconify-icon></span>
-      </div>
-    </div>
-    <div class="tabs">
-      <button class="tab active" data-tab="features">Features</button>
-      <button class="tab" data-tab="pages">Pages</button>
-      <button class="tab" data-tab="ai-agents">AI agents</button>
-    </div>
-    <div class="content">
-      <div id="overviewView" class="view active" style="display: block;">
-        <div id="featuresTab" class="tab-content active">
-          <div class="section-title">FEATURES OVERVIEW</div>
-          <div class="card">
-            <div class="card-content">
-              <div class="card-left">
-                <span class="badge badge-teal" id="suggestedCount">7</span>
-                <div class="card-text">
-                  <div class="card-title">Suggested Features</div>
-                  <div class="card-description">List of untagged elements on this page</div>
-                </div>
-              </div>
-              <span class="chevron"><iconify-icon icon="mdi:chevron-right"></iconify-icon></span>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-content">
-              <div class="card-left">
-                <span class="badge badge-purple" id="taggedCount">111</span>
-                <div class="card-text">
-                  <div class="card-title">Tagged Features</div>
-                  <div class="card-description">List of tagged Features on this page</div>
-                </div>
-              </div>
-              <span class="chevron"><iconify-icon icon="mdi:chevron-right"></iconify-icon></span>
-            </div>
-          </div>
-          <div class="heatmap-row">
-            <span class="heatmap-label">Heatmap</span>
-            <div class="heatmap-controls">
-              <div class="toggle-switch" id="heatmapToggle"></div>
-              <div class="plus-icon"><iconify-icon icon="mdi:plus"></iconify-icon></div>
-            </div>
-          </div>
-          <div class="overview-actions">
-            <button class="tag-feature-btn" id="tagFeatureBtn">Tag Feature</button>
-            <button class="clear-selection-btn" id="overviewClearSelectionBtn">Clear Selection</button>
-          </div>
-        </div>
-      </div>
-      <div id="selectorFormView" class="view" style="display: none;">
-        <div style="padding: 20px; flex: 1;">
-          <a class="back-link" id="backFromForm"><iconify-icon icon="mdi:arrow-left"></iconify-icon> Back to overview</a>
-          <h3 style="margin-bottom: 16px; font-size: 16px;">Tag Feature</h3>
-          <div class="selector-form">
-            <div class="form-group">
-              <label>Selector</label>
-              <div class="selector-preview" id="selectorPreview">-</div>
-            </div>
-            <div class="form-group" id="elementInfoGroup" style="display: none;">
-              <label>Element info</label>
-              <div class="element-info" id="elementInfoContent"></div>
-            </div>
-            <div class="form-group">
-              <label>Feature Name <span class="required">*</span></label>
-              <input type="text" id="featureNameInput" placeholder="Enter feature name">
-              <div class="error" id="featureNameError">Please enter a feature name.</div>
-            </div>
-          </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-cancel" id="formCancelBtn">Cancel</button>
-          <button class="btn btn-cancel" id="clearSelectionBtn">Clear Selection</button>
-          <button class="btn btn-save" id="formSaveBtn">Save</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <script>
-    function sendMessage(m) { window.parent.postMessage(m, '*'); }
-    var FEATURES_STORAGE_KEY = 'designerTaggedFeatures';
-    var HEATMAP_STORAGE_KEY = 'designerHeatmapEnabled';
-    var currentSelector = '';
-    var currentElementInfo = null;
-    function getCurrentUrl() {
-      try {
-        var p = window.parent.location;
-        return (p.host || p.hostname || '') + (p.pathname || '/') + (p.search || '') + (p.hash || '');
-      } catch (e) { return window.location.href || ''; }
-    }
-    function normalizeUrl(u) {
-      u = (u || '').replace(/^https?:\\/\\//i, '').replace(/\\/$/, '');
-      return u || '';
-    }
-    function getTaggedFeatures() {
-      try {
-        var raw = localStorage.getItem(FEATURES_STORAGE_KEY) || '[]';
-        return JSON.parse(raw);
-      } catch (e) { return []; }
-    }
-    function getFeaturesForCurrentUrl() {
-      var current = normalizeUrl(getCurrentUrl());
-      return getTaggedFeatures().filter(function(f) { return f && normalizeUrl(f.url) === current; });
-    }
-    function refreshTaggedCount() {
-      var count = getFeaturesForCurrentUrl().length;
-      document.getElementById('taggedCount').textContent = String(count);
-    }
-    function showOverview() {
-      document.getElementById('overviewView').style.display = 'block';
-      document.getElementById('selectorFormView').style.display = 'none';
-      currentSelector = '';
-      currentElementInfo = null;
-      document.getElementById('selectorPreview').textContent = '-';
-      document.getElementById('elementInfoGroup').style.display = 'none';
-      document.getElementById('featureNameInput').value = '';
-      document.getElementById('featureNameError').classList.remove('show');
-      refreshTaggedCount();
-    }
-    document.getElementById('minimizeBtn').addEventListener('click', function() { sendMessage({ type: 'CANCEL' }); });
-    document.getElementById('tagFeatureBtn').addEventListener('click', function() {
-      sendMessage({ type: 'TAG_FEATURE_CLICKED' });
-    });
-    document.getElementById('overviewClearSelectionBtn').addEventListener('click', function() {
-      sendMessage({ type: 'CLEAR_SELECTION_CLICKED' });
-    });
-    document.getElementById('clearSelectionBtn').addEventListener('click', function() {
-      sendMessage({ type: 'CLEAR_SELECTION_CLICKED' });
-    });
-    document.querySelectorAll('.tab').forEach(function(tab) {
-      tab.addEventListener('click', function() {
-        var t = tab.dataset.tab;
-        document.querySelectorAll('.tab').forEach(function(x) { x.classList.remove('active'); });
-        tab.classList.add('active');
-        document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
-        var panel = document.getElementById(t + 'Tab');
-        if (panel) panel.classList.add('active');
-      });
-    });
-    document.getElementById('heatmapToggle').addEventListener('click', function() {
-      this.classList.toggle('active');
-      var enabled = this.classList.contains('active');
-      try { localStorage.setItem(HEATMAP_STORAGE_KEY, String(enabled)); } catch (e) {}
-      sendMessage({ type: 'HEATMAP_TOGGLE', enabled: enabled });
-    });
-    document.getElementById('backFromForm').addEventListener('click', function() { showOverview(); });
-    document.getElementById('formCancelBtn').addEventListener('click', function() { showOverview(); });
-    document.getElementById('formSaveBtn').addEventListener('click', function() {
-      var name = (document.getElementById('featureNameInput').value || '').trim();
-      var err = document.getElementById('featureNameError');
-      if (!name) { err.classList.add('show'); return; }
-      err.classList.remove('show');
-      sendMessage({
-        type: 'SAVE_TAG_FEATURE',
-        payload: {
-          featureName: name,
-          selector: currentSelector,
-          elementInfo: currentElementInfo
-        }
-      });
-    });
-    window.addEventListener('message', function(event) {
-      var d = event.data;
-      if (!d) return;
-      if (d.type === 'ELEMENT_SELECTED') {
-        currentSelector = d.selector || '';
-        currentElementInfo = d.elementInfo || null;
-        document.getElementById('selectorPreview').textContent = currentSelector || '-';
-        var infoEl = document.getElementById('elementInfoContent');
-        var infoGroup = document.getElementById('elementInfoGroup');
-        if (currentElementInfo) {
-          var tag = currentElementInfo.tagName || '';
-          var id = currentElementInfo.id || '';
-          var cls = (currentElementInfo.className || (currentElementInfo.attributes && currentElementInfo.attributes.class)) || '';
-          var text = (currentElementInfo.textContent || '').slice(0, 80);
-          infoEl.innerHTML = 'Tag: ' + tag + (id ? ' | ID: ' + id : '') + (cls ? ' | Class: ' + cls : '') + (text ? ' | Text: ' + text : '');
-          infoGroup.style.display = 'block';
-        } else {
-          infoGroup.style.display = 'none';
-        }
-        document.getElementById('featureNameInput').value = '';
-        document.getElementById('featureNameError').classList.remove('show');
-        document.getElementById('overviewView').style.display = 'none';
-        document.getElementById('selectorFormView').style.display = 'flex';
-      }
-      if (d.type === 'CLEAR_SELECTION_ACK') {
-        showOverview();
-      }
-      if (d.type === 'TAG_FEATURE_SAVED_ACK') {
-        showOverview();
-      }
-    });
-    window.addEventListener('load', function() {
-      refreshTaggedCount();
-      var heatmapEnabled = localStorage.getItem(HEATMAP_STORAGE_KEY) === 'true';
-      var toggleEl = document.getElementById('heatmapToggle');
-      if (heatmapEnabled && toggleEl) toggleEl.classList.add('active');
-      sendMessage({ type: 'EDITOR_READY' });
-    });
-  <\/script>
+  <div id="designer-editor-root"></div>
 </body>
 </html>`;
   }
@@ -1747,15 +2043,15 @@ class $e {
     if (!this.isMouseDown || !this.iframe || !this.dragHandle)
       return;
     if (!this.isDragging) {
-      const d = Math.abs(e.clientX - this.mouseDownX), c = Math.abs(e.clientY - this.mouseDownY);
-      if (Math.sqrt(d * d + c * c) > this.dragThreshold)
+      const c = Math.abs(e.clientX - this.mouseDownX), g = Math.abs(e.clientY - this.mouseDownY);
+      if (Math.sqrt(c * c + g * g) > this.dragThreshold)
         this.isDragging = !0, document.body.style.cursor = "grabbing", document.documentElement.style.cursor = "grabbing", document.body.style.userSelect = "none", document.documentElement.style.userSelect = "none", this.iframe && (this.iframe.style.pointerEvents = "none"), this.gripButton && (this.gripButton.style.cursor = "grabbing");
       else
         return;
     }
     e.preventDefault(), e.stopPropagation();
-    const n = e.clientX - this.dragStartX, i = e.clientY - this.dragStartY, o = window.innerWidth, r = window.innerHeight, s = this.iframe.offsetWidth, l = Math.max(-s + 50, Math.min(n, o - 50)), g = Math.max(0, Math.min(i, r - 100));
-    this.iframe.style.left = `${l}px`, this.iframe.style.top = `${g}px`, this.iframe.style.right = "auto", this.iframe.style.bottom = "auto", this.dragHandle.style.left = `${l}px`, this.dragHandle.style.top = `${g}px`;
+    const n = e.clientX - this.dragStartX, r = e.clientY - this.dragStartY, o = window.innerWidth, a = window.innerHeight, l = this.iframe.offsetWidth, d = Math.max(-l + 50, Math.min(n, o - 50)), u = Math.max(0, Math.min(r, a - 100));
+    this.iframe.style.left = `${d}px`, this.iframe.style.top = `${u}px`, this.iframe.style.right = "auto", this.iframe.style.bottom = "auto", this.dragHandle.style.left = `${d}px`, this.dragHandle.style.top = `${u}px`;
   };
   /**
    * Handle mouse up to end drag
@@ -1771,10 +2067,10 @@ class $e {
     !n || !n.type || (this.messageCallback && this.messageCallback(n), (n.type === "CANCEL" || n.type === "GUIDE_SAVED") && this.hide());
   };
 }
-const Ke = "visual-designer-guides", ce = "1.0.0";
-class Ye {
+const Vt = "visual-designer-guides", We = "1.0.0";
+class jt {
   storageKey;
-  constructor(e = Ke) {
+  constructor(e = Vt) {
     this.storageKey = e;
   }
   getGuides() {
@@ -1782,28 +2078,28 @@ class Ye {
       const e = localStorage.getItem(this.storageKey);
       if (!e) return [];
       const n = JSON.parse(e);
-      return n.version !== ce ? (this.clear(), []) : n.guides || [];
+      return n.version !== We ? (this.clear(), []) : n.guides || [];
     } catch {
       return [];
     }
   }
   getGuidesByPage(e) {
-    return this.getGuides().filter((i) => i.page === e && i.status === "active");
+    return this.getGuides().filter((r) => r.page === e && r.status === "active");
   }
   saveGuide(e) {
-    const n = this.getGuides(), i = n.findIndex((r) => r.id === e.id), o = {
+    const n = this.getGuides(), r = n.findIndex((a) => a.id === e.id), o = {
       ...e,
       updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
       createdAt: e.createdAt || (/* @__PURE__ */ new Date()).toISOString()
     };
-    i >= 0 ? n[i] = o : n.push(o), this.saveGuides(n);
+    r >= 0 ? n[r] = o : n.push(o), this.saveGuides(n);
   }
   deleteGuide(e) {
-    const n = this.getGuides().filter((i) => i.id !== e);
+    const n = this.getGuides().filter((r) => r.id !== e);
     this.saveGuides(n);
   }
   saveGuides(e) {
-    const n = { guides: e, version: ce };
+    const n = { guides: e, version: We };
     localStorage.setItem(this.storageKey, JSON.stringify(n));
   }
   clear() {
@@ -1813,46 +2109,46 @@ class Ye {
     return this.getGuides().find((n) => n.id === e) || null;
   }
 }
-function je({ onExit: t }) {
+function Yt({ onExit: t }) {
   const e = {
     position: "fixed",
     top: "20px",
     right: "20px",
     padding: "10px 20px",
-    background: p.bg,
-    border: `2px solid ${p.primary}`,
-    borderRadius: p.borderRadius,
-    color: p.primary,
+    background: _.bg,
+    border: `2px solid ${_.primary}`,
+    borderRadius: _.borderRadius,
+    color: _.primary,
     fontSize: "14px",
     fontWeight: "600",
-    fontFamily: p.fontFamily,
+    fontFamily: _.fontFamily,
     cursor: "pointer",
-    zIndex: String(p.zIndex.controls),
-    boxShadow: p.shadow,
+    zIndex: String(_.zIndex.controls),
+    boxShadow: _.shadow,
     transition: "all 0.2s ease",
     pointerEvents: "auto"
   };
-  return /* @__PURE__ */ v(
+  return /* @__PURE__ */ i(
     "button",
     {
       id: "designer-exit-editor-btn",
       style: e,
       onClick: t,
       onMouseEnter: (n) => {
-        n.currentTarget.style.background = p.primary, n.currentTarget.style.color = p.bg, n.currentTarget.style.transform = "translateY(-2px)", n.currentTarget.style.boxShadow = p.shadowHover;
+        n.currentTarget.style.background = _.primary, n.currentTarget.style.color = _.bg, n.currentTarget.style.transform = "translateY(-2px)", n.currentTarget.style.boxShadow = _.shadowHover;
       },
       onMouseLeave: (n) => {
-        n.currentTarget.style.background = p.bg, n.currentTarget.style.color = p.primary, n.currentTarget.style.transform = "translateY(0)", n.currentTarget.style.boxShadow = p.shadow;
+        n.currentTarget.style.background = _.bg, n.currentTarget.style.color = _.primary, n.currentTarget.style.transform = "translateY(0)", n.currentTarget.style.boxShadow = _.shadow;
       },
       children: [
-        /* @__PURE__ */ v("iconify-icon", { icon: "mdi:exit-to-app", style: { verticalAlign: "-0.2em", marginRight: "6px" } }),
+        /* @__PURE__ */ i("iconify-icon", { icon: "mdi:exit-to-app", style: { verticalAlign: "-0.2em", marginRight: "6px" } }),
         "Exit Editor"
       ]
     }
   );
 }
-function We() {
-  return /* @__PURE__ */ v(
+function Kt() {
+  return /* @__PURE__ */ i(
     "div",
     {
       id: "designer-red-border-overlay",
@@ -1862,16 +2158,16 @@ function We() {
         left: 0,
         right: 0,
         bottom: 0,
-        border: `5px solid ${p.primary}`,
+        border: `5px solid ${_.primary}`,
         pointerEvents: "none",
-        zIndex: p.zIndex.highlight - 1,
+        zIndex: _.zIndex.highlight - 1,
         boxSizing: "border-box"
       }
     }
   );
 }
-function Xe() {
-  return /* @__PURE__ */ v(
+function Xt() {
+  return /* @__PURE__ */ i(
     "div",
     {
       id: "designer-studio-badge",
@@ -1881,15 +2177,15 @@ function Xe() {
         left: "50%",
         transform: "translateX(-50%)",
         padding: "0px 10px 3px",
-        background: p.primary,
-        color: p.bg,
+        background: _.primary,
+        color: _.bg,
         fontSize: "14px",
         fontWeight: "600",
-        fontFamily: p.fontFamily,
+        fontFamily: _.fontFamily,
         borderRadius: "0 0 6px 6px",
-        border: `5px solid ${p.primary}`,
+        border: `5px solid ${_.primary}`,
         borderTop: "none",
-        zIndex: p.zIndex.badge,
+        zIndex: _.zIndex.badge,
         boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
         pointerEvents: "none",
         whiteSpace: "nowrap"
@@ -1898,8 +2194,8 @@ function Xe() {
     }
   );
 }
-function qe() {
-  return /* @__PURE__ */ v(
+function Jt() {
+  return /* @__PURE__ */ i(
     "div",
     {
       id: "designer-loading-overlay",
@@ -1909,58 +2205,166 @@ function qe() {
         left: 0,
         right: 0,
         bottom: 0,
-        background: "rgba(255, 255, 255, 0.95)",
-        zIndex: p.zIndex.loading,
+        background: "rgba(248, 250, 252, 0.97)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        zIndex: _.zIndex.loading,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: p.fontFamily
+        fontFamily: _.fontFamily
       },
       children: [
-        /* @__PURE__ */ v(
+        /* @__PURE__ */ i(
           "div",
           {
             style: {
-              width: 48,
-              height: 48,
-              border: "4px solid #e2e8f0",
-              borderTopColor: p.primary,
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-              marginBottom: 16
-            }
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "2.5rem 3rem",
+              background: "#ffffff",
+              borderRadius: "16px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04)",
+              minWidth: "220px"
+            },
+            children: [
+              /* @__PURE__ */ i(
+                "div",
+                {
+                  style: {
+                    width: 56,
+                    height: 56,
+                    border: "3px solid #e2e8f0",
+                    borderTopColor: _.primary,
+                    borderRadius: "50%",
+                    animation: "vd-spin 0.8s linear infinite",
+                    marginBottom: "1.5rem"
+                  }
+                }
+              ),
+              /* @__PURE__ */ i(
+                "div",
+                {
+                  style: {
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    color: "#1e293b",
+                    letterSpacing: "-0.02em",
+                    marginBottom: "0.25rem"
+                  },
+                  children: "Loading editor"
+                }
+              ),
+              /* @__PURE__ */ i(
+                "div",
+                {
+                  style: {
+                    fontSize: "0.8125rem",
+                    color: "#64748b",
+                    fontWeight: 500
+                  },
+                  children: [
+                    /* @__PURE__ */ i("span", { style: { animation: "vd-dot1 1.4s ease-in-out infinite" }, children: "." }),
+                    /* @__PURE__ */ i("span", { style: { animation: "vd-dot2 1.4s ease-in-out infinite" }, children: "." }),
+                    /* @__PURE__ */ i("span", { style: { animation: "vd-dot3 1.4s ease-in-out infinite" }, children: "." })
+                  ]
+                }
+              )
+            ]
           }
         ),
-        /* @__PURE__ */ v("style", { children: "@keyframes spin { to { transform: rotate(360deg); } }" }),
-        /* @__PURE__ */ v(
-          "div",
-          {
-            style: {
-              color: "#1e40af",
-              fontSize: 16,
-              fontWeight: 500,
-              fontFamily: p.fontFamily
-            },
-            children: "Loading Visual Designer..."
-          }
-        )
+        /* @__PURE__ */ i("style", { children: `
+        @keyframes vd-spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes vd-dot1 {
+          0%, 20% { opacity: 0.2; }
+          40%, 100% { opacity: 1; }
+        }
+        @keyframes vd-dot2 {
+          0%, 20%, 40% { opacity: 0.2; }
+          60%, 100% { opacity: 1; }
+        }
+        @keyframes vd-dot3 {
+          0%, 20%, 40%, 60% { opacity: 0.2; }
+          80%, 100% { opacity: 1; }
+        }
+      ` })
       ]
     }
   );
 }
-function Je(t) {
-  return /* @__PURE__ */ v(z, { children: [
-    t.showExitButton && /* @__PURE__ */ v(je, { onExit: t.onExitEditor }),
-    t.showRedBorder && /* @__PURE__ */ v(We, {}),
-    t.showBadge && /* @__PURE__ */ v(Xe, {}),
-    t.showLoading && /* @__PURE__ */ v(qe, {})
+function qt(t) {
+  return /* @__PURE__ */ i(X, { children: [
+    t.showExitButton && /* @__PURE__ */ i(Yt, { onExit: t.onExitEditor }),
+    t.showRedBorder && /* @__PURE__ */ i(Kt, {}),
+    t.showBadge && /* @__PURE__ */ i(Xt, {}),
+    t.showLoading && /* @__PURE__ */ i(Jt, {})
   ] });
 }
-function Qe(t, e) {
-  P(/* @__PURE__ */ v(Je, { ...e }), t);
+function Qt(t, e) {
+  O(/* @__PURE__ */ i(qt, { ...e }), t);
 }
-class we {
+const Zt = "https://devgw.revgain.ai/rg-pex", ot = "designerIud";
+function en() {
+  if (typeof window > "u") return null;
+  try {
+    return localStorage.getItem(ot);
+  } catch {
+    return null;
+  }
+}
+function te(t) {
+  const e = {
+    "Content-Type": "application/json",
+    ...t
+  }, n = en();
+  return n && (e.iud = n), e;
+}
+const at = {
+  baseUrl: Zt,
+  async get(t, e) {
+    const n = t.startsWith("http") ? t : `${this.baseUrl}${t.startsWith("/") ? "" : "/"}${t}`, r = await fetch(n, {
+      ...e,
+      headers: { ...te(), ...e?.headers }
+    });
+    if (!r.ok) throw new Error(`API error: ${r.status} ${r.statusText}`);
+    return r.json();
+  },
+  async post(t, e, n) {
+    const r = t.startsWith("http") ? t : `${this.baseUrl}${t.startsWith("/") ? "" : "/"}${t}`, o = await fetch(r, {
+      method: "POST",
+      ...n,
+      headers: { ...te(), ...n?.headers },
+      body: e !== void 0 ? JSON.stringify(e) : void 0
+    });
+    if (!o.ok) throw new Error(`API error: ${o.status} ${o.statusText}`);
+    return o.json();
+  },
+  async put(t, e, n) {
+    const r = t.startsWith("http") ? t : `${this.baseUrl}${t.startsWith("/") ? "" : "/"}${t}`, o = await fetch(r, {
+      method: "PUT",
+      ...n,
+      headers: { ...te(), ...n?.headers },
+      body: e !== void 0 ? JSON.stringify(e) : void 0
+    });
+    if (!o.ok) throw new Error(`API error: ${o.status} ${o.statusText}`);
+    return o.json();
+  },
+  async delete(t, e) {
+    const n = t.startsWith("http") ? t : `${this.baseUrl}${t.startsWith("/") ? "" : "/"}${t}`, r = await fetch(n, {
+      method: "DELETE",
+      ...e,
+      headers: { ...te(), ...e?.headers }
+    });
+    if (!r.ok) throw new Error(`API error: ${r.status} ${r.statusText}`);
+    return r.json();
+  }
+};
+class st {
   config;
   storage;
   editorMode;
@@ -1972,8 +2376,9 @@ class we {
   isEditorMode = !1;
   sdkRoot = null;
   showLoading = !1;
+  loadingFallbackTimer = null;
   constructor(e = {}) {
-    this.config = e, this.storage = new Ye(e.storageKey), this.editorMode = new Le(), this.guideRenderer = new Ne(), this.featureHeatmapRenderer = new Ve(), this.editorFrame = new $e();
+    this.config = e, this.storage = new jt(e.storageKey), this.editorMode = new ft(), this.guideRenderer = new Ct(), this.featureHeatmapRenderer = new Dt(), this.editorFrame = new Ut();
   }
   init() {
     if (this.isInitialized) return;
@@ -1983,11 +2388,13 @@ class we {
     if (this.isEditorMode) return;
     this.isEditorMode = !0;
     let e = typeof window < "u" && window.__visualDesignerMode || null;
-    e || (e = localStorage.getItem("designerModeType") || null), this.editorFrame.create((i) => this.handleEditorMessage(i), e);
+    e || (e = localStorage.getItem("designerModeType") || null), this.editorFrame.create((r) => this.handleEditorMessage(r), e);
     const n = e === "tag-page" || e === "tag-feature";
-    n || this.editorMode.activate((i) => this.handleEditorMessage(i)), this.ensureSDKRoot(), this.showLoading = !1, this.renderOverlays(), localStorage.setItem("designerMode", "true"), e && localStorage.setItem("designerModeType", e), setTimeout(() => {
+    n || this.editorMode.activate((r) => this.handleEditorMessage(r)), this.ensureSDKRoot(), this.renderOverlays(), localStorage.setItem("designerMode", "true"), e && localStorage.setItem("designerModeType", e), setTimeout(() => {
       this.editorFrame.show(), this.renderOverlays();
-    }, n ? 100 : 300);
+    }, n ? 100 : 300), this.loadingFallbackTimer = setTimeout(() => {
+      this.loadingFallbackTimer = null, this.showLoading && (this.showLoading = !1, this.renderOverlays());
+    }, 5e3);
   }
   disableEditor() {
     if (this.isEditorMode) {
@@ -1995,19 +2402,19 @@ class we {
         window.close();
       } catch {
       }
-      this.isEditorMode = !1, this.editorMode.deactivate(), this.editorFrame.destroy(), this.featureHeatmapRenderer.destroy(), this.showLoading = !1, localStorage.removeItem("designerMode"), localStorage.removeItem("designerModeType"), this.renderOverlays(), this.loadGuides();
+      this.isEditorMode = !1, this.editorMode.deactivate(), this.editorFrame.destroy(), this.featureHeatmapRenderer.destroy(), this.loadingFallbackTimer && (clearTimeout(this.loadingFallbackTimer), this.loadingFallbackTimer = null), this.showLoading = !1, localStorage.removeItem("designerMode"), localStorage.removeItem("designerModeType"), this.renderOverlays(), this.loadGuides();
     }
   }
   getGuides() {
     return this.storage.getGuides();
   }
   getGuidesForCurrentPage() {
-    return this.storage.getGuidesByPage(K());
+    return this.storage.getGuidesByPage(oe());
   }
   saveGuide(e) {
     const n = {
       ...e,
-      id: ne(),
+      id: ke(),
       createdAt: (/* @__PURE__ */ new Date()).toISOString(),
       updatedAt: (/* @__PURE__ */ new Date()).toISOString()
     };
@@ -2058,7 +2465,7 @@ class we {
         this.disableEditor();
         break;
       case "EDITOR_READY":
-        this.showLoading = !1, this.renderOverlays();
+        this.loadingFallbackTimer && (clearTimeout(this.loadingFallbackTimer), this.loadingFallbackTimer = null), this.showLoading = !1, this.renderOverlays();
         break;
     }
   }
@@ -2068,31 +2475,43 @@ class we {
   handleSaveGuide(e) {
     this.saveGuide({
       ...e.guide,
-      page: K()
+      page: oe()
     });
   }
-  handleSaveTagPage(e) {
-    const n = "designerTaggedPages";
+  async handleSaveTagPage(e) {
+    const n = e.payload, r = typeof window < "u" ? window.location.href : "", o = typeof window < "u" ? `${window.location.hostname}${window.location.pathname}` : "";
     try {
-      const i = localStorage.getItem(n) || "[]", o = JSON.parse(i), r = typeof window < "u" ? window.location.href : "";
-      o.push({ pageName: e.payload.pageName, url: r }), localStorage.setItem(n, JSON.stringify(o));
+      await at.post("/pages", {
+        name: n.pageName,
+        slug: o,
+        description: n.description,
+        status: "active"
+      });
+    } catch (l) {
+      console.warn("[Visual Designer] Failed to create page via API:", l), this.editorFrame.sendTagPageSavedAck();
+      return;
+    }
+    const a = "designerTaggedPages";
+    try {
+      const l = localStorage.getItem(a) || "[]", d = JSON.parse(l);
+      d.push({ pageName: n.pageName, url: r }), localStorage.setItem(a, JSON.stringify(d));
     } catch {
     }
     this.editorFrame.sendTagPageSavedAck();
   }
   handleSaveTagFeature(e) {
-    const n = "designerTaggedFeatures", i = e.payload;
-    if (!(!i.selector || !i.featureName))
+    const n = "designerTaggedFeatures", r = e.payload;
+    if (!(!r.selector || !r.featureName))
       try {
-        const o = localStorage.getItem(n) || "[]", r = JSON.parse(o), s = typeof window < "u" ? window.location.href : "", l = {
-          id: ne(),
-          featureName: i.featureName,
-          selector: i.selector,
-          url: s,
-          elementInfo: i.elementInfo,
+        const o = localStorage.getItem(n) || "[]", a = JSON.parse(o), l = typeof window < "u" ? window.location.href : "", d = {
+          id: ke(),
+          featureName: r.featureName,
+          selector: r.selector,
+          url: l,
+          elementInfo: r.elementInfo,
           createdAt: (/* @__PURE__ */ new Date()).toISOString()
         };
-        r.push(l), localStorage.setItem(n, JSON.stringify(r)), this.editorFrame.sendTagFeatureSavedAck(), this.renderFeatureHeatmap();
+        a.push(d), localStorage.setItem(n, JSON.stringify(a)), this.editorFrame.sendTagFeatureSavedAck(), this.renderFeatureHeatmap();
       } catch {
       }
   }
@@ -2117,20 +2536,20 @@ class we {
   }
   setupEventListeners() {
     let e, n;
-    const i = () => {
+    const r = () => {
       this.guideRenderer.updatePositions(this.storage.getGuides());
     }, o = () => {
       this.featureHeatmapRenderer.updatePositions(this.getTaggedFeatures());
     };
     window.addEventListener("resize", () => {
       clearTimeout(e), e = window.setTimeout(() => {
-        i(), o();
+        r(), o();
       }, 100);
     }), window.addEventListener(
       "scroll",
       () => {
         clearTimeout(n), n = window.setTimeout(() => {
-          i(), o();
+          r(), o();
         }, 50);
       },
       !0
@@ -2150,7 +2569,7 @@ class we {
     }
   }
   renderOverlays() {
-    this.ensureSDKRoot(), this.sdkRoot && Qe(this.sdkRoot, {
+    this.ensureSDKRoot(), this.sdkRoot && Qt(this.sdkRoot, {
       showExitButton: this.isEditorMode,
       showRedBorder: this.isEditorMode,
       showBadge: this.isEditorMode,
@@ -2169,36 +2588,36 @@ class we {
     e.id = "designer-iconify-script", e.src = "https://code.iconify.design/iconify-icon/3.0.2/iconify-icon.min.js", e.async = !0, document.head.appendChild(e);
   }
 }
-let _ = null, Ee = !1;
-function C(t) {
-  return _ || (_ = new we(t), _.init(), _);
+let I = null, lt = !1;
+function N(t) {
+  return I || (I = new st(t), I.init(), I);
 }
-function ke() {
-  return _;
+function dt() {
+  return I;
 }
-function Se(t) {
+function ct(t) {
   !t || !Array.isArray(t) || t.forEach((e) => {
     if (!e || !Array.isArray(e) || e.length === 0) return;
-    const n = e[0], i = e.slice(1);
+    const n = e[0], r = e.slice(1);
     try {
       switch (n) {
         case "initialize":
-          C(i[0]);
+          N(r[0]);
           break;
         case "identify":
-          i[0] && console.log("[Visual Designer] identify (snippet) called with:", i[0]);
+          r[0] && console.log("[Visual Designer] identify (snippet) called with:", r[0]);
           break;
         case "enableEditor":
-          (_ ?? C()).enableEditor();
+          (I ?? N()).enableEditor();
           break;
         case "disableEditor":
-          _?.disableEditor();
+          I?.disableEditor();
           break;
         case "loadGuides":
-          _?.loadGuides();
+          I?.loadGuides();
           break;
         case "getGuides":
-          return _?.getGuides();
+          return I?.getGuides();
         default:
           console.warn("[Visual Designer] Unknown snippet method:", n);
       }
@@ -2209,31 +2628,33 @@ function Se(t) {
 }
 if (typeof window < "u") {
   const t = window.visualDesigner;
-  t && Array.isArray(t._q) && (Ee = !0, t.initialize = (e) => C(e), t.identify = (e) => {
+  t && Array.isArray(t._q) && (lt = !0, t.initialize = (e) => N(e), t.identify = (e) => {
     e && console.log("[Visual Designer] identify (snippet) called with:", e);
-  }, t.enableEditor = () => (_ ?? C()).enableEditor(), t.disableEditor = () => _?.disableEditor(), t.loadGuides = () => _?.loadGuides(), t.getGuides = () => _?.getGuides(), t.getInstance = ke, t.init = C, Se(t._q));
+  }, t.enableEditor = () => (I ?? N()).enableEditor(), t.disableEditor = () => I?.disableEditor(), t.loadGuides = () => I?.loadGuides(), t.getGuides = () => I?.getGuides(), t.getInstance = dt, t.init = N, ct(t._q));
   try {
-    const e = new URL(window.location.href), n = e.searchParams.get("designer"), i = e.searchParams.get("mode");
-    n === "true" && (i && (window.__visualDesignerMode = i, localStorage.setItem("designerModeType", i)), localStorage.setItem("designerMode", "true"), e.searchParams.delete("designer"), e.searchParams.delete("mode"), window.history.replaceState({}, "", e.toString()), window.__visualDesignerWasLaunched = !0);
+    const e = new URL(window.location.href), n = e.searchParams.get("designer"), r = e.searchParams.get("mode"), o = e.searchParams.get("iud");
+    n === "true" && (r && (window.__visualDesignerMode = r, localStorage.setItem("designerModeType", r)), localStorage.setItem("designerMode", "true"), o && localStorage.setItem(ot, o), e.searchParams.delete("designer"), e.searchParams.delete("mode"), e.searchParams.delete("iud"), window.history.replaceState({}, "", e.toString()), window.__visualDesignerWasLaunched = !0);
   } catch {
   }
 }
-if (typeof window < "u" && !_ && !Ee) {
+if (typeof window < "u" && !I && !lt) {
   const t = () => {
-    _ || C();
+    I || N();
   };
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", t) : t();
 }
 typeof window < "u" && (window.VisualDesigner = {
-  init: C,
-  initialize: C,
-  getInstance: ke,
-  DesignerSDK: we,
-  _processQueue: Se
+  init: N,
+  initialize: N,
+  getInstance: dt,
+  DesignerSDK: st,
+  apiClient: at,
+  _processQueue: ct
 });
 export {
-  we as DesignerSDK,
-  Se as _processQueue,
-  ke as getInstance,
-  C as init
+  st as DesignerSDK,
+  ct as _processQueue,
+  at as apiClient,
+  dt as getInstance,
+  N as init
 };
