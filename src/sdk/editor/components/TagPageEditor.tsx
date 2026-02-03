@@ -197,6 +197,8 @@ export function TagPageEditor({ onMessage }: TagPageEditorProps) {
         localStorage.setItem(key, JSON.stringify(list));
         queryClient.invalidateQueries({ queryKey: CHECK_SLUG_QUERY_KEY });
         queryClient.invalidateQueries({ queryKey: PAGES_LIST_QUERY_KEY });
+        setView('overviewTagged');
+        setShowFormActions(false);
       }
     } catch {
       // Error already logged by mutation; keep form open

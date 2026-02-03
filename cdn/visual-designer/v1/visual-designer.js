@@ -3798,7 +3798,7 @@ function Dr({ onMessage: e }) {
           description: _.trim() || void 0
         });
         const ie = Pr, Ki = localStorage.getItem(ie) || "[]", vt = JSON.parse(Ki);
-        vt.push({ pageName: x, url: He }), localStorage.setItem(ie, JSON.stringify(vt)), R.invalidateQueries({ queryKey: we }), R.invalidateQueries({ queryKey: Be });
+        vt.push({ pageName: x, url: He }), localStorage.setItem(ie, JSON.stringify(vt)), R.invalidateQueries({ queryKey: we }), R.invalidateQueries({ queryKey: Be }), i("overviewTagged"), h(!1);
       }
     } catch {
     }
