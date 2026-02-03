@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'preact/hooks';
 import type { ElementInfo, EditorMessage } from '../../types';
 import { editorStyles } from '../editorStyles';
+import { EditorButton } from './EditorButton';
+import { EditorInput } from './EditorInput';
 
 const FEATURES_STORAGE_KEY = 'designerTaggedFeatures';
 const HEATMAP_STORAGE_KEY = 'designerHeatmapEnabled';
@@ -48,7 +50,9 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
   const [featureNameError, setFeatureNameError] = useState(false);
   const [taggedCount, setTaggedCount] = useState(0);
   const [heatmapEnabled, setHeatmapEnabled] = useState(false);
-  const [activeTab, setActiveTab] = useState<'features' | 'pages' | 'ai-agents'>('features');
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [selectionModeActive, setSelectionModeActive] = useState(false);
+  const [elementInfoExpanded, setElementInfoExpanded] = useState(false);
 
   const refreshTaggedCount = () => {
     setTaggedCount(getFeaturesForCurrentUrl().length);
@@ -132,105 +136,105 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
     return parts.join(' | ');
   };
 
+  if (isMinimized) {
+    return (
+      <div style={{ ...editorStyles.panel, padding: '0.5rem' }}>
+        <div style={editorStyles.panelHeader}>
+          <h2 style={{ ...editorStyles.headerTitle, fontSize: '1.125rem' }}>
+            {showForm ? 'Tag Feature' : 'Tag Features'}
+          </h2>
+          <div style={{ display: 'flex', gap: '0.25rem' }}>
+            <EditorButton variant="icon" title="Expand" onClick={() => setIsMinimized(false)}>
+              <iconify-icon icon="mdi:plus" style={{ fontSize: '1.25rem', color: '#64748b' }} />
+            </EditorButton>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={editorStyles.panel}>
       <div style={editorStyles.panelHeader}>
-        <h2 style={{ ...editorStyles.headerTitle, fontSize: '1.125rem' }}>Manage Pages, Features & AI</h2>
+        <h2 style={{ ...editorStyles.headerTitle, fontSize: '1.125rem' }}>Tag Features</h2>
         <div style={{ display: 'flex', gap: '0.25rem' }}>
-          <button type="button" style={editorStyles.iconBtn} title="Menu">
-            <iconify-icon icon="mdi:dots-horizontal" style={{ fontSize: '1.125rem' }} />
-          </button>
-          <button type="button" style={editorStyles.iconBtn} title="Minimize" onClick={() => onMessage({ type: 'CANCEL' })}>
+          <EditorButton variant="icon" title="Minimize" onClick={() => setIsMinimized(true)}>
             <iconify-icon icon="mdi:window-minimize" style={{ fontSize: '1.125rem' }} />
-          </button>
+          </EditorButton>
         </div>
-      </div>
-      <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(226,232,240,0.8)', padding: '0 1.5rem', background: '#fff' }}>
-        {(['features', 'pages', 'ai-agents'] as const).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            style={editorStyles.tab(activeTab === tab)}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1).replace('-', ' ')}
-          </button>
-        ))}
       </div>
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', background: 'linear-gradient(to bottom, rgba(248,250,252,0.8), #fff)' }}>
         {!showForm ? (
-          <>
-            {activeTab === 'features' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={editorStyles.sectionLabel}>FEATURES OVERVIEW</div>
-                <div style={{ ...editorStyles.card, marginBottom: '0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: 0 }}>
-                      <span style={{ ...editorStyles.badge, background: '#14b8a6', color: '#fff', minWidth: '1.75rem', height: '1.75rem' }}>0</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1e293b', marginBottom: '0.125rem' }}>Suggested Features</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.375 }}>List of untagged elements on this page</div>
-                      </div>
-                    </div>
-                    <iconify-icon icon="mdi:chevron-right" style={{ color: '#94a3b8', fontSize: '1.25rem', flexShrink: 0 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={editorStyles.sectionLabel}>FEATURES OVERVIEW</div>
+            <div style={{ ...editorStyles.card, marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: 0 }}>
+                  <span style={{ ...editorStyles.badge, background: '#14b8a6', color: '#fff', minWidth: '1.75rem', height: '1.75rem' }}>0</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1e293b', marginBottom: '0.125rem' }}>Suggested Features</div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.375 }}>List of untagged elements on this page</div>
                   </div>
                 </div>
-                <div style={{ ...editorStyles.card, marginBottom: '0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: 0 }}>
-                      <span style={{ ...editorStyles.badge, background: '#3b82f6', color: '#fff', minWidth: '1.75rem', height: '1.75rem' }}>{taggedCount}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1e293b', marginBottom: '0.125rem' }}>Tagged Features</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.375 }}>List of tagged Features on this page</div>
-                      </div>
-                    </div>
-                    <iconify-icon icon="mdi:chevron-right" style={{ color: '#94a3b8', fontSize: '1.25rem', flexShrink: 0 }} />
+                <iconify-icon icon="mdi:chevron-right" style={{ color: '#94a3b8', fontSize: '1.25rem', flexShrink: 0 }} />
+              </div>
+            </div>
+            <div style={{ ...editorStyles.card, marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: 0 }}>
+                  <span style={{ ...editorStyles.badge, background: '#3b82f6', color: '#fff', minWidth: '1.75rem', height: '1.75rem' }}>{taggedCount}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1e293b', marginBottom: '0.125rem' }}>Tagged Features</div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: 1.375 }}>List of tagged Features on this page</div>
                   </div>
                 </div>
-                <div style={editorStyles.heatmapRow}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Heatmap</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <button
-                      role="switch"
-                      tabIndex={0}
-                      style={editorStyles.toggle(heatmapEnabled)}
-                      onClick={handleHeatmapToggle}
-                      onKeyDown={(e) => e.key === 'Enter' && handleHeatmapToggle()}
-                    >
-                      <span style={editorStyles.toggleThumb(heatmapEnabled)} />
-                    </button>
-                    <button type="button" style={{ ...editorStyles.iconBtn, border: '1px solid #e2e8f0', borderRadius: '0.75rem' }}>
-                      <iconify-icon icon="mdi:plus" style={{ fontSize: '1.125rem' }} />
-                    </button>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-                  <button type="button" style={{ ...editorStyles.primaryBtn, flex: 1 }} onClick={() => onMessage({ type: 'TAG_FEATURE_CLICKED' })}>
-                    Tag Feature
-                  </button>
-                  <button type="button" style={editorStyles.secondaryBtn} onClick={() => onMessage({ type: 'CLEAR_SELECTION_CLICKED' })}>
-                    Clear Selection
-                  </button>
-                </div>
+                <iconify-icon icon="mdi:chevron-right" style={{ color: '#94a3b8', fontSize: '1.25rem', flexShrink: 0 }} />
               </div>
-            )}
-            {activeTab === 'pages' && (
-              <div style={editorStyles.comingSoon}>
-                <div style={editorStyles.comingSoonIcon}>
-                  <iconify-icon icon="mdi:file-document-multiple" style={{ fontSize: '1.875rem', color: '#94a3b8' }} />
-                </div>
-                <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Pages view — coming soon</p>
+            </div>
+            <div style={editorStyles.heatmapRow}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Heatmap</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <button
+                  role="switch"
+                  tabIndex={0}
+                  style={editorStyles.toggle(heatmapEnabled)}
+                  onClick={handleHeatmapToggle}
+                  onKeyDown={(e) => e.key === 'Enter' && handleHeatmapToggle()}
+                >
+                  <span style={editorStyles.toggleThumb(heatmapEnabled)} />
+                </button>
+                <EditorButton variant="icon" style={{ border: '1px solid #e2e8f0', borderRadius: '0.75rem' }}>
+                  <iconify-icon icon="mdi:plus" style={{ fontSize: '1.125rem' }} />
+                </EditorButton>
               </div>
-            )}
-            {activeTab === 'ai-agents' && (
-              <div style={editorStyles.comingSoon}>
-                <div style={editorStyles.comingSoonIcon}>
-                  <iconify-icon icon="mdi:robot" style={{ fontSize: '1.875rem', color: '#94a3b8' }} />
-                </div>
-                <p style={{ color: '#64748b', fontSize: '0.875rem' }}>AI Agents — coming soon</p>
-              </div>
-            )}
-          </>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <EditorButton
+                variant={selectionModeActive ? 'primary' : 'secondary'}
+                style={{ flex: 1 }}
+                onClick={() => {
+                  setSelectionModeActive(true);
+                  onMessage({ type: 'TAG_FEATURE_CLICKED' });
+                }}
+              >
+                Tag Feature
+              </EditorButton>
+              <EditorButton
+                variant="secondary"
+                style={
+                  !selectionModeActive
+                    ? { borderWidth: '2px', borderColor: '#3b82f6', background: 'rgba(59, 130, 246, 0.08)', color: '#1d4ed8' }
+                    : undefined
+                }
+                onClick={() => {
+                  setSelectionModeActive(false);
+                  onMessage({ type: 'CLEAR_SELECTION_CLICKED' });
+                }}
+              >
+                Clear Selection
+              </EditorButton>
+            </div>
+          </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
             <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -244,22 +248,45 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
               </div>
               {elementInfo && (
                 <div style={editorStyles.section}>
-                  <label style={editorStyles.label}>Element info</label>
-                  <div style={editorStyles.elementInfo}>
-                    <div style={editorStyles.elementInfoText}>{formatElementInfo(elementInfo)}</div>
-                  </div>
+                  <button
+                    type="button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: 0,
+                      border: 'none',
+                      background: 'none',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      textAlign: 'left',
+                    }}
+                    onClick={() => setElementInfoExpanded((e) => !e)}
+                    aria-expanded={elementInfoExpanded}
+                  >
+                    <label style={{ ...editorStyles.label, marginBottom: 0, cursor: 'pointer' }}>Element info</label>
+                    <iconify-icon
+                      icon={elementInfoExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}
+                      style={{ fontSize: '1.25rem', color: '#64748b', flexShrink: 0 }}
+                    />
+                  </button>
+                  {elementInfoExpanded && (
+                    <div style={{ ...editorStyles.elementInfo, marginTop: '0.5rem' }}>
+                      <div style={editorStyles.elementInfoText}>{formatElementInfo(elementInfo)}</div>
+                    </div>
+                  )}
                 </div>
               )}
               <div style={editorStyles.section}>
                 <label style={editorStyles.label}>
                   Feature Name <span style={{ color: '#ef4444' }}>*</span>
                 </label>
-                <input
+                <EditorInput
                   type="text"
                   placeholder="Enter feature name"
                   value={featureName}
                   onInput={(e) => setFeatureName((e.target as HTMLInputElement).value)}
-                  style={editorStyles.input}
                 />
                 {featureNameError && (
                   <p style={{ fontSize: '0.875rem', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -269,15 +296,21 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
               </div>
             </div>
             <div style={editorStyles.footer}>
-              <button type="button" style={editorStyles.secondaryBtn} onClick={showOverview}>
+              <EditorButton variant="secondary" onClick={showOverview}>
                 Cancel
-              </button>
-              <button type="button" style={editorStyles.secondaryBtn} onClick={() => onMessage({ type: 'CLEAR_SELECTION_CLICKED' })}>
+              </EditorButton>
+              <EditorButton
+                variant="secondary"
+                onClick={() => {
+                  setSelectionModeActive(false);
+                  onMessage({ type: 'CLEAR_SELECTION_CLICKED' });
+                }}
+              >
                 Clear Selection
-              </button>
-              <button type="button" style={editorStyles.primaryBtn} onClick={handleSave}>
+              </EditorButton>
+              <EditorButton variant="primary" onClick={handleSave}>
                 Save
-              </button>
+              </EditorButton>
             </div>
           </div>
         )}

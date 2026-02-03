@@ -206,6 +206,13 @@ export type EditorMessage =
   | GuideSavedMessage
   | ExitEditorModeMessage;
 
+/** Payload for create page API (POST /pages) - used by React Query mutation */
+export interface CreatePagePayload {
+  name: string;
+  slug: string;
+  description?: string;
+}
+
 /**
  * SDK configuration options
  */

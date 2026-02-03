@@ -2,6 +2,8 @@ import { useState, useEffect } from 'preact/hooks';
 import type { ElementInfo, EditorMessage } from '../../types';
 import { getCurrentPage } from '../../utils/dom';
 import { editorStyles } from '../editorStyles';
+import { EditorButton } from './EditorButton';
+import { EditorTextarea } from './EditorInput';
 
 export interface GuideEditorProps {
   onMessage: (msg: EditorMessage) => void;
@@ -83,14 +85,9 @@ export function GuideEditor({ onMessage, elementSelected }: GuideEditorProps) {
     <div style={editorStyles.root}>
       <div style={editorStyles.header}>
         <h2 style={editorStyles.headerTitle}>Create Guide</h2>
-        <button
-          type="button"
-          style={editorStyles.closeBtn}
-          onClick={() => onMessage({ type: 'CANCEL' })}
-          aria-label="Close"
-        >
+        <EditorButton variant="icon" onClick={() => onMessage({ type: 'CANCEL' })} aria-label="Close">
           <iconify-icon icon="mdi:close" style={{ fontSize: '1.25rem' }} />
-        </button>
+        </EditorButton>
       </div>
 
       {!showForm ? (
@@ -99,10 +96,10 @@ export function GuideEditor({ onMessage, elementSelected }: GuideEditorProps) {
             <iconify-icon icon="mdi:cursor-default-click" style={{ fontSize: '1.875rem', color: '#3b82f6' }} />
           </div>
           <p style={editorStyles.emptyStateText}>Click on an element in the page to create a guide</p>
-          <button type="button" style={editorStyles.primaryBtn} onClick={() => onMessage({ type: 'ACTIVATE_SELECTOR' })}>
+          <EditorButton variant="primary" onClick={() => onMessage({ type: 'ACTIVATE_SELECTOR' })}>
             <iconify-icon icon="mdi:selection-marker" />
             Select element
-          </button>
+          </EditorButton>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -120,9 +117,8 @@ export function GuideEditor({ onMessage, elementSelected }: GuideEditorProps) {
             <label for="guideContent" style={editorStyles.label}>
               Guide Content
             </label>
-            <textarea
+            <EditorTextarea
               id="guideContent"
-              style={editorStyles.textarea}
               placeholder="Enter the guide text that will be shown to users..."
               value={content}
               onInput={(e) => setContent((e.target as HTMLTextAreaElement).value)}
@@ -132,14 +128,14 @@ export function GuideEditor({ onMessage, elementSelected }: GuideEditorProps) {
             <label style={editorStyles.label}>Placement</label>
             <div style={editorStyles.placementGrid}>
               {PLACEMENTS.map((p) => (
-                <button
+                <EditorButton
                   key={p}
-                  type="button"
-                  style={editorStyles.placementBtn(placement === p)}
+                  variant="placement"
+                  active={placement === p}
                   onClick={() => setPlacement(p)}
                 >
                   {p.charAt(0).toUpperCase() + p.slice(1)}
-                </button>
+                </EditorButton>
               ))}
             </div>
           </div>
@@ -150,15 +146,15 @@ export function GuideEditor({ onMessage, elementSelected }: GuideEditorProps) {
             </div>
           )}
           <div style={editorStyles.actionRow}>
-            <button type="button" style={editorStyles.secondaryBtn} onClick={() => onMessage({ type: 'CANCEL' })}>
+            <EditorButton variant="secondary" onClick={() => onMessage({ type: 'CANCEL' })}>
               Cancel
-            </button>
-            <button type="button" style={editorStyles.secondaryBtn} onClick={handleClearSelection}>
+            </EditorButton>
+            <EditorButton variant="secondary" onClick={handleClearSelection}>
               Clear Selection
-            </button>
-            <button type="button" style={{ ...editorStyles.primaryBtn, flex: 1 }} onClick={handleSave}>
+            </EditorButton>
+            <EditorButton variant="primary" style={{ flex: 1 }} onClick={handleSave}>
               Save Guide
-            </button>
+            </EditorButton>
           </div>
         </div>
       )}

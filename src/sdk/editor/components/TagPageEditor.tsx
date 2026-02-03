@@ -1,46 +1,39 @@
 import { useState, useEffect, useCallback } from 'preact/hooks';
-import type { TagPagePayload, EditorMessage } from '../../types';
+import { useQueryClient } from '@tanstack/react-query';
+import type { EditorMessage } from '../../types';
 import { editorStyles } from '../editorStyles';
+import { EditorButton } from './EditorButton';
+import { EditorInput, EditorTextarea } from './EditorInput';
+import { useCreatePageMutation } from '../../hooks/useCreatePageMutation';
+import { useUpdatePageMutation } from '../../hooks/useUpdatePageMutation';
+import { useDeletePageMutation } from '../../hooks/useDeletePageMutation';
+import { useCheckSlug } from '../../hooks/useCheckSlug';
+import { usePagesList } from '../../hooks/usePagesList';
+import type { PageItem } from '../../hooks/usePagesList';
 
 const STORAGE_KEY = 'designerTaggedPages';
+const CHECK_SLUG_QUERY_KEY = ['pages', 'check-slug'] as const;
+const PAGES_LIST_QUERY_KEY = ['pages', 'list'] as const;
 
 export interface TagPageEditorProps {
   onMessage: (msg: EditorMessage) => void;
-  tagPageSavedAckCounter?: number;
 }
 
-interface TaggedPage {
-  pageName: string;
-  url: string;
-}
-
+/** Use parent window URL when in iframe (designer editor runs in iframe) */
 function getCurrentUrl(): string {
   try {
-    const p = window.location;
+    const w = typeof window !== 'undefined' && window.parent !== window ? window.parent : window;
+    const p = w.location;
     return (p.host || p.hostname || '') + (p.pathname || '/') + (p.search || '') + (p.hash || '');
   } catch {
-    return window.location.href || '';
-  }
-}
-
-function normalizeUrl(u: string): string {
-  return (u || '')
-    .replace(/^https?:\/\//i, '')
-    .replace(/\/$/, '') || '';
-}
-
-function getTaggedPages(): TaggedPage[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY) || '[]';
-    return JSON.parse(raw);
-  } catch {
-    return [];
+    return typeof window !== 'undefined' && window.parent !== window ? window.parent.location.href : window.location.href || '';
   }
 }
 
 function getSuggestedSelectionUrl(): string {
   try {
-    const p = window.location;
+    const w = typeof window !== 'undefined' && window.parent !== window ? window.parent : window;
+    const p = w.location;
     const path = (p.pathname || '/').replace(/^\//, '');
     const search = p.search || '';
     const hash = p.hash || '';
@@ -52,8 +45,9 @@ function getSuggestedSelectionUrl(): string {
 
 type ViewId = 'overviewTagged' | 'overviewUntagged' | 'taggedPagesDetailView' | 'tagPageFormView';
 
-export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEditorProps) {
+export function TagPageEditor({ onMessage }: TagPageEditorProps) {
   const [view, setView] = useState<ViewId>('overviewUntagged');
+  const [currentSlug, setCurrentSlug] = useState('');
   const [currentUrl, setCurrentUrl] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFormActions, setShowFormActions] = useState(false);
@@ -63,24 +57,30 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
   const [ruleType, setRuleType] = useState<'suggested' | 'exact' | 'builder'>('suggested');
   const [selectionUrl, setSelectionUrl] = useState('');
   const [pageNameError, setPageNameError] = useState(false);
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [isMinimized, setIsMinimized] = useState(false);
 
-  const isCurrentUrlTagged = useCallback(() => {
-    const current = normalizeUrl(getCurrentUrl());
-    const list = getTaggedPages();
-    return list.some((p) => p && normalizeUrl(p.url) === current);
-  }, []);
+  const queryClient = useQueryClient();
+  const createPageMutation = useCreatePageMutation();
+  const updatePageMutation = useUpdatePageMutation();
+  const deletePageMutation = useDeletePageMutation();
+  const { data: checkSlugData, isLoading: slugQueryLoading, isError: slugCheckError } = useCheckSlug(currentSlug);
+  const { data: pagesListData, isLoading: pagesListLoading } = usePagesList();
+  const slugCheckLoading = !!currentSlug && slugQueryLoading;
+  const saving = createPageMutation.isPending || updatePageMutation.isPending;
 
-  const getPagesForCurrentUrl = useCallback((): TaggedPage[] => {
-    const current = normalizeUrl(getCurrentUrl());
-    return getTaggedPages().filter((p) => p && normalizeUrl(p.url) === current);
-  }, []);
+  const normalizedCurrentSlug = (currentSlug || '').trim().toLowerCase();
+  const pagesForCurrentSlug: PageItem[] = (pagesListData?.data ?? []).filter((p) => (p.slug || '').trim().toLowerCase() === normalizedCurrentSlug);
+  const filteredPagesList = pagesForCurrentSlug.filter((p) =>
+    (p.name || '').toLowerCase().includes(searchQuery.toLowerCase().trim())
+  );
 
   const refreshOverview = useCallback(() => {
-    const tagged = isCurrentUrlTagged();
-    setView(tagged ? 'overviewTagged' : 'overviewUntagged');
+    setView('overviewUntagged');
     setCurrentUrl(getCurrentUrl() || '(current page)');
     setShowFormActions(false);
-  }, [isCurrentUrlTagged]);
+    queryClient.invalidateQueries({ queryKey: CHECK_SLUG_QUERY_KEY });
+  }, [queryClient]);
 
   const showTaggedDetailView = useCallback(() => {
     setView('taggedPagesDetailView');
@@ -88,6 +88,7 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
   }, []);
 
   const showTagPageForm = useCallback(() => {
+    setEditingPageId(null);
     setView('tagPageFormView');
     setShowFormActions(true);
     setSelectionUrl(getSuggestedSelectionUrl());
@@ -98,19 +99,41 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
     setPageNameError(false);
   }, []);
 
+  const showEditPageForm = useCallback((page: PageItem) => {
+    setEditingPageId(page.page_id);
+    setView('tagPageFormView');
+    setShowFormActions(true);
+    setSelectionUrl(page.slug || getSuggestedSelectionUrl());
+    setPageName(page.name || '');
+    setPageDescription(page.description || '');
+    setPageSetup('create');
+    setRuleType('suggested');
+    setPageNameError(false);
+  }, []);
+
   useEffect(() => {
     onMessage({ type: 'EDITOR_READY' });
   }, []);
 
   useEffect(() => {
-    refreshOverview();
-  }, [refreshOverview]);
+    setCurrentSlug(getSuggestedSelectionUrl());
+    setCurrentUrl(getCurrentUrl() || '(current page)');
+  }, []);
 
   useEffect(() => {
-    if (tagPageSavedAckCounter != null && tagPageSavedAckCounter > 0) {
-      refreshOverview();
+    if (!currentSlug) {
+      setView('overviewUntagged');
+      return;
     }
-  }, [tagPageSavedAckCounter, refreshOverview]);
+    if (slugCheckError) {
+      if (view === 'overviewTagged' || view === 'overviewUntagged') setView('overviewUntagged');
+      return;
+    }
+    if (checkSlugData === undefined) return;
+    if (view === 'overviewTagged' || view === 'overviewUntagged') {
+      setView(checkSlugData.exists ? 'overviewTagged' : 'overviewUntagged');
+    }
+  }, [currentSlug, checkSlugData, slugCheckError, view]);
 
   useEffect(() => {
     let lastKnownUrl = getCurrentUrl();
@@ -118,7 +141,9 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
       const current = getCurrentUrl();
       if (current !== lastKnownUrl) {
         lastKnownUrl = current;
-        refreshOverview();
+        setCurrentSlug(getSuggestedSelectionUrl());
+        setCurrentUrl(current || '(current page)');
+        setView('overviewUntagged');
       }
     };
     const handleHashChange = () => checkUrlChange();
@@ -131,64 +156,100 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
       window.removeEventListener('popstate', handlePopState);
       clearInterval(interval);
     };
-  }, [refreshOverview]);
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmed = pageName.trim();
     if (!trimmed) {
       setPageNameError(true);
       return;
     }
     setPageNameError(false);
-    const payload: TagPagePayload = {
-      pageSetup,
-      pageName: trimmed,
-      description: pageDescription.trim() || undefined,
-      includeRules: [{ ruleType, selectionUrl: selectionUrl.trim() || '' }],
-    };
-    onMessage({ type: 'SAVE_TAG_PAGE', payload });
-  };
-
-  const handleDeletePage = (pageNameToDelete: string) => {
-    if (!window.confirm(`Delete page "${pageNameToDelete}"?`)) return;
-    const current = normalizeUrl(getCurrentUrl());
-    const list = getTaggedPages().filter(
-      (p) => !(p && p.pageName === pageNameToDelete && normalizeUrl(p.url) === current)
-    );
+    const pathnameFallback = typeof window !== 'undefined' && window.parent !== window ? window.parent.location.pathname : window.location.pathname;
+    const slug = selectionUrl.trim() || pathnameFallback || '/';
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-      const remaining = getPagesForCurrentUrl();
-      if (remaining.length === 0) {
+      if (editingPageId) {
+        await updatePageMutation.mutateAsync({
+          pageId: editingPageId,
+          payload: {
+            name: trimmed,
+            slug,
+            description: pageDescription.trim() || undefined,
+            status: 'active',
+          },
+        });
+        setEditingPageId(null);
+        queryClient.invalidateQueries({ queryKey: CHECK_SLUG_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: PAGES_LIST_QUERY_KEY });
         refreshOverview();
-      } else if (view === 'taggedPagesDetailView') {
-        setView('taggedPagesDetailView');
+      } else {
+        const currentHref = typeof window !== 'undefined' && window.parent !== window ? window.parent.location.href : window.location.href;
+        const urlToStore = selectionUrl.trim() || currentHref;
+        await createPageMutation.mutateAsync({
+          name: trimmed,
+          slug,
+          description: pageDescription.trim() || undefined,
+        });
+        const key = STORAGE_KEY;
+        const raw = localStorage.getItem(key) || '[]';
+        const list: { pageName: string; url: string }[] = JSON.parse(raw);
+        list.push({ pageName: trimmed, url: urlToStore });
+        localStorage.setItem(key, JSON.stringify(list));
+        queryClient.invalidateQueries({ queryKey: CHECK_SLUG_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: PAGES_LIST_QUERY_KEY });
       }
     } catch {
-      // ignore
+      // Error already logged by mutation; keep form open
     }
   };
 
-  const filteredPages = getPagesForCurrentUrl().filter((p) =>
-    (p.pageName || '').toLowerCase().includes(searchQuery.toLowerCase().trim())
-  );
+  const handleDeletePage = async (pageId: string) => {
+    if (!window.confirm('Delete this page?')) return;
+    try {
+      await deletePageMutation.mutateAsync(pageId);
+      queryClient.invalidateQueries({ queryKey: CHECK_SLUG_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: PAGES_LIST_QUERY_KEY });
+    } catch {
+      // Error already logged by mutation
+    }
+  };
+
 
   const col = { display: 'flex', flexDirection: 'column' as const, flex: 1, gap: '1rem' };
+
+  if (isMinimized) {
+    return (
+      <div style={{ ...editorStyles.panel, padding: '0.5rem' }}>
+        <div style={editorStyles.panelHeader}>
+          <h2 style={{ ...editorStyles.headerTitle, fontSize: '1.125rem' }}>Tag Page</h2>
+          <div style={{ display: 'flex', gap: '0.25rem' }}>
+            <EditorButton variant="icon" title="Expand" onClick={() => setIsMinimized(false)}>
+              <iconify-icon icon="mdi:plus" style={{ fontSize: '1.25rem', color: '#64748b' }} />
+            </EditorButton>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={editorStyles.panel}>
       <div style={editorStyles.panelHeader}>
         <h2 style={{ ...editorStyles.headerTitle, fontSize: '1.125rem' }}>Tag Page</h2>
         <div style={{ display: 'flex', gap: '0.25rem' }}>
-          <button type="button" style={editorStyles.iconBtn} title="Menu">
-            <iconify-icon icon="mdi:dots-horizontal" style={{ fontSize: '1.125rem' }} />
-          </button>
-          <button type="button" style={editorStyles.iconBtn} title="Minimize" onClick={() => onMessage({ type: 'CANCEL' })}>
+          <EditorButton variant="icon" title="Minimize" onClick={() => setIsMinimized(true)}>
             <iconify-icon icon="mdi:window-minimize" style={{ fontSize: '1.125rem' }} />
-          </button>
+          </EditorButton>
         </div>
       </div>
       <div style={editorStyles.panelBody}>
-        {view === 'overviewTagged' && (
+        {slugCheckLoading && (view === 'overviewTagged' || view === 'overviewUntagged') && (
+          <div style={{ ...col, alignItems: 'center', justifyContent: 'center', padding: '2rem', color: '#64748b', fontSize: '0.875rem' }}>
+            <iconify-icon icon="mdi:loading" className="editor-spinner" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }} />
+            <span>Checking page…</span>
+          </div>
+        )}
+        {!slugCheckLoading && view === 'overviewTagged' && (
           <div style={col}>
             <div style={editorStyles.sectionLabel}>PAGES OVERVIEW</div>
             <div style={{ ...editorStyles.card, marginBottom: '1rem', cursor: 'pointer' }} onClick={showTaggedDetailView}>
@@ -203,9 +264,9 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
                 <iconify-icon icon="mdi:chevron-right" style={{ color: '#94a3b8', fontSize: '1.25rem', flexShrink: 0 }} />
               </div>
             </div>
-            <button type="button" style={{ ...editorStyles.primaryBtn, width: '100%' }} onClick={showTagPageForm}>
+            <EditorButton variant="primary" style={{ width: '100%' }} onClick={showTagPageForm}>
               Tag Page
-            </button>
+            </EditorButton>
           </div>
         )}
 
@@ -222,13 +283,13 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
               <iconify-icon icon="mdi:arrow-left" /> Back to overview
             </a>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-              <span style={{ ...editorStyles.badge, background: '#3b82f6', color: '#fff', minWidth: '1.5rem', height: '1.5rem' }}>{filteredPages.length}</span>
+              <span style={{ ...editorStyles.badge, background: '#3b82f6', color: '#fff', minWidth: '1.5rem', height: '1.5rem' }}>{pagesListLoading ? '…' : filteredPagesList.length}</span>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>Current URL</h3>
             </div>
             <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem' }}>List of tagged Pages on this URL</p>
             <div style={editorStyles.searchWrap}>
               <iconify-icon icon="mdi:magnify" style={editorStyles.searchIcon} />
-              <input
+              <EditorInput
                 type="text"
                 placeholder="Search Pages"
                 value={searchQuery}
@@ -236,31 +297,38 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
                 style={editorStyles.searchInput}
               />
               {searchQuery && (
-                <button type="button" style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => setSearchQuery('')}>
+                <EditorButton variant="ghost" style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} onClick={() => setSearchQuery('')}>
                   Clear
-                </button>
+                </EditorButton>
               )}
             </div>
-            {filteredPages.map((p) => (
-              <div key={p.pageName} style={{ ...editorStyles.pageItem, marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#1e293b', flex: 1 }}>{p.pageName || 'Unnamed'}</span>
-                <div style={{ display: 'flex', gap: '0.25rem' }}>
-                  <button type="button" style={editorStyles.iconBtnSm} title="Edit" onClick={() => onMessage({ type: 'EDIT_TAG_PAGE', payload: { pageName: p.pageName } })}>
-                    <iconify-icon icon="mdi:pencil" />
-                  </button>
-                  <button type="button" style={editorStyles.iconBtnSm} title="Delete" onClick={() => handleDeletePage(p.pageName)}>
-                    <iconify-icon icon="mdi:delete-outline" />
-                  </button>
-                </div>
+            {pagesListLoading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', color: '#64748b', fontSize: '0.875rem' }}>
+                <iconify-icon icon="mdi:loading" className="editor-spinner" style={{ fontSize: '1.25rem', marginRight: '0.5rem' }} />
+                <span>Loading pages…</span>
               </div>
-            ))}
-            <button type="button" style={{ ...editorStyles.primaryBtn, width: '100%', marginTop: '1rem' }} onClick={showTagPageForm}>
+            ) : (
+              filteredPagesList.map((p) => (
+                <div key={p.page_id} style={{ ...editorStyles.pageItem, marginBottom: '0.5rem', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#1e293b', flex: 1 }}>{p.name || 'Unnamed'}</span>
+                  <div style={{ display: 'flex', gap: '0.25rem' }}>
+                    <EditorButton variant="iconSm" title="Edit" onClick={() => showEditPageForm(p)}>
+                      <iconify-icon icon="mdi:pencil" />
+                    </EditorButton>
+                    <EditorButton variant="iconSm" title="Delete" onClick={() => handleDeletePage(p.page_id)}>
+                      <iconify-icon icon="mdi:delete-outline" />
+                    </EditorButton>
+                  </div>
+                </div>
+              ))
+            )}
+            <EditorButton variant="primary" style={{ width: '100%', marginTop: '1rem' }} onClick={showTagPageForm}>
               Tag Page
-            </button>
+            </EditorButton>
           </div>
         )}
 
-        {view === 'overviewUntagged' && (
+        {!slugCheckLoading && view === 'overviewUntagged' && (
           <div style={{ ...col, textAlign: 'center', padding: '2.5rem 1.5rem' }}>
             <div style={{ ...editorStyles.emptyStateIcon, width: '6rem', height: '6rem', marginBottom: '1.5rem', background: 'linear-gradient(to bottom right, #dbeafe, #bfdbfe, #93c5fd)' }}>
               <iconify-icon icon="mdi:tag-plus" style={{ fontSize: '3rem', color: '#3b82f6' }} />
@@ -269,9 +337,9 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
             <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '2rem', lineHeight: 1.625, maxWidth: '20rem', margin: '0 auto 2rem' }}>
               Start by first tagging this page and then features to get going.
             </p>
-            <button type="button" style={{ ...editorStyles.primaryBtn, width: '100%', maxWidth: '20rem', margin: '0 auto' }} onClick={showTagPageForm}>
+            <EditorButton variant="primary" style={{ width: '100%', maxWidth: '20rem', margin: '0 auto' }} onClick={showTagPageForm}>
               Tag Page
-            </button>
+            </EditorButton>
           </div>
         )}
 
@@ -282,6 +350,7 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
               style={editorStyles.link}
               onClick={(e) => {
                 e.preventDefault();
+                setEditingPageId(null);
                 refreshOverview();
                 setShowFormActions(false);
               }}
@@ -289,28 +358,29 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
               <iconify-icon icon="mdi:arrow-left" /> Back
             </a>
             <div>
-              <div style={editorStyles.sectionLabel}>PAGE SETUP</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                <label style={editorStyles.radioLabel}>
-                  <input type="radio" name="pageSetup" value="create" checked={pageSetup === 'create'} onChange={() => setPageSetup('create')} style={{ accentColor: '#3b82f6' }} />
-                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Create New Page</span>
-                </label>
-                <label style={editorStyles.radioLabel}>
-                  <input type="radio" name="pageSetup" value="merge" checked={pageSetup === 'merge'} onChange={() => setPageSetup('merge')} style={{ accentColor: '#3b82f6' }} />
-                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Merge with Existing</span>
-                </label>
-              </div>
+              <div style={editorStyles.sectionLabel}>{editingPageId ? 'EDIT PAGE' : 'PAGE SETUP'}</div>
+              {!editingPageId && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                  <label style={editorStyles.radioLabel}>
+                    <input type="radio" name="pageSetup" value="create" checked={pageSetup === 'create'} onChange={() => setPageSetup('create')} style={{ accentColor: '#3b82f6' }} />
+                    <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Create New Page</span>
+                  </label>
+                  <label style={editorStyles.radioLabel}>
+                    <input type="radio" name="pageSetup" value="merge" checked={pageSetup === 'merge'} onChange={() => setPageSetup('merge')} style={{ accentColor: '#3b82f6' }} />
+                    <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Merge with Existing</span>
+                  </label>
+                </div>
+              )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>
                     Page Name <span style={{ color: '#ef4444' }}>*</span>
                   </label>
-                  <input
+                  <EditorInput
                     type="text"
                     placeholder="Enter page name"
                     value={pageName}
                     onInput={(e) => setPageName((e.target as HTMLInputElement).value)}
-                    style={editorStyles.input}
                   />
                   {pageNameError && (
                     <p style={{ fontSize: '0.875rem', color: '#dc2626', marginTop: '0.375rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -320,11 +390,11 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Description</label>
-                  <textarea
+                  <EditorTextarea
                     placeholder="Click to add description"
                     value={pageDescription}
                     onInput={(e) => setPageDescription((e.target as HTMLTextAreaElement).value)}
-                    style={{ ...editorStyles.textarea, minHeight: '5rem' }}
+                    minHeight="5rem"
                   />
                 </div>
               </div>
@@ -338,9 +408,9 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                 <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>Include Rule 1</span>
-                <button type="button" style={editorStyles.iconBtnSm}>
+                <EditorButton variant="iconSm">
                   <iconify-icon icon="mdi:delete-outline" />
-                </button>
+                </EditorButton>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
                 <label style={editorStyles.radioLabel}>
@@ -358,7 +428,7 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Selection URL</label>
-                <input type="text" placeholder="e.g. //*/path/to/page" value={selectionUrl} onInput={(e) => setSelectionUrl((e.target as HTMLInputElement).value)} style={editorStyles.input} />
+                <EditorInput type="text" placeholder="e.g. //*/path/to/page" value={selectionUrl} onInput={(e) => setSelectionUrl((e.target as HTMLInputElement).value)} />
               </div>
             </div>
           </div>
@@ -366,12 +436,28 @@ export function TagPageEditor({ onMessage, tagPageSavedAckCounter }: TagPageEdit
       </div>
       {showFormActions && (
         <div style={editorStyles.footer}>
-          <button type="button" style={editorStyles.secondaryBtn} onClick={refreshOverview}>
+          <EditorButton
+            variant="secondary"
+            onClick={() => {
+              setEditingPageId(null);
+              refreshOverview();
+            }}
+            disabled={saving}
+          >
             Cancel
-          </button>
-          <button type="button" style={{ ...editorStyles.primaryBtn, flex: 1 }} onClick={handleSave}>
-            Save
-          </button>
+          </EditorButton>
+          <EditorButton variant="primary" style={{ flex: 1 }} onClick={handleSave} disabled={saving}>
+            {saving ? (
+              <>
+                <iconify-icon icon="mdi:loading" className="editor-spinner" style={{ fontSize: '1.125rem', marginRight: '0.375rem' }} />
+                {editingPageId ? 'Updating…' : 'Saving…'}
+              </>
+            ) : editingPageId ? (
+              'Update'
+            ) : (
+              'Save'
+            )}
+          </EditorButton>
         </div>
       )}
     </div>

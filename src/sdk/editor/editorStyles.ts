@@ -1,3 +1,6 @@
+/** Font family used across all editor UI */
+export const EDITOR_FONT_FAMILY = "'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif";
+
 /**
  * Editor styles - shared style objects for editor UI (no Tailwind)
  */
@@ -8,6 +11,7 @@ export const editorStyles = {
     gap: '1.5rem',
     maxWidth: '100%',
     minHeight: '100%',
+    fontFamily: EDITOR_FONT_FAMILY,
   },
   header: {
     display: 'flex',
@@ -21,6 +25,7 @@ export const editorStyles = {
     fontWeight: 700,
     color: '#1e293b',
     letterSpacing: '-0.025em',
+    fontFamily: EDITOR_FONT_FAMILY,
   },
   closeBtn: {
     width: '2.25rem',
@@ -69,7 +74,6 @@ export const editorStyles = {
     fontWeight: 600,
     color: '#fff',
     background: 'linear-gradient(to right, #3b82f6, #2563eb)',
-    boxShadow: '0 4px 6px -1px rgba(59,130,246,0.3)',
     border: 'none',
     cursor: 'pointer',
     transition: 'all 0.2s',
@@ -95,6 +99,7 @@ export const editorStyles = {
     fontSize: '0.875rem',
     fontWeight: 600,
     color: '#475569',
+    fontFamily: EDITOR_FONT_FAMILY,
   },
   selectorBox: {
     padding: '0.625rem 1rem',
@@ -136,7 +141,7 @@ export const editorStyles = {
     minHeight: '100px',
     lineHeight: 1.625,
     resize: 'vertical' as const,
-    fontFamily: 'inherit',
+    fontFamily: EDITOR_FONT_FAMILY,
   },
   input: {
     width: '100%',
@@ -146,7 +151,7 @@ export const editorStyles = {
     fontSize: '0.875rem',
     color: '#0f172a',
     background: '#fff',
-    fontFamily: 'inherit',
+    fontFamily: EDITOR_FONT_FAMILY,
   },
   placementGrid: {
     display: 'grid',
@@ -161,7 +166,7 @@ export const editorStyles = {
     cursor: 'pointer',
     transition: 'all 0.2s',
     ...(active
-      ? { background: '#3b82f6', color: '#fff', border: 'none', boxShadow: '0 4px 6px -1px rgba(59,130,246,0.3)' }
+      ? { background: '#3b82f6', color: '#fff', border: 'none' }
       : { background: '#fff', color: '#475569', border: '1px solid #e2e8f0' }),
   }),
   errorBox: {
@@ -219,7 +224,6 @@ export const editorStyles = {
     borderRadius: '1rem',
     padding: '1.25rem',
     border: '1px solid rgba(226,232,240,0.8)',
-    boxShadow: '0 1px 3px 0 rgba(0,0,0,0.05)',
     transition: 'all 0.2s',
   },
   badge: {
@@ -256,7 +260,7 @@ export const editorStyles = {
     position: 'relative' as const,
     background: 'none',
     border: 'none',
-    fontFamily: 'inherit',
+    fontFamily: EDITOR_FONT_FAMILY,
     borderBottom: active ? '2px solid #3b82f6' : '2px solid transparent',
   }),
   heatmapRow: {
@@ -285,7 +289,6 @@ export const editorStyles = {
     height: '1.25rem',
     background: '#fff',
     borderRadius: '9999px',
-    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
     transition: 'all 0.2s',
   }),
   link: {
@@ -299,7 +302,7 @@ export const editorStyles = {
     cursor: 'pointer',
     background: 'none',
     border: 'none',
-    fontFamily: 'inherit',
+    fontFamily: EDITOR_FONT_FAMILY,
   },
   footer: {
     display: 'flex',
@@ -339,7 +342,7 @@ export const editorStyles = {
     fontSize: '0.875rem',
     color: '#0f172a',
     background: '#fff',
-    fontFamily: 'inherit',
+    fontFamily: EDITOR_FONT_FAMILY,
   },
   pageItem: {
     display: 'flex',
@@ -381,7 +384,10 @@ export const editorStyles = {
   },
 } as const;
 
-/** Minimal CSS string for iframe injection (iconify + base) */
+/** Minimal CSS string for iframe injection (iconify + base + font) */
 export const editorStylesCss = `
+* { font-family: ${EDITOR_FONT_FAMILY}; }
 iconify-icon { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; }
+@keyframes editor-spin { to { transform: rotate(360deg); } }
+.editor-spinner { display: inline-block; animation: editor-spin 0.8s linear infinite; }
 `;

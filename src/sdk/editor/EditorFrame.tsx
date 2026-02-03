@@ -1,4 +1,5 @@
 import { render } from 'preact';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GuideEditor } from './components/GuideEditor';
 import { TagPageEditor } from './components/TagPageEditor';
 import { TagFeatureEditor } from './components/TagFeatureEditor';
@@ -6,6 +7,11 @@ import type { EditorMessage, ElementSelectedMessage, ElementInfo } from '../type
 
 // Editor styles (minimal - iconify base only)
 import { editorStylesCss } from './editorStyles';
+
+/** Query client for editor iframe (Tag Page uses React Query mutation inside component) */
+const editorQueryClient = new QueryClient({
+  defaultOptions: { mutations: { retry: 0 } },
+});
 
 /**
  * Editor Frame - Manages isolated editor UI iframe (Preact-based)
@@ -53,7 +59,8 @@ export class EditorFrame {
       border: none;
       border-radius: 16px;
       background: white;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
       z-index: 999999;
       display: none;
       overflow: hidden;
@@ -227,32 +234,28 @@ export class EditorFrame {
 
     const onMessage = (msg: EditorMessage) => this.messageCallback?.(msg);
 
-    if (this.mode === 'tag-page') {
-      render(
-        <TagPageEditor
-          onMessage={onMessage}
-          tagPageSavedAckCounter={this.tagPageSavedAckCounter}
-        />,
-        root
-      );
-    } else if (this.mode === 'tag-feature') {
-      render(
+    const editorContent =
+      this.mode === 'tag-page' ? (
+        <TagPageEditor onMessage={onMessage} />
+      ) : this.mode === 'tag-feature' ? (
         <TagFeatureEditor
           onMessage={onMessage}
           elementSelected={this.elementSelectedState}
           tagFeatureSavedAckCounter={this.tagFeatureSavedAckCounter}
-        />,
-        root
-      );
-    } else {
-      render(
+        />
+      ) : (
         <GuideEditor
           onMessage={onMessage}
           elementSelected={this.elementSelectedState}
-        />,
-        root
+        />
       );
-    }
+
+    render(
+      <QueryClientProvider client={editorQueryClient}>
+        {editorContent}
+      </QueryClientProvider>,
+      root
+    );
   }
 
   /**
@@ -267,7 +270,7 @@ export class EditorFrame {
   <title>Visual Designer Editor</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://code.iconify.design/iconify-icon/3.0.2/iconify-icon.min.js"></script>
-  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%);color:#0f172a;line-height:1.6;height:100%;overflow-y:auto;-webkit-font-smoothing:antialiased}</style>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;color:#0f172a;line-height:1.6;height:100%;overflow-y:auto;-webkit-font-smoothing:antialiased}</style>
   <style>${editorStylesCss}</style>
 </head>
 <body>

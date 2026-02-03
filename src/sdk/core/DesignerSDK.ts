@@ -5,13 +5,11 @@ import { EditorFrame } from '../editor/EditorFrame';
 import { Storage } from '../utils/storage';
 import { getCurrentPage, generateId } from '../utils/dom';
 import { renderSDKOverlays } from '../components/SDKOverlays';
-import { apiClient } from '../api/client';
 import type {
   Guide,
   SDKConfig,
   EditorMessage,
   SaveGuideMessage,
-  SaveTagPageMessage,
   SaveTagFeatureMessage,
   ElementSelectedMessage,
   TaggedFeature,
@@ -188,9 +186,6 @@ export class DesignerSDK {
         this.editorMode.deactivate();
         this.editorFrame.sendClearSelectionAck();
         break;
-      case 'SAVE_TAG_PAGE':
-        this.handleSaveTagPage(message);
-        break;
       case 'SAVE_TAG_FEATURE':
         this.handleSaveTagFeature(message);
         break;
@@ -225,39 +220,6 @@ export class DesignerSDK {
       ...message.guide,
       page: getCurrentPage(),
     });
-  }
-
-  private async handleSaveTagPage(message: SaveTagPageMessage): Promise<void> {
-    const payload = message.payload;
-    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-    const slug =
-      typeof window !== 'undefined'
-        ? `${window.location.hostname}${window.location.pathname}`
-        : '';
-
-    try {
-      await apiClient.post('/pages', {
-        name: payload.pageName,
-        slug,
-        description: payload.description,
-        status: 'active',
-      });
-    } catch (e) {
-      console.warn('[Visual Designer] Failed to create page via API:', e);
-      this.editorFrame.sendTagPageSavedAck();
-      return;
-    }
-
-    const key = 'designerTaggedPages';
-    try {
-      const raw = localStorage.getItem(key) || '[]';
-      const list: { pageName: string; url: string }[] = JSON.parse(raw);
-      list.push({ pageName: payload.pageName, url: currentUrl });
-      localStorage.setItem(key, JSON.stringify(list));
-    } catch {
-      // ignore
-    }
-    this.editorFrame.sendTagPageSavedAck();
   }
 
   private handleSaveTagFeature(message: SaveTagFeatureMessage): void {
