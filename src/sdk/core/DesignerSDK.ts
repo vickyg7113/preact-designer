@@ -5,7 +5,6 @@ import { EditorFrame } from '../editor/EditorFrame';
 import { Storage } from '../utils/storage';
 import { getCurrentPage, generateId } from '../utils/dom';
 import { renderSDKOverlays } from '../components/SDKOverlays';
-import { apiClient } from '../api/client';
 import type {
   Guide,
   SDKConfig,
@@ -224,7 +223,7 @@ export class DesignerSDK {
     });
   }
 
-  private async handleSaveTagFeature(message: SaveTagFeatureMessage): Promise<void> {
+  private handleSaveTagFeature(message: SaveTagFeatureMessage): void {
     const key = 'designerTaggedFeatures';
     const payload = message.payload;
     const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -235,12 +234,6 @@ export class DesignerSDK {
       if ('rules' in payload && Array.isArray(payload.rules) && payload.rules[0]?.selector_type === 'xpath') {
         const exactPayload = payload as ExactMatchFeaturePayload;
         if (!exactPayload.name || !exactPayload.rules[0].selector_value) return;
-
-        try {
-          await apiClient.post<unknown>('/features', exactPayload);
-        } catch (err) {
-          console.warn('[Visual Designer] POST /features failed:', err);
-        }
         list.push({ ...exactPayload, url: currentUrl });
       } else {
         const p = payload as { featureName?: string; selector?: string; elementInfo?: unknown };

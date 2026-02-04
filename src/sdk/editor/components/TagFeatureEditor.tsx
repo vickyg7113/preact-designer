@@ -3,6 +3,7 @@ import type { ElementInfo, EditorMessage, ExactMatchFeaturePayload } from '../..
 import { editorStyles } from '../editorStyles';
 import { EditorButton } from './EditorButton';
 import { EditorInput, EditorTextarea } from './EditorInput';
+import { useCreateFeatureMutation } from '../../hooks/useCreateFeatureMutation';
 
 const FEATURES_STORAGE_KEY = 'designerTaggedFeatures';
 const HEATMAP_STORAGE_KEY = 'designerHeatmapEnabled';
@@ -57,6 +58,9 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
   const [featureMatch, setFeatureMatch] = useState<'suggested' | 'ruleBuilder' | 'customCss' | 'exact'>('suggested');
   const [description, setDescription] = useState('');
   const [xpath, setXpath] = useState('');
+
+  const createFeatureMutation = useCreateFeatureMutation();
+  const saving = createFeatureMutation.isPending;
 
   const refreshTaggedCount = () => {
     setTaggedCount(getFeaturesForCurrentUrl().length);
@@ -123,7 +127,7 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '');
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmed = featureName.trim();
     if (!trimmed) {
       setFeatureNameError(true);
@@ -151,8 +155,12 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
           },
         ],
       };
-      console.log('Tag Feature payload (exact match):', payload);
-      onMessage({ type: 'SAVE_TAG_FEATURE', payload });
+      try {
+        await createFeatureMutation.mutateAsync(payload);
+        onMessage({ type: 'SAVE_TAG_FEATURE', payload });
+      } catch {
+        // Error handled by mutation; keep form open
+      }
       return;
     }
 
@@ -400,8 +408,8 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
               <EditorButton variant="secondary" onClick={showOverview}>
                 Cancel
               </EditorButton>
-              <EditorButton variant="primary" style={{ flex: 1 }} onClick={handleSave}>
-                Save
+              <EditorButton variant="primary" style={{ flex: 1 }} onClick={handleSave} disabled={saving}>
+                {saving ? 'Saving...' : 'Save'}
               </EditorButton>
             </div>
           </div>
