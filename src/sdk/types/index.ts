@@ -77,6 +77,24 @@ export interface TagFeaturePayload {
   elementInfo?: ElementInfo;
 }
 
+/** Rule for exact match (XPath) */
+export interface ExactMatchRule {
+  selector_type: 'xpath';
+  selector_value: string;
+  match_mode: 'exact';
+  priority: number;
+  is_active: boolean;
+}
+
+/** Payload when Feature element matching = Exact match */
+export interface ExactMatchFeaturePayload {
+  name: string;
+  slug: string;
+  description: string;
+  status: 'active' | 'inactive';
+  rules: ExactMatchRule[];
+}
+
 /** Tagged feature stored in localStorage */
 export interface TaggedFeature {
   id: string;
@@ -114,6 +132,7 @@ export interface ElementSelectedMessage {
   type: 'ELEMENT_SELECTED';
   selector: string;
   elementInfo: ElementInfo;
+  xpath?: string;
 }
 
 /**
@@ -177,7 +196,7 @@ export interface SaveTagPageMessage {
 
 export interface SaveTagFeatureMessage {
   type: 'SAVE_TAG_FEATURE';
-  payload: TagFeaturePayload;
+  payload: TagFeaturePayload | ExactMatchFeaturePayload;
 }
 
 export interface EditTagPageMessage {

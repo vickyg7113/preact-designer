@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'preact/hooks';
-import type { ElementInfo, EditorMessage } from '../../types';
+import type { ElementInfo, EditorMessage, ExactMatchFeaturePayload } from '../../types';
 import { editorStyles } from '../editorStyles';
 import { EditorButton } from './EditorButton';
-import { EditorInput } from './EditorInput';
+import { EditorInput, EditorTextarea } from './EditorInput';
 
 const FEATURES_STORAGE_KEY = 'designerTaggedFeatures';
 const HEATMAP_STORAGE_KEY = 'designerHeatmapEnabled';
@@ -38,7 +38,7 @@ function getFeaturesForCurrentUrl(): unknown[] {
 
 export interface TagFeatureEditorProps {
   onMessage: (msg: EditorMessage) => void;
-  elementSelected?: { selector: string; elementInfo: ElementInfo } | null;
+  elementSelected?: { selector: string; elementInfo: ElementInfo; xpath?: string } | null;
   tagFeatureSavedAckCounter?: number;
 }
 
@@ -53,6 +53,10 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
   const [isMinimized, setIsMinimized] = useState(false);
   const [selectionModeActive, setSelectionModeActive] = useState(false);
   const [elementInfoExpanded, setElementInfoExpanded] = useState(false);
+  const [featureSetup, setFeatureSetup] = useState<'create' | 'merge'>('create');
+  const [featureMatch, setFeatureMatch] = useState<'suggested' | 'ruleBuilder' | 'customCss' | 'exact'>('suggested');
+  const [description, setDescription] = useState('');
+  const [xpath, setXpath] = useState('');
 
   const refreshTaggedCount = () => {
     setTaggedCount(getFeaturesForCurrentUrl().length);
@@ -62,6 +66,7 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
     setShowForm(false);
     setSelector('');
     setElementInfo(null);
+    setXpath('');
     setFeatureName('');
     setFeatureNameError(false);
     refreshTaggedCount();
@@ -84,9 +89,12 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
     if (elementSelected) {
       setSelector(elementSelected.selector);
       setElementInfo(elementSelected.elementInfo);
+      setXpath(elementSelected.xpath || '');
       setShowForm(true);
       setFeatureName('');
       setFeatureNameError(false);
+      setFeatureSetup('create');
+      setDescription('');
     } else {
       showOverview();
     }
@@ -109,6 +117,12 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
     onMessage({ type: 'HEATMAP_TOGGLE', enabled: next });
   };
 
+  const slugFromName = (name: string) =>
+    name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
+
   const handleSave = () => {
     const trimmed = featureName.trim();
     if (!trimmed) {
@@ -116,11 +130,38 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
       return;
     }
     setFeatureNameError(false);
+
+    const effectiveSelector = selector || elementSelected?.selector || '';
+    const effectiveXpath = xpath || elementSelected?.xpath || '';
+
+    if (featureMatch === 'exact') {
+      if (!effectiveXpath) return;
+      const payload: ExactMatchFeaturePayload = {
+        name: trimmed,
+        slug: slugFromName(trimmed),
+        description: description.trim() || '',
+        status: 'active',
+        rules: [
+          {
+            selector_type: 'xpath',
+            selector_value: effectiveXpath,
+            match_mode: 'exact',
+            priority: 10,
+            is_active: true,
+          },
+        ],
+      };
+      console.log('Tag Feature payload (exact match):', payload);
+      onMessage({ type: 'SAVE_TAG_FEATURE', payload });
+      return;
+    }
+
     onMessage({
       type: 'SAVE_TAG_FEATURE',
       payload: {
         featureName: trimmed,
-        selector,
+        description: description.trim() || undefined,
+        selector: effectiveSelector,
         elementInfo: elementInfo || undefined,
       },
     });
@@ -237,78 +278,129 @@ export function TagFeatureEditor({ onMessage, elementSelected, tagFeatureSavedAc
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
-            <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <a href="#" style={editorStyles.link} onClick={(e) => { e.preventDefault(); showOverview(); }}>
-                <iconify-icon icon="mdi:arrow-left" /> Back to overview
-              </a>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1e293b' }}>Tag Feature</h3>
-              <div style={editorStyles.section}>
-                <label style={editorStyles.label}>Selector</label>
-                <div style={editorStyles.selectorBox}>{selector || '-'}</div>
-              </div>
-              {elementInfo && (
-                <div style={editorStyles.section}>
-                  <button
-                    type="button"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                      padding: 0,
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      textAlign: 'left',
-                    }}
-                    onClick={() => setElementInfoExpanded((e) => !e)}
-                    aria-expanded={elementInfoExpanded}
-                  >
-                    <label style={{ ...editorStyles.label, marginBottom: 0, cursor: 'pointer' }}>Element info</label>
-                    <iconify-icon
-                      icon={elementInfoExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}
-                      style={{ fontSize: '1.25rem', color: '#64748b', flexShrink: 0 }}
-                    />
-                  </button>
-                  {elementInfoExpanded && (
-                    <div style={{ ...editorStyles.elementInfo, marginTop: '0.5rem' }}>
-                      <div style={editorStyles.elementInfoText}>{formatElementInfo(elementInfo)}</div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <a href="#" style={editorStyles.link} onClick={(e) => { e.preventDefault(); showOverview(); }}>
+                  <iconify-icon icon="mdi:arrow-left" /> Back
+                </a>
+
+                <div>
+                  <div style={editorStyles.sectionLabel}>FEATURE SETUP</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    <label style={editorStyles.radioLabel}>
+                      <input type="radio" name="featureSetup" checked={featureSetup === 'create'} onChange={() => setFeatureSetup('create')} style={{ accentColor: '#3b82f6' }} />
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Create new Feature</span>
+                    </label>
+                    <label style={editorStyles.radioLabel}>
+                      <input type="radio" name="featureSetup" checked={featureSetup === 'merge'} onChange={() => setFeatureSetup('merge')} style={{ accentColor: '#3b82f6' }} />
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Merge with existing</span>
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>
+                        Feature name <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <EditorInput
+                        type="text"
+                        placeholder="e.g. report-designer-data-table-grid Link"
+                        value={featureName}
+                        onInput={(e) => setFeatureName((e.target as HTMLInputElement).value)}
+                      />
+                      {featureNameError && (
+                        <p style={{ fontSize: '0.875rem', color: '#dc2626', marginTop: '0.375rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <iconify-icon icon="mdi:alert-circle" /> Please enter a feature name.
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Description</label>
+                      <EditorTextarea
+                        placeholder="Describe your Feature"
+                        value={description}
+                        onInput={(e) => setDescription((e.target as HTMLTextAreaElement).value)}
+                        minHeight="5rem"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ ...editorStyles.sectionLabel, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    FEATURE ELEMENT MATCHING
+                    <span style={{ color: '#94a3b8' }} title="Match the element for this feature">
+                      <iconify-icon icon="mdi:information-outline" />
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    <label style={editorStyles.radioLabel}>
+                      <input type="radio" name="featureMatch" checked={featureMatch === 'suggested'} onChange={() => setFeatureMatch('suggested')} style={{ accentColor: '#3b82f6' }} />
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Suggested match</span>
+                    </label>
+                    <label style={editorStyles.radioLabel}>
+                      <input type="radio" name="featureMatch" checked={featureMatch === 'ruleBuilder'} onChange={() => setFeatureMatch('ruleBuilder')} style={{ accentColor: '#3b82f6' }} />
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Rule builder</span>
+                    </label>
+                    <label style={editorStyles.radioLabel}>
+                      <input type="radio" name="featureMatch" checked={featureMatch === 'customCss'} onChange={() => setFeatureMatch('customCss')} style={{ accentColor: '#3b82f6' }} />
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Custom CSS</span>
+                    </label>
+                    <label style={editorStyles.radioLabel}>
+                      <input type="radio" name="featureMatch" checked={featureMatch === 'exact'} onChange={() => setFeatureMatch('exact')} style={{ accentColor: '#3b82f6' }} />
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Exact match</span>
+                    </label>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>
+                      {featureMatch === 'exact' ? 'XPath' : 'Selection'}
+                    </label>
+                    <div style={editorStyles.selectorBox}>
+                      {featureMatch === 'exact'
+                        ? ((elementSelected?.xpath ?? xpath) || '-')
+                        : ((elementSelected?.selector ?? selector) || '-')}
+                    </div>
+                  </div>
+                  {elementInfo && (
+                    <div style={{ marginTop: '1rem' }}>
+                      <button
+                        type="button"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          width: '100%',
+                          padding: 0,
+                          border: 'none',
+                          background: 'none',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          textAlign: 'left',
+                        }}
+                        onClick={() => setElementInfoExpanded((e) => !e)}
+                        aria-expanded={elementInfoExpanded}
+                      >
+                        <label style={{ ...editorStyles.label, marginBottom: 0, cursor: 'pointer' }}>Element info</label>
+                        <iconify-icon
+                          icon={elementInfoExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}
+                          style={{ fontSize: '1.125rem', color: '#64748b', flexShrink: 0 }}
+                        />
+                      </button>
+                      {elementInfoExpanded && (
+                        <div style={{ ...editorStyles.elementInfo, marginTop: '0.5rem' }}>
+                          <div style={editorStyles.elementInfoText}>{formatElementInfo(elementInfo)}</div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
-              <div style={editorStyles.section}>
-                <label style={editorStyles.label}>
-                  Feature Name <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <EditorInput
-                  type="text"
-                  placeholder="Enter feature name"
-                  value={featureName}
-                  onInput={(e) => setFeatureName((e.target as HTMLInputElement).value)}
-                />
-                {featureNameError && (
-                  <p style={{ fontSize: '0.875rem', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <iconify-icon icon="mdi:alert-circle" /> Please enter a feature name.
-                  </p>
-                )}
               </div>
             </div>
+
             <div style={editorStyles.footer}>
               <EditorButton variant="secondary" onClick={showOverview}>
                 Cancel
               </EditorButton>
-              <EditorButton
-                variant="secondary"
-                onClick={() => {
-                  setSelectionModeActive(false);
-                  onMessage({ type: 'CLEAR_SELECTION_CLICKED' });
-                }}
-              >
-                Clear Selection
-              </EditorButton>
-              <EditorButton variant="primary" onClick={handleSave}>
+              <EditorButton variant="primary" style={{ flex: 1 }} onClick={handleSave}>
                 Save
               </EditorButton>
             </div>

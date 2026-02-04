@@ -131,10 +131,12 @@ export class EditorMode {
     this.highlightElement(element);
     const result = SelectorEngine.generateSelector(element);
     const elementInfo = getElementInfo(element);
+    const xpath = SelectorEngine.getXPath(element);
     this.messageCallback?.({
       type: 'ELEMENT_SELECTED',
       selector: result.selector,
       elementInfo,
+      xpath,
     });
   }
 

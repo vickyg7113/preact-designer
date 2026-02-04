@@ -5,6 +5,7 @@ import { EditorFrame } from '../editor/EditorFrame';
 import { Storage } from '../utils/storage';
 import { getCurrentPage, generateId } from '../utils/dom';
 import { renderSDKOverlays } from '../components/SDKOverlays';
+import { apiClient } from '../api/client';
 import type {
   Guide,
   SDKConfig,
@@ -13,6 +14,7 @@ import type {
   SaveTagFeatureMessage,
   ElementSelectedMessage,
   TaggedFeature,
+  ExactMatchFeaturePayload,
   HeatmapToggleMessage,
 } from '../types';
 
@@ -222,23 +224,38 @@ export class DesignerSDK {
     });
   }
 
-  private handleSaveTagFeature(message: SaveTagFeatureMessage): void {
+  private async handleSaveTagFeature(message: SaveTagFeatureMessage): Promise<void> {
     const key = 'designerTaggedFeatures';
     const payload = message.payload;
-    if (!payload.selector || !payload.featureName) return;
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
     try {
       const raw = localStorage.getItem(key) || '[]';
-      const list: TaggedFeature[] = JSON.parse(raw);
-      const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-      const feature: TaggedFeature = {
-        id: generateId(),
-        featureName: payload.featureName,
-        selector: payload.selector,
-        url: currentUrl,
-        elementInfo: payload.elementInfo,
-        createdAt: new Date().toISOString(),
-      };
-      list.push(feature);
+      const list: unknown[] = JSON.parse(raw);
+
+      if ('rules' in payload && Array.isArray(payload.rules) && payload.rules[0]?.selector_type === 'xpath') {
+        const exactPayload = payload as ExactMatchFeaturePayload;
+        if (!exactPayload.name || !exactPayload.rules[0].selector_value) return;
+
+        try {
+          await apiClient.post<unknown>('/features', exactPayload);
+        } catch (err) {
+          console.warn('[Visual Designer] POST /features failed:', err);
+        }
+        list.push({ ...exactPayload, url: currentUrl });
+      } else {
+        const p = payload as { featureName?: string; selector?: string; elementInfo?: unknown };
+        if (!p.selector || !p.featureName) return;
+        const feature: TaggedFeature = {
+          id: generateId(),
+          featureName: p.featureName,
+          selector: p.selector,
+          url: currentUrl,
+          elementInfo: p.elementInfo as TaggedFeature['elementInfo'],
+          createdAt: new Date().toISOString(),
+        };
+        list.push(feature);
+      }
+
       localStorage.setItem(key, JSON.stringify(list));
       this.editorFrame.sendTagFeatureSavedAck();
       this.renderFeatureHeatmap();
@@ -260,7 +277,25 @@ export class DesignerSDK {
   private getTaggedFeatures(): TaggedFeature[] {
     try {
       const raw = localStorage.getItem('designerTaggedFeatures') || '[]';
-      return JSON.parse(raw);
+      const list: unknown[] = JSON.parse(raw);
+      return list
+        .filter((item): item is Record<string, unknown> => item != null && typeof item === 'object')
+        .map((item) => {
+          if ('rules' in item && Array.isArray(item.rules) && item.rules[0] && (item.rules[0] as { selector_type?: string }).selector_type === 'xpath') {
+            const p = item as unknown as ExactMatchFeaturePayload & { url?: string };
+            const xpath = (p.rules[0] as { selector_value: string }).selector_value;
+            return {
+              id: generateId(),
+              featureName: p.name,
+              selector: xpath,
+              url: p.url || '',
+              createdAt: new Date().toISOString(),
+            };
+          }
+          if ('selector' in item && 'featureName' in item) return item as unknown as TaggedFeature;
+          return null;
+        })
+        .filter((f): f is TaggedFeature => f != null);
     } catch {
       return [];
     }

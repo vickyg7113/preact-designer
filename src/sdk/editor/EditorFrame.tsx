@@ -23,7 +23,7 @@ export class EditorFrame {
   private messageCallback: ((message: EditorMessage) => void) | null = null;
   private isReady: boolean = false;
   private mode: string | null = null;
-  private elementSelectedState: { selector: string; elementInfo: ElementInfo } | null = null;
+  private elementSelectedState: { selector: string; elementInfo: ElementInfo; xpath?: string } | null = null;
   private tagPageSavedAckCounter = 0;
   private tagFeatureSavedAckCounter = 0;
   private isDragging: boolean = false;
@@ -140,7 +140,7 @@ export class EditorFrame {
    * Send element selected to editor (updates Preact component props)
    */
   sendElementSelected(message: ElementSelectedMessage): void {
-    this.elementSelectedState = { selector: message.selector, elementInfo: message.elementInfo };
+    this.elementSelectedState = { selector: message.selector, elementInfo: message.elementInfo, xpath: message.xpath };
     this.renderEditorContent();
     this.show();
   }
