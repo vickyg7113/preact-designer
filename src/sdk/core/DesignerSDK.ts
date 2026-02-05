@@ -10,10 +10,9 @@ import type {
   SDKConfig,
   EditorMessage,
   SaveGuideMessage,
-  SaveTagFeatureMessage,
   ElementSelectedMessage,
   TaggedFeature,
-  ExactMatchFeaturePayload,
+  FeatureItem,
   HeatmapToggleMessage,
 } from '../types';
 
@@ -33,6 +32,8 @@ export class DesignerSDK {
   private sdkRoot: HTMLElement | null = null;
   private showLoading = false;
   private loadingFallbackTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Features for heatmap from API (editor sends via FEATURES_FOR_HEATMAP; xpaths from feature rules) */
+  private featuresForHeatmap: TaggedFeature[] = [];
 
   constructor(config: SDKConfig = {}) {
     this.config = config;
@@ -187,11 +188,11 @@ export class DesignerSDK {
         this.editorMode.deactivate();
         this.editorFrame.sendClearSelectionAck();
         break;
-      case 'SAVE_TAG_FEATURE':
-        this.handleSaveTagFeature(message);
-        break;
       case 'HEATMAP_TOGGLE':
         this.handleHeatmapToggle((message as HeatmapToggleMessage).enabled);
+        break;
+      case 'FEATURES_FOR_HEATMAP':
+        this.handleFeaturesForHeatmap((message as { type: 'FEATURES_FOR_HEATMAP'; features: FeatureItem[] }).features);
         break;
       case 'CANCEL':
         this.editorFrame.hide();
@@ -223,40 +224,6 @@ export class DesignerSDK {
     });
   }
 
-  private handleSaveTagFeature(message: SaveTagFeatureMessage): void {
-    const key = 'designerTaggedFeatures';
-    const payload = message.payload;
-    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-    try {
-      const raw = localStorage.getItem(key) || '[]';
-      const list: unknown[] = JSON.parse(raw);
-
-      if ('rules' in payload && Array.isArray(payload.rules) && payload.rules[0]?.selector_type === 'xpath') {
-        const exactPayload = payload as ExactMatchFeaturePayload;
-        if (!exactPayload.name || !exactPayload.rules[0].selector_value) return;
-        list.push({ ...exactPayload, url: currentUrl });
-      } else {
-        const p = payload as { featureName?: string; selector?: string; elementInfo?: unknown };
-        if (!p.selector || !p.featureName) return;
-        const feature: TaggedFeature = {
-          id: generateId(),
-          featureName: p.featureName,
-          selector: p.selector,
-          url: currentUrl,
-          elementInfo: p.elementInfo as TaggedFeature['elementInfo'],
-          createdAt: new Date().toISOString(),
-        };
-        list.push(feature);
-      }
-
-      localStorage.setItem(key, JSON.stringify(list));
-      this.editorFrame.sendTagFeatureSavedAck();
-      this.renderFeatureHeatmap();
-    } catch {
-      // ignore
-    }
-  }
-
   private handleHeatmapToggle(enabled: boolean): void {
     this.heatmapEnabled = enabled;
     try {
@@ -267,31 +234,27 @@ export class DesignerSDK {
     this.renderFeatureHeatmap();
   }
 
+  private handleFeaturesForHeatmap(features: FeatureItem[]): void {
+    this.featuresForHeatmap = features.map((f) => {
+      const xpathRule = f.rules?.find(
+        (r) => r.selector_type === 'xpath' && (r.selector_value ?? '').trim() !== ''
+      );
+      let selector = (xpathRule?.selector_value ?? '').trim();
+      if (selector && selector.startsWith('/body')) {
+        selector = '/html[1]' + selector;
+      }
+      return {
+        id: f.feature_id,
+        featureName: f.name,
+        selector,
+        url: '',
+      };
+    });
+    this.renderFeatureHeatmap();
+  }
+
   private getTaggedFeatures(): TaggedFeature[] {
-    try {
-      const raw = localStorage.getItem('designerTaggedFeatures') || '[]';
-      const list: unknown[] = JSON.parse(raw);
-      return list
-        .filter((item): item is Record<string, unknown> => item != null && typeof item === 'object')
-        .map((item) => {
-          if ('rules' in item && Array.isArray(item.rules) && item.rules[0] && (item.rules[0] as { selector_type?: string }).selector_type === 'xpath') {
-            const p = item as unknown as ExactMatchFeaturePayload & { url?: string };
-            const xpath = (p.rules[0] as { selector_value: string }).selector_value;
-            return {
-              id: generateId(),
-              featureName: p.name,
-              selector: xpath,
-              url: p.url || '',
-              createdAt: new Date().toISOString(),
-            };
-          }
-          if ('selector' in item && 'featureName' in item) return item as unknown as TaggedFeature;
-          return null;
-        })
-        .filter((f): f is TaggedFeature => f != null);
-    } catch {
-      return [];
-    }
+    return this.featuresForHeatmap;
   }
 
   private renderFeatureHeatmap(): void {

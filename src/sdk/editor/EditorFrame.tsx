@@ -25,7 +25,6 @@ export class EditorFrame {
   private mode: string | null = null;
   private elementSelectedState: { selector: string; elementInfo: ElementInfo; xpath?: string } | null = null;
   private tagPageSavedAckCounter = 0;
-  private tagFeatureSavedAckCounter = 0;
   private isDragging: boolean = false;
   private dragStartX: number = 0;
   private dragStartY: number = 0;
@@ -158,11 +157,6 @@ export class EditorFrame {
     this.renderEditorContent();
   }
 
-  sendTagFeatureSavedAck(): void {
-    this.tagFeatureSavedAckCounter += 1;
-    this.renderEditorContent();
-  }
-
   /**
    * Destroy editor frame
    */
@@ -241,7 +235,6 @@ export class EditorFrame {
         <TagFeatureEditor
           onMessage={onMessage}
           elementSelected={this.elementSelectedState}
-          tagFeatureSavedAckCounter={this.tagFeatureSavedAckCounter}
         />
       ) : (
         <GuideEditor
@@ -491,7 +484,6 @@ export class EditorFrame {
     }
 
     // Handle specific message types (hide editor on cancel or after save)
-    // SAVE_TAG_PAGE / SAVE_TAG_FEATURE: do NOT hide - keep panel open so user can tag more
     if (message.type === 'CANCEL' || message.type === 'GUIDE_SAVED') {
       this.hide();
     }

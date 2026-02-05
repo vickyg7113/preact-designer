@@ -14,17 +14,14 @@ interface FeatureHeatmapOverlayProps {
 }
 
 export function FeatureHeatmapOverlay({ feature, color, rect }: FeatureHeatmapOverlayProps) {
-  const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-  const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-
   return (
     <div
       className="designer-feature-heatmap-overlay"
       title={feature.featureName}
       style={{
-        position: 'absolute',
-        left: rect.left + scrollX,
-        top: rect.top + scrollY,
+        position: 'fixed',
+        left: rect.left,
+        top: rect.top,
         width: rect.width,
         height: rect.height,
         backgroundColor: color,

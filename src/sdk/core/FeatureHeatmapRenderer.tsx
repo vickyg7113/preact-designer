@@ -4,20 +4,9 @@ import { SelectorEngine } from './SelectorEngine';
 import { FeatureHeatmapOverlay, HEATMAP_COLORS } from '../components/FeatureHeatmapOverlay';
 import { SDK_STYLES } from '../styles/constants';
 
-function normalizeUrl(url: string): string {
-  return (url || '').replace(/^https?:\/\//i, '').replace(/\/$/, '').trim() || '';
-}
-
-function getCurrentUrl(): string {
-  try {
-    return window.location.href || '';
-  } catch {
-    return '';
-  }
-}
-
 /**
- * Feature Heatmap Renderer - Renders colored overlays on tagged features using Preact
+ * Feature Heatmap Renderer - Renders colored overlays on elements matching feature xpaths.
+ * Uses all features with an xpath; highlights wherever that xpath matches on this page (no URL filter).
  */
 export class FeatureHeatmapRenderer {
   private container: HTMLElement | null = null;
@@ -28,16 +17,12 @@ export class FeatureHeatmapRenderer {
     this.clear();
     if (!enabled || features.length === 0) return;
 
-    const currentUrl = getCurrentUrl();
-    const normalized = normalizeUrl(currentUrl);
-    const pageFeatures = features.filter((f) => f.url && normalizeUrl(f.url) === normalized);
-
-    if (pageFeatures.length === 0) return;
+    const featuresWithSelector = features.filter((f) => (f.selector || '').trim() !== '');
 
     this.ensureContainer();
     if (!this.container) return;
 
-    const overlays = pageFeatures
+    const overlays = featuresWithSelector
       .map((feature, index) => {
         const el = SelectorEngine.findElement(feature.selector);
         if (!el) return null;
@@ -47,15 +32,17 @@ export class FeatureHeatmapRenderer {
       })
       .filter(Boolean) as { feature: TaggedFeature; rect: DOMRect; color: string }[];
 
+    if (overlays.length === 0) return;
+
     render(
       <div
         id="designer-feature-heatmap-container"
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
-          width: '100%',
-          height: '100%',
+          width: '100vw',
+          height: '100vh',
           pointerEvents: 'none',
           zIndex: SDK_STYLES.zIndex.overlay - 1,
         }}

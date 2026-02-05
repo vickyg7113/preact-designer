@@ -77,13 +77,28 @@ export interface TagFeaturePayload {
   elementInfo?: ElementInfo;
 }
 
-/** Rule for exact match (XPath) */
+/** Rule for exact match (XPath) - used in create/update payload */
 export interface ExactMatchRule {
   selector_type: 'xpath';
   selector_value: string;
   match_mode: 'exact';
   priority: number;
   is_active: boolean;
+}
+
+/** Rule as returned by GET /features API */
+export interface FeatureRule {
+  rule_id?: string;
+  feature_id?: string;
+  selector_type: string;
+  selector_value: string;
+  match_mode: string;
+  priority: number;
+  is_active: boolean;
+  created_at?: string | null;
+  created_by?: string | null;
+  updated_at?: string | null;
+  updated_by?: string | null;
 }
 
 /** Payload when Feature element matching = Exact match */
@@ -95,14 +110,30 @@ export interface ExactMatchFeaturePayload {
   rules: ExactMatchRule[];
 }
 
-/** Tagged feature stored in localStorage */
+/** Feature item from GET /features API */
+export interface FeatureItem {
+  feature_id: string;
+  product_id: string | null;
+  area_id: string | null;
+  name: string;
+  slug: string;
+  description: string | null;
+  status: string;
+  rules?: FeatureRule[];
+  created_at?: string;
+  created_by?: string;
+  updated_at?: string;
+  updated_by?: string;
+}
+
+/** Tagged feature (legacy / heatmap shape) */
 export interface TaggedFeature {
   id: string;
   featureName: string;
   selector: string;
   url: string;
   elementInfo?: ElementInfo;
-  createdAt: string;
+  createdAt?: string;
 }
 
 /**
@@ -111,8 +142,6 @@ export interface TaggedFeature {
 export type EditorMessageType =
   | 'ELEMENT_SELECTED'
   | 'SAVE_GUIDE'
-  | 'SAVE_TAG_PAGE'
-  | 'SAVE_TAG_FEATURE'
   | 'EDIT_TAG_PAGE'
   | 'TAG_FEATURE_CLICKED'
   | 'ACTIVATE_SELECTOR'
@@ -123,7 +152,7 @@ export type EditorMessageType =
   | 'GUIDE_SAVED'
   | 'EXIT_EDITOR_MODE'
   | 'HEATMAP_TOGGLE'
-  | 'TAG_FEATURE_SAVED_ACK';
+  | 'FEATURES_FOR_HEATMAP';
 
 /**
  * Messages sent from SDK to Editor iframe
@@ -185,18 +214,9 @@ export interface HeatmapToggleMessage {
   enabled: boolean;
 }
 
-export interface TagFeatureSavedAckMessage {
-  type: 'TAG_FEATURE_SAVED_ACK';
-}
-
-export interface SaveTagPageMessage {
-  type: 'SAVE_TAG_PAGE';
-  payload: TagPagePayload;
-}
-
-export interface SaveTagFeatureMessage {
-  type: 'SAVE_TAG_FEATURE';
-  payload: TagFeaturePayload | ExactMatchFeaturePayload;
+export interface FeaturesForHeatmapMessage {
+  type: 'FEATURES_FOR_HEATMAP';
+  features: FeatureItem[];
 }
 
 export interface EditTagPageMessage {
@@ -210,15 +230,13 @@ export interface EditTagPageMessage {
 export type EditorMessage =
   | ElementSelectedMessage
   | SaveGuideMessage
-  | SaveTagPageMessage
-  | SaveTagFeatureMessage
+  | FeaturesForHeatmapMessage
   | EditTagPageMessage
   | TagFeatureClickMessage
   | ActivateSelectorMessage
   | ClearSelectionClickMessage
   | ClearSelectionAckMessage
   | TagPageSavedAckMessage
-  | TagFeatureSavedAckMessage
   | HeatmapToggleMessage
   | CancelMessage
   | EditorReadyMessage
