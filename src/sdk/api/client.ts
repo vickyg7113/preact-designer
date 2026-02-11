@@ -1,7 +1,7 @@
 /**
  * API client for Visual Designer backend
  * Base URL: https://devgw.revgain.ai/rg-pex
- * Headers: iud (read from target URL localStorage)
+ * Headers: schema (customer_1001), iud (read from target URL localStorage)
  */
 
 const API_BASE_URL = 'https://devgw.revgain.ai/rg-pex';
@@ -21,11 +21,12 @@ function getIudHeader(): string | null {
 }
 
 /**
- * Build headers for API requests, including iud from localStorage
+ * Build headers for API requests, including iud from localStorage and schema
  */
 function buildHeaders(extraHeaders?: Record<string, string>): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    schema: 'customer_1001',
     ...extraHeaders,
   };
 

@@ -10,8 +10,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/sdk/index.ts'),
-      name: 'VisualDesigner',
-      fileName: 'visual-designer',
+      name: 'Revgain',
+      fileName: 'revgain',
       formats: ['es', 'umd'],
     },
     outDir: 'dist/sdk',

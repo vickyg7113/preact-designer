@@ -24,6 +24,78 @@ export interface GuideTargeting {
 }
 
 /**
+ * Template nested in GET /guides?guide_id= response (data.templates / data.steps)
+ */
+export interface GuideTemplateNested {
+  template_id: string;
+  title: string;
+  subtitle: string;
+  content: string;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  template_key: string;
+}
+
+/**
+ * Template step/map item in GET /guides?guide_id= response
+ */
+export interface GuideTemplateMapItem {
+  map_id: string;
+  template_id: string;
+  template: GuideTemplateNested;
+  step_order: number;
+  url: string | null;
+  x_path: string | null;
+  is_active: boolean;
+}
+
+/**
+ * GET /guides?guide_id= response data
+ */
+export interface GuideByIdData {
+  guide_id: string;
+  guide_name: string;
+  description: string | null;
+  target_segment: string | null;
+  guide_category: string | null;
+  target_page: string | null;
+  type: string;
+  status: string;
+  priority: number;
+  created_at: string;
+  updated_at: string;
+  updated_by: string | null;
+  templates: GuideTemplateMapItem[];
+  steps: GuideTemplateMapItem[];
+}
+
+export interface GuideByIdResponse {
+  status: string;
+  message: string;
+  data: GuideByIdData;
+}
+
+/** Payload for PUT /guides/:guide_id (update guide) */
+export interface GuideUpdatePayload {
+  guide_name: string;
+  description: string | null;
+  target_segment: string | null;
+  guide_category: string | null;
+  target_page: string | null;
+  type: string;
+  status: string;
+  priority: number;
+  templates: Array<{
+    template_id: string;
+    step_order: number;
+    url: string | null;
+    x_path: string | null;
+  }>;
+}
+
+/**
  * Storage structure
  */
 export interface StorageData {
@@ -254,9 +326,44 @@ export interface CreatePagePayload {
  * SDK configuration options
  */
 export interface SDKConfig {
+  /** RevGain API Key (Required for Analytics) */
+  apiKey?: string;
+  /** Analytics API Host (Optional) */
+  apiHost?: string;
+  /** Whether to automatically capture user interactions (Default: true) */
+  autoCapture?: boolean;
+  /** Whether to automatically track page views (Default: true) */
+  autoPageViews?: boolean;
+  /** Events per batch (Default: 50) */
+  batchSize?: number;
+  /** Batch interval in seconds (Default: 10) */
+  batchInterval?: number;
+  /** Storage type for persistence (Default: localStorage) */
+  persistence?: 'localStorage' | 'sessionStorage' | 'memory';
+  /** Session timeout in minutes (Default: 30) */
+  sessionTimeout?: number;
+  /** Privacy configuration */
+  privacyConfig?: {
+    maskInputs?: boolean;
+    maskTextContent?: boolean;
+    sensitiveSelectors?: string[];
+  };
+  /** Visitor IDs to never track */
+  doNotProcess?: string[];
+  /** Require consent before tracking (Default: false) */
+  requireConsent?: boolean;
+  /** Enable debug logging */
+  debug?: boolean;
+
+  // Designer properties
   storageKey?: string;
   editorMode?: boolean;
   apiEndpoint?: string;
   onGuideSaved?: (guide: Guide) => void;
   onGuideDismissed?: (guideId: string) => void;
+  /** Guide ID (e.g. from URL); SDK also sets this from guide_id when present in URL */
+  guideId?: string | null;
+  /** Template ID (e.g. from URL); SDK also sets this from template_id when present in URL */
+  templateId?: string | null;
 }
+

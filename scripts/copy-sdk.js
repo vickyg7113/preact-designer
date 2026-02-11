@@ -9,11 +9,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 
 const srcDir = join(root, 'dist', 'sdk');
-const destDir = join(root, 'cdn', 'visual-designer', 'v1');
+const destDir = join(root, 'cdn', 'revgain', 'v1');
 
 const files = [
-  ['visual-designer.js', 'visual-designer.js'],
-  ['visual-designer.umd.cjs', 'visual-designer.umd.cjs'],
+  ['revgain.js', 'revgain.js'],
+  ['revgain.umd.cjs', 'revgain.umd.cjs'],
 ];
 
 if (!existsSync(srcDir)) {

@@ -34,9 +34,15 @@ export class DesignerSDK {
   private loadingFallbackTimer: ReturnType<typeof setTimeout> | null = null;
   /** Features for heatmap from API (editor sends via FEATURES_FOR_HEATMAP; xpaths from feature rules) */
   private featuresForHeatmap: TaggedFeature[] = [];
+  /** guide_id from URL or config (in-memory only) */
+  private guideId: string | null = null;
+  /** template_id from URL or config (in-memory only) */
+  private templateId: string | null = null;
 
   constructor(config: SDKConfig = {}) {
     this.config = config;
+    this.guideId = config.guideId ?? null;
+    this.templateId = config.templateId ?? null;
     this.storage = new Storage(config.storageKey);
     this.editorMode = new EditorMode();
     this.guideRenderer = new GuideRenderer();
@@ -77,12 +83,14 @@ export class DesignerSDK {
       mode = localStorage.getItem('designerModeType') || null;
     }
 
-    this.editorFrame.create((msg) => this.handleEditorMessage(msg), mode);
+    this.editorFrame.create((msg) => this.handleEditorMessage(msg), mode, {
+      guideId: this.guideId,
+      templateId: this.templateId,
+    });
 
     const isTagMode = mode === 'tag-page' || mode === 'tag-feature';
-    if (!isTagMode) {
-      this.editorMode.activate((msg) => this.handleEditorMessage(msg));
-    }
+    // For guide mode, do NOT auto-activate selector; user must click Re-Select / Select element.
+    // For tag modes, selector is activated on demand via TAG_FEATURE_CLICKED.
 
     this.ensureSDKRoot();
     // Keep showLoading true - loading overlay stays centered until EDITOR_READY
@@ -162,6 +170,14 @@ export class DesignerSDK {
 
   isEditorModeActive(): boolean {
     return this.isEditorMode;
+  }
+
+  getGuideId(): string | null {
+    return this.guideId;
+  }
+
+  getTemplateId(): string | null {
+    return this.templateId;
   }
 
   private shouldEnableEditorMode(): boolean {

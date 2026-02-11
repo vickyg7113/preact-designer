@@ -23,6 +23,8 @@ export class EditorFrame {
   private messageCallback: ((message: EditorMessage) => void) | null = null;
   private isReady: boolean = false;
   private mode: string | null = null;
+  private guideId: string | null = null;
+  private templateId: string | null = null;
   private elementSelectedState: { selector: string; elementInfo: ElementInfo; xpath?: string } | null = null;
   private tagPageSavedAckCounter = 0;
   private isDragging: boolean = false;
@@ -36,7 +38,11 @@ export class EditorFrame {
   /**
    * Create and show editor iframe
    */
-  create(onMessage: (message: EditorMessage) => void, mode?: string | null): void {
+  create(
+    onMessage: (message: EditorMessage) => void,
+    mode?: string | null,
+    options?: { guideId?: string | null; templateId?: string | null }
+  ): void {
     console.log('[Visual Designer] EditorFrame.create() called with mode:', mode);
     if (this.iframe) {
       console.warn('[Visual Designer] EditorFrame already created, skipping');
@@ -44,6 +50,8 @@ export class EditorFrame {
     }
 
     this.mode = mode || null;
+    this.guideId = options?.guideId ?? null;
+    this.templateId = options?.templateId ?? null;
     this.messageCallback = onMessage;
     console.log('[Visual Designer] Creating editor iframe with mode:', this.mode);
     this.iframe = document.createElement('iframe');
@@ -240,6 +248,8 @@ export class EditorFrame {
         <GuideEditor
           onMessage={onMessage}
           elementSelected={this.elementSelectedState}
+          guideId={this.guideId}
+          templateId={this.templateId}
         />
       );
 

@@ -1,29 +1,86 @@
 import { DesignerSDK } from './core/DesignerSDK';
 import type { SDKConfig } from './types';
 import { apiClient, IUD_STORAGE_KEY } from './api/client';
+// @ts-ignore
+import rg from '../rg-web-sdk/index.js';
 
 export { DesignerSDK };
 export { apiClient };
+export { rg }; // Exporting the analytics instance as well
 export type { Guide, SDKConfig, GuideTargeting } from './types';
 
-let sdkInstance: DesignerSDK | null = null;
+let designerInstance: DesignerSDK | null = null;
 let isSnippetMode = false;
+const GUIDE_ID_STORAGE_KEY = 'designerGuideId';
+const TEMPLATE_ID_STORAGE_KEY = 'designerTemplateId';
 
+/** guide_id / template_id from URL; passed into SDK on init; backup from localStorage */
+let urlGuideId: string | null = null;
+let urlTemplateId: string | null = null;
+
+function getStoredGuideId(): string | null {
+  try {
+    return typeof localStorage !== 'undefined' ? localStorage.getItem(GUIDE_ID_STORAGE_KEY) : null;
+  } catch {
+    return null;
+  }
+}
+
+function getStoredTemplateId(): string | null {
+  try {
+    return typeof localStorage !== 'undefined' ? localStorage.getItem(TEMPLATE_ID_STORAGE_KEY) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Unified Initialize
+ */
 export function init(config?: SDKConfig): DesignerSDK {
-  if (sdkInstance) return sdkInstance;
-  sdkInstance = new DesignerSDK(config);
-  sdkInstance.init();
-  return sdkInstance;
+  // 1. Initialize Analytics (rg-web-sdk)
+  if (config?.apiKey) {
+    rg.initialize(config);
+  } else {
+    console.warn('[Revgain] No apiKey found in config. Analytics will not start.');
+  }
+
+  // 2. Initialize Designer
+  if (designerInstance) return designerInstance;
+  designerInstance = new DesignerSDK({
+    ...config,
+    guideId: urlGuideId ?? config?.guideId ?? getStoredGuideId() ?? null,
+    templateId: urlTemplateId ?? config?.templateId ?? getStoredTemplateId() ?? null,
+  });
+  designerInstance.init();
+
+  return designerInstance;
+}
+
+/**
+ * Unified Identify
+ */
+export function identify(visitor: any, account?: any): void {
+  rg.identify(visitor, account);
+  // Designer currently doesn't have its own identify but we could pass it here if needed
+}
+
+/**
+ * Unified Track
+ */
+export function track(eventName: string, properties?: any): void {
+  rg.track(eventName, properties);
 }
 
 export function getInstance(): DesignerSDK | null {
-  return sdkInstance;
+  return designerInstance;
 }
 
-export function _processQueue(queue: unknown[]): void {
+export function _processQueue(queue: any[]): void {
   if (!queue || !Array.isArray(queue)) return;
 
-  queue.forEach((call) => {
+  const calls = queue.splice(0, queue.length);
+  calls.forEach((call) => {
     if (!call || !Array.isArray(call) || call.length === 0) return;
     const method = call[0];
     const args = call.slice(1);
@@ -31,46 +88,63 @@ export function _processQueue(queue: unknown[]): void {
     try {
       switch (method) {
         case 'initialize':
+        case 'init':
           init(args[0] as SDKConfig);
           break;
         case 'identify':
-          if (args[0]) console.log('[Visual Designer] identify (snippet) called with:', args[0]);
+          identify(args[0], args[1]);
+          break;
+        case 'track':
+          track(args[0] as string, args[1]);
           break;
         case 'enableEditor':
-          (sdkInstance ?? init()).enableEditor();
+          (designerInstance ?? init()).enableEditor();
           break;
         case 'disableEditor':
-          sdkInstance?.disableEditor();
+          designerInstance?.disableEditor();
           break;
         case 'loadGuides':
-          sdkInstance?.loadGuides();
+          designerInstance?.loadGuides();
           break;
         case 'getGuides':
-          return sdkInstance?.getGuides();
+          return designerInstance?.getGuides();
         default:
-          console.warn('[Visual Designer] Unknown snippet method:', method);
+          // @ts-ignore
+          if (typeof rg[method] === 'function') {
+            // @ts-ignore
+            rg[method](...args);
+          } else {
+            console.warn('[Revgain] Unknown snippet method:', method);
+          }
       }
     } catch (error) {
-      console.error('[Visual Designer] Error processing queued call:', method, error);
+      console.error('[Revgain] Error processing queued call:', method, error);
     }
   });
 }
 
 if (typeof window !== 'undefined') {
-  const globalVD = (window as any).visualDesigner;
-  if (globalVD && Array.isArray(globalVD._q)) {
+  const globalRG = (window as any).revgain || (window as any).visualDesigner;
+  if (globalRG && Array.isArray(globalRG._q)) {
     isSnippetMode = true;
-    globalVD.initialize = (config?: SDKConfig | Record<string, unknown>) => init(config as SDKConfig);
-    globalVD.identify = (user: unknown) => {
-      if (user) console.log('[Visual Designer] identify (snippet) called with:', user);
-    };
-    globalVD.enableEditor = () => (sdkInstance ?? init()).enableEditor();
-    globalVD.disableEditor = () => sdkInstance?.disableEditor();
-    globalVD.loadGuides = () => sdkInstance?.loadGuides();
-    globalVD.getGuides = () => sdkInstance?.getGuides();
-    globalVD.getInstance = getInstance;
-    globalVD.init = init;
-    _processQueue(globalVD._q);
+
+    // Attach methods to existing snippet proxy
+    globalRG.init = init;
+    globalRG.initialize = init;
+    globalRG.identify = identify;
+    globalRG.track = track;
+    globalRG.enableEditor = () => (designerInstance ?? init()).enableEditor();
+    globalRG.disableEditor = () => designerInstance?.disableEditor();
+    globalRG.loadGuides = () => designerInstance?.loadGuides();
+    globalRG.getGuides = () => designerInstance?.getGuides();
+    globalRG.getInstance = getInstance;
+
+    // Analytics methods
+    globalRG.page = (name: string, props: any) => rg.page(name, props);
+    globalRG.flush = () => rg.flush();
+    globalRG.reset = () => rg.reset();
+
+    _processQueue(globalRG._q);
   }
 
   try {
@@ -78,6 +152,12 @@ if (typeof window !== 'undefined') {
     const designerParam = url.searchParams.get('designer');
     const modeParam = url.searchParams.get('mode');
     const designerIudParam = url.searchParams.get('iud');
+    const guideIdParam = url.searchParams.get('guide_id');
+    const templateIdParam = url.searchParams.get('template_id');
+
+    if (designerParam === 'true' || guideIdParam != null || templateIdParam != null) {
+      console.log('[Revgain] URL params detected:', { designerParam, modeParam, guideIdParam });
+    }
 
     if (designerParam === 'true') {
       if (modeParam) {
@@ -86,9 +166,19 @@ if (typeof window !== 'undefined') {
       }
       localStorage.setItem('designerMode', 'true');
       if (designerIudParam) localStorage.setItem(IUD_STORAGE_KEY, designerIudParam);
+      if (guideIdParam != null) {
+        urlGuideId = guideIdParam;
+        localStorage.setItem(GUIDE_ID_STORAGE_KEY, guideIdParam);
+      }
+      if (templateIdParam != null) {
+        urlTemplateId = templateIdParam;
+        localStorage.setItem(TEMPLATE_ID_STORAGE_KEY, templateIdParam);
+      }
       url.searchParams.delete('designer');
       url.searchParams.delete('mode');
       url.searchParams.delete('iud');
+      url.searchParams.delete('guide_id');
+      url.searchParams.delete('template_id');
       window.history.replaceState({}, '', url.toString());
       (window as any).__visualDesignerWasLaunched = true;
     }
@@ -97,9 +187,11 @@ if (typeof window !== 'undefined') {
   }
 }
 
-if (typeof window !== 'undefined' && !sdkInstance && !isSnippetMode) {
+// Auto-initialize if designer mode active
+if (typeof window !== 'undefined' && !designerInstance && !isSnippetMode) {
+  const isDesignerActive = localStorage.getItem('designerMode') === 'true';
   const doInit = () => {
-    if (!sdkInstance) init();
+    if (!designerInstance && isDesignerActive) init();
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', doInit);
@@ -108,13 +200,27 @@ if (typeof window !== 'undefined' && !sdkInstance && !isSnippetMode) {
   }
 }
 
+// Expose unified Revgain global
 if (typeof window !== 'undefined') {
-  (window as any).VisualDesigner = {
+  const Revgain = {
     init,
     initialize: init,
+    identify,
+    track,
+    page: (name: string, props: any) => rg.page(name, props),
+    flush: () => rg.flush(),
+    reset: () => rg.reset(),
     getInstance,
     DesignerSDK,
     apiClient,
     _processQueue,
+    getGuideId: () => getInstance()?.getGuideId() ?? null,
+    getTemplateId: () => getInstance()?.getTemplateId() ?? null,
+    enableEditor: () => (designerInstance ?? init()).enableEditor(),
+    disableEditor: () => designerInstance?.disableEditor(),
+    analytics: rg,
   };
+  (window as any).revgain = Revgain;
+  (window as any).VisualDesigner = Revgain; // Alias for backward compatibility
 }
+
