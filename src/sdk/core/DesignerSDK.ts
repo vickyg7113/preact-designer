@@ -14,7 +14,11 @@ import type {
   TaggedFeature,
   FeatureItem,
   HeatmapToggleMessage,
+  GuideByIdData,
+  GuideByIdResponse,
 } from '../types';
+import { apiClient } from '../api/client';
+import { SelectorEngine } from './SelectorEngine';
 
 /**
  * Visual Designer SDK - Main SDK class (Preact-based)
@@ -38,6 +42,10 @@ export class DesignerSDK {
   private guideId: string | null = null;
   /** template_id from URL or config (in-memory only) */
   private templateId: string | null = null;
+  /** Guides fetched from API for the current page */
+  private fetchedGuides: GuideByIdData[] = [];
+  /** Current URL to detect page changes */
+  private currentUrl: string = typeof window !== 'undefined' ? window.location.href : '';
 
   constructor(config: SDKConfig = {}) {
     this.config = config;
@@ -57,7 +65,50 @@ export class DesignerSDK {
     this.injectMontserratFont();
     this.injectIconifyScript();
 
-    this.guideRenderer.setOnDismiss((id) => this.config.onGuideDismissed?.(id));
+    this.guideRenderer.setOnDismiss((id, stepIndex) => {
+      const properties: Record<string, any> = { guide_id: id, step_index: stepIndex };
+
+      // Try to find template info if possible
+      const guide = this.fetchedGuides.find(g => g.guide_id === id);
+      if (guide) {
+        const activeTemplates = (guide.templates || []).filter(t => t.is_active);
+        const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+        const currentTemplate = sortedTemplates[stepIndex];
+        if (currentTemplate) {
+          properties.template_id = currentTemplate.template_id;
+          properties.template_key = currentTemplate.template.template_key;
+          properties.step_order = currentTemplate.step_order;
+          properties.xpath = currentTemplate.x_path;
+        }
+      }
+
+      this.trackEvent('dismissed', properties);
+      this.config.onGuideDismissed?.(id);
+    });
+    this.guideRenderer.setOnNext((guideId, stepIndex, totalSteps) => {
+      const guide = this.fetchedGuides.find(g => g.guide_id === guideId);
+      if (guide) {
+        const activeTemplates = (guide.templates || []).filter(t => t.is_active);
+        const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+        const currentTemplate = sortedTemplates[stepIndex];
+
+        if (currentTemplate) {
+          let guideStepMarker = 'middle';
+          if (stepIndex === 0) guideStepMarker = 'first';
+          else if (stepIndex === totalSteps - 1) guideStepMarker = 'last';
+
+          this.trackEvent('viewed', {
+            guide_id: guideId,
+            template_id: currentTemplate.template_id,
+            map_id: currentTemplate.map_id,
+            step_order: currentTemplate.step_order,
+            template_key: currentTemplate.template.template_key,
+            guide_step: guideStepMarker,
+            xpath: currentTemplate.x_path
+          });
+        }
+      }
+    });
 
     const shouldEnableEditor = this.shouldEnableEditorMode();
 
@@ -72,6 +123,9 @@ export class DesignerSDK {
     this.heatmapEnabled = localStorage.getItem('designerHeatmapEnabled') === 'true';
     this.renderFeatureHeatmap();
     this.setupEventListeners();
+
+    // Initial fetch of guides for the current page
+    this.fetchGuides();
   }
 
   enableEditor(): void {
@@ -178,6 +232,200 @@ export class DesignerSDK {
 
   getTemplateId(): string | null {
     return this.templateId;
+  }
+
+  async fetchGuides(): Promise<void> {
+    try {
+      const currentPage = getCurrentPage();
+      const response = await apiClient.get<GuideByIdResponse>(`/guides?target_page=${encodeURIComponent(currentPage)}`);
+      if (response && response.data) {
+        this.fetchedGuides = Array.isArray(response.data) ? response.data : [response.data as any];
+        console.log('[Visual Designer] Fetched guides for page:', currentPage, this.fetchedGuides);
+      }
+    } catch (error) {
+      console.error('[Visual Designer] Error fetching guides:', error);
+    }
+  }
+
+  private _getStorageItem(key: string): any {
+    if (typeof window === 'undefined') return null;
+    try {
+      const val = localStorage.getItem(key);
+      if (val === null || val === undefined) return null;
+      try {
+        return JSON.parse(val);
+      } catch {
+        return val;
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  private _getIdentity() {
+    return {
+      visitor_id: this._getStorageItem('__rg_visitor_id'),
+      account_id: this._getStorageItem('__rg_account_id'),
+      session_id: this._getStorageItem('__rg_session_id'),
+    };
+  }
+
+  private _getDeviceContext() {
+    if (typeof window === 'undefined') return {};
+
+    const ua = navigator.userAgent;
+    let browserName = 'Unknown';
+    let browserVersion = 'Unknown';
+    if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) {
+      browserName = 'Chrome';
+      browserVersion = ua.match(/Chrome\/([\d.]+)/)?.[1] || 'Unknown';
+    } else if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) {
+      browserName = 'Safari';
+      browserVersion = ua.match(/Version\/([\d.]+)/)?.[1] || 'Unknown';
+    } else if (ua.indexOf('Firefox') > -1) {
+      browserName = 'Firefox';
+      browserVersion = ua.match(/Firefox\/([\d.]+)/)?.[1] || 'Unknown';
+    } else if (ua.indexOf('Edg') > -1) {
+      browserName = 'Edge';
+      browserVersion = ua.match(/Edg\/([\d.]+)/)?.[1] || 'Unknown';
+    }
+
+    let osName = 'Unknown';
+    let osVersion = 'Unknown';
+    if (ua.indexOf('Win') > -1) {
+      osName = 'Windows';
+      if (ua.indexOf('Windows NT 10.0') > -1) osVersion = '10';
+    } else if (ua.indexOf('Mac') > -1) {
+      osName = 'macOS';
+      osVersion = ua.match(/Mac OS X ([\d_]+)/)?.[1]?.replace(/_/g, '.') || 'Unknown';
+    } else if (ua.indexOf('Linux') > -1) {
+      osName = 'Linux';
+    } else if (ua.indexOf('Android') > -1) {
+      osName = 'Android';
+      osVersion = ua.match(/Android ([\d.]+)/)?.[1] || 'Unknown';
+    } else if (ua.indexOf('iOS') > -1 || ua.indexOf('iPhone') > -1 || ua.indexOf('iPad') > -1) {
+      osName = 'iOS';
+      osVersion = ua.match(/OS ([\d_]+)/)?.[1]?.replace(/_/g, '.') || 'Unknown';
+    }
+
+    return {
+      device_type: /Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua) ? 'mobile' : 'desktop',
+      screen_width: window.screen.width,
+      screen_height: window.screen.height,
+      viewport_width: window.innerWidth,
+      viewport_height: window.innerHeight,
+      browser_name: browserName,
+      browser_version: browserVersion,
+      os_name: osName,
+      os_version: osVersion,
+      user_agent: ua,
+      language: navigator.language,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown',
+    };
+  }
+
+  private _getPageContext() {
+    if (typeof window === 'undefined') return {};
+    return {
+      page_url: window.location.href,
+      page_title: document.title,
+      page_path: window.location.pathname,
+      page_hash: window.location.hash || null,
+      page_query: window.location.search || null,
+    };
+  }
+
+  async trackEvent(eventName: string, properties: Record<string, any> = {}): Promise<void> {
+    await this.trackEventBatch([{ eventName, properties }]);
+  }
+
+  async trackEventBatch(events: { eventName: string; properties?: Record<string, any> }[]): Promise<void> {
+    try {
+      const timestamp = new Date().toISOString();
+      const identity = this._getIdentity();
+      const pageContext = this._getPageContext();
+
+      // Calculate session duration if available
+      let sessionDurationMs = 0;
+      const sessionStart = this._getStorageItem('__rg_session_start');
+      if (sessionStart) {
+        const startTime = new Date(sessionStart).getTime();
+        if (!isNaN(startTime)) {
+          sessionDurationMs = Date.now() - startTime;
+        }
+      }
+
+      // Get visitor email from traits
+      const visitorTraits = this._getStorageItem('__rg_visitor_traits') || {};
+      const visitorEmail = visitorTraits.email || null;
+
+      const canonicalEvents = events.map(e => {
+        const props = e.properties || {};
+        return {
+          event_id: 'evt_' + generateId(),
+          event_type: 'guide',
+          event_name: e.eventName,
+          timestamp: timestamp,
+          ingested_at: timestamp, // Simulating server-side ingestion time
+          visitor_id: identity.visitor_id,
+          account_id: identity.account_id,
+          session_id: identity.session_id,
+          page_url: pageContext.page_url,
+          visitor_email: visitorEmail,
+          session_duration_ms: sessionDurationMs,
+          element_id: props.element_id || props.xpath || null,
+          guide_id: props.guide_id || null,
+          properties: props
+        };
+      });
+
+      console.log('[Visual Designer] Tracking Batch:', canonicalEvents);
+
+      await apiClient.post('/guide-events', {
+        events: canonicalEvents
+      });
+    } catch (error) {
+      console.error('[Visual Designer] Failed to track events:', error);
+    }
+  }
+
+  private handlePageChange(): void {
+    const newUrl = window.location.href;
+    if (newUrl !== this.currentUrl) {
+      this.currentUrl = newUrl;
+      this.fetchGuides();
+    }
+  }
+
+  private handleGlobalClick(event: MouseEvent): void {
+    if (this.isEditorMode) return;
+
+    // Log the click event
+    console.log('[Visual Designer] Click Event:', event);
+
+    const target = event.target as Element;
+    if (!target) return;
+
+    // Generate XPath of clicked element
+    const xpath = SelectorEngine.getXPath(target);
+
+    console.log('[Visual Designer] Clicked Element XPath:', xpath);
+
+    // Compare with target_segment of fetched guides
+    for (const guide of this.fetchedGuides) {
+      console.log('Guide:', guide);
+      if (guide.target_segment && guide.target_segment === xpath) {
+        // Step 1: Only track triggered on click
+        this.trackEvent('triggered', {
+          guide_id: guide.guide_id,
+          guide_name: guide.guide_name,
+          xpath: xpath
+        });
+
+        // Trigger the guide display here (this will then trigger guide_template_shown via callback)
+        this.guideRenderer.renderTriggeredGuide(guide);
+      }
+    }
   }
 
   private shouldEnableEditorMode(): boolean {
@@ -307,6 +555,29 @@ export class DesignerSDK {
       },
       true
     );
+
+    // Page change detection for SPAs
+    window.addEventListener('popstate', () => this.handlePageChange());
+
+    // Patch pushState/replaceState
+    const originalPushState = history.pushState;
+    if (originalPushState) {
+      history.pushState = (...args: any[]) => {
+        originalPushState.apply(history, args as any);
+        this.handlePageChange();
+      };
+    }
+
+    const originalReplaceState = history.replaceState;
+    if (originalReplaceState) {
+      history.replaceState = (...args: any[]) => {
+        originalReplaceState.apply(history, args as any);
+        this.handlePageChange();
+      };
+    }
+
+    // Global click listener for guide triggering
+    document.addEventListener('click', (e) => this.handleGlobalClick(e), true);
   }
 
   private ensureSDKRoot(): void {

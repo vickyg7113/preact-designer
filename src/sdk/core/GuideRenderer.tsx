@@ -1,9 +1,10 @@
 import { render } from 'preact';
-import type { Guide } from '../types';
 import { SelectorEngine } from './SelectorEngine';
 import { getCurrentPage, scrollIntoViewIfNeeded } from '../utils/dom';
 import { GuideTooltip } from '../components/GuideTooltip';
+import { LiveGuideCard } from '../components/LiveGuideCard';
 import { SDK_STYLES } from '../styles/constants';
+import type { Guide, GuideByIdData, GuideTemplateMapItem } from '../types';
 
 function getArrowStyle(placement: Guide['placement']): Record<string, string> {
   const base = { position: 'absolute' as const };
@@ -68,12 +69,19 @@ function computeTooltipPosition(
  */
 export class GuideRenderer {
   private container: HTMLElement | null = null;
-  private onDismiss: (guideId: string) => void = () => {};
+  private onDismiss: (guideId: string, stepIndex: number) => void = () => { };
+  private onNext: (guideId: string, currentStepIndex: number, totalSteps: number) => void = () => { };
   private lastGuides: Guide[] = [];
+  private triggeredGuide: GuideByIdData | null = null;
+  private currentStepIndex: number = 0;
   private dismissedThisSession = new Set<string>();
 
-  setOnDismiss(cb: (guideId: string) => void) {
+  setOnDismiss(cb: (guideId: string, stepIndex: number) => void) {
     this.onDismiss = cb;
+  }
+
+  setOnNext(cb: (guideId: string, currentStepIndex: number, totalSteps: number) => void) {
+    this.onNext = cb;
   }
 
   renderGuides(guides: Guide[]): void {
@@ -83,12 +91,11 @@ export class GuideRenderer {
       (g) => g.page === currentPage && g.status === 'active' && !this.dismissedThisSession.has(g.id)
     );
 
-    if (pageGuides.length === 0) return;
-
     this.ensureContainer();
     if (!this.container) return;
 
     const tooltips: { guide: Guide; target: Element; pos: { top: number; left: number; arrowStyle: Record<string, string> } }[] = [];
+    const triggeredTooltips: { template: GuideTemplateMapItem; target: Element; pos: { top: number; left: number } }[] = [];
 
     for (const guide of pageGuides) {
       const target = SelectorEngine.findElement(guide.selector);
@@ -96,6 +103,37 @@ export class GuideRenderer {
       scrollIntoViewIfNeeded(target);
       const pos = computeTooltipPosition(target, guide.placement, 280, 80);
       tooltips.push({ guide, target, pos });
+    }
+
+    if (this.triggeredGuide && !this.dismissedThisSession.has(this.triggeredGuide.guide_id)) {
+      const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
+      const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+
+      const template = sortedTemplates[this.currentStepIndex];
+
+      if (template && template.x_path) {
+        const target = SelectorEngine.findElement(template.x_path);
+        if (target) {
+          scrollIntoViewIfNeeded(target);
+          const pos = computeTooltipPosition(target, 'bottom', 300, 160);
+
+          const targetRect = target.getBoundingClientRect();
+          const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+          const targetCenter = targetRect.left + scrollX + targetRect.width / 2;
+          pos.left = targetCenter - 16 - 16;
+
+          const vw = window.innerWidth;
+          if (pos.left < scrollX + 10) pos.left = scrollX + 10;
+          else if (pos.left + 300 > scrollX + vw - 10) pos.left = scrollX + vw - 300 - 10;
+
+          triggeredTooltips.push({ template, target, pos });
+        }
+      }
+    }
+
+    if (tooltips.length === 0 && triggeredTooltips.length === 0) {
+      render(null, this.container);
+      return;
     }
 
     render(
@@ -121,9 +159,56 @@ export class GuideRenderer {
             onDismiss={() => this.dismissGuide(guide.id)}
           />
         ))}
+        {triggeredTooltips.map(({ template, pos }) => (
+          <LiveGuideCard
+            key={template.map_id}
+            template={template}
+            top={pos.top}
+            left={pos.left}
+            onDismiss={() => this.dismissTriggeredGuide()}
+            onNext={() => this.handleNext()}
+          />
+        ))}
       </div>,
       this.container
     );
+  }
+
+  renderTriggeredGuide(guide: GuideByIdData): void {
+    console.log('[Visual Designer] Rendering Triggered Guide:', guide);
+    this.triggeredGuide = guide;
+    this.currentStepIndex = 0;
+    this.dismissedThisSession.delete(guide.guide_id); // Re-show if triggered again
+    this.renderGuides(this.lastGuides);
+  }
+
+  handleNext(): void {
+    if (!this.triggeredGuide) return;
+
+    const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
+    const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+
+    if (this.currentStepIndex < sortedTemplates.length - 1) {
+      // Trigger event for the step just passed
+      this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, sortedTemplates.length);
+      this.currentStepIndex++;
+      this.renderGuides(this.lastGuides);
+    } else {
+      // Trigger event for the LAST step just passed
+      this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, sortedTemplates.length);
+      this.dismissTriggeredGuide();
+    }
+  }
+
+  dismissTriggeredGuide(): void {
+    if (this.triggeredGuide) {
+      const gId = this.triggeredGuide.guide_id;
+      const sIdx = this.currentStepIndex;
+      this.dismissedThisSession.add(gId);
+      this.onDismiss(gId, sIdx);
+      this.triggeredGuide = null;
+      this.renderGuides(this.lastGuides);
+    }
   }
 
   updatePositions(guides: Guide[]): void {
@@ -132,7 +217,7 @@ export class GuideRenderer {
 
   dismissGuide(guideId: string): void {
     this.dismissedThisSession.add(guideId);
-    this.onDismiss(guideId);
+    this.onDismiss(guideId, 0);
     this.renderGuides(this.lastGuides);
   }
 
