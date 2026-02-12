@@ -75,7 +75,15 @@ export class SelectorEngine {
       parts.unshift(`${tag}[${index}]`);
       current = parent;
     }
-    return '/' + parts.join('/');
+    const xpathParts = parts.join('/');
+    let res = xpathParts ? `/${xpathParts}` : '';
+
+    // Normalize: ensure it starts with /html[1] if it's an absolute-ish path missing it
+    if (!res.startsWith('/html')) {
+      res = '/html[1]' + (res.startsWith('/') ? res : '/' + res);
+    }
+
+    return res;
   }
 
   static findElement(selector: string): Element | null {
@@ -119,7 +127,11 @@ export class SelectorEngine {
 
   static findElementByXPath(xpath: string): Element | null {
     try {
-      const result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+      let normalizedXpath = xpath;
+      if (normalizedXpath.startsWith('/body')) {
+        normalizedXpath = '/html[1]' + normalizedXpath;
+      }
+      const result = document.evaluate(normalizedXpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
       return result.singleNodeValue as Element | null;
     } catch {
       return null;

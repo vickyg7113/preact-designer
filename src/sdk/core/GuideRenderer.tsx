@@ -127,6 +127,8 @@ export class GuideRenderer {
           else if (pos.left + 300 > scrollX + vw - 10) pos.left = scrollX + vw - 300 - 10;
 
           triggeredTooltips.push({ template, target, pos });
+        } else {
+          console.warn(`[Visual Designer] Target element not found for template "${template.template_id}" using selector: ${template.x_path}`);
         }
       }
     }
