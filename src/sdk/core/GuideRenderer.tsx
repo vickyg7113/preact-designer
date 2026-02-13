@@ -3,6 +3,7 @@ import { SelectorEngine } from './SelectorEngine';
 import { getCurrentPage, scrollIntoViewIfNeeded } from '../utils/dom';
 import { GuideTooltip } from '../components/GuideTooltip';
 import { LiveGuideCard } from '../components/LiveGuideCard';
+import { GuideOverlay } from '../components/GuideOverlay';
 import { SDK_STYLES } from '../styles/constants';
 import type { Guide, GuideByIdData, GuideTemplateMapItem } from '../types';
 
@@ -149,8 +150,10 @@ export class GuideRenderer {
           height: '100%',
           pointerEvents: 'none',
           zIndex: SDK_STYLES.zIndex.guides,
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
+        {triggeredTooltips.length > 0 && <GuideOverlay onClick={() => this.dismissTriggeredGuide()} />}
         {tooltips.map(({ guide, pos }) => (
           <GuideTooltip
             key={guide.id}
@@ -163,7 +166,7 @@ export class GuideRenderer {
         ))}
         {triggeredTooltips.map(({ template, pos }) => (
           <LiveGuideCard
-            key={template.map_id}
+            key={this.triggeredGuide!.guide_id}
             template={template}
             top={pos.top}
             left={pos.left}

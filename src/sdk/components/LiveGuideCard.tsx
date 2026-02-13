@@ -109,6 +109,8 @@ export function LiveGuideCard({ template, top, left, onDismiss, onNext }: LiveGu
                 zIndex: SDK_STYLES.zIndex.tooltip,
                 pointerEvents: 'auto',
                 maxWidth: 300,
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                willChange: 'top, left',
             }}
         >
             <div style={{ position: 'relative', width: '100%', margin: '0 auto', paddingTop: isTooltip ? 12 : 0 }}>
