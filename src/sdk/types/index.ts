@@ -49,6 +49,7 @@ export interface GuideTemplateMapItem {
   url: string | null;
   x_path: string | null;
   is_active: boolean;
+  auto_click_target: boolean;
 }
 
 /**
@@ -92,6 +93,7 @@ export interface GuideUpdatePayload {
     step_order: number;
     url: string | null;
     x_path: string | null;
+    auto_click_target: boolean;
   }>;
 }
 

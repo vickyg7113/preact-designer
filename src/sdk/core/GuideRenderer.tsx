@@ -192,6 +192,18 @@ export class GuideRenderer {
 
     const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
     const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+    const currentStep = sortedTemplates[this.currentStepIndex];
+
+    // Auto-click underlying element if enabled for this step
+    if (currentStep && currentStep.auto_click_target && currentStep.x_path) {
+      console.log(`[Visual Designer] Auto-clicking target element for step: ${currentStep.template_id}`);
+      const element = SelectorEngine.findElement(currentStep.x_path);
+      if (element instanceof HTMLElement) {
+        element.click();
+      } else if (element) {
+        (element as any).click?.();
+      }
+    }
 
     if (this.currentStepIndex < sortedTemplates.length - 1) {
       // Trigger event for the step just passed

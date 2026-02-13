@@ -462,7 +462,7 @@ export class EditorFrame {
     // End dragging - restore normal cursor and selection
     this.isDragging = false;
     this.isMouseDown = false;
-    
+
     document.body.style.cursor = '';
     document.documentElement.style.cursor = '';
     document.body.style.userSelect = '';

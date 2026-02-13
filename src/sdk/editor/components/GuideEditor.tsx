@@ -26,7 +26,7 @@ export function GuideEditor({
   const [xpath, setXpath] = useState<string | undefined>(undefined);
   const [elementInfo, setElementInfo] = useState<ElementInfo | null>(null);
   const [content, setContent] = useState('');
-  const [placement, setPlacement] = useState<(typeof PLACEMENTS)[number]>('right');
+  const [placement] = useState<(typeof PLACEMENTS)[number]>('right');
   const [error, setError] = useState('');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(templateId ?? null);
 
@@ -42,6 +42,7 @@ export function GuideEditor({
   } | null>(null);
   /** True only when selector is actually active (user clicked Select element and is waiting to pick). Cleared when selection received or parent clears. */
   const [selectionModeActive, setSelectionModeActive] = useState(false);
+  const [autoClickTarget, setAutoClickTarget] = useState(false);
 
   const { data: guideData, isLoading: guideLoading } = useGuideById(guideId);
   const guide = guideData?.data;
@@ -59,6 +60,15 @@ export function GuideEditor({
       setSelectedTemplateId(templateId);
     }
   }, [guide, templateId, templates]);
+
+  // Sync autoClickTarget with selected step
+  useEffect(() => {
+    if (selectedStep) {
+      setAutoClickTarget(selectedStep.auto_click_target ?? false);
+    } else {
+      setAutoClickTarget(false);
+    }
+  }, [selectedStep]);
 
   useEffect(() => {
     onMessage({ type: 'EDITOR_READY' });
@@ -140,7 +150,10 @@ export function GuideEditor({
     if (!guide || !guideId) return;
     const currentUrl = getCurrentPage();
     const selectedXpath =
-      xpath ?? (selector && (selector.startsWith('/') || selector.startsWith('//')) ? selector : null);
+      xpath ??
+      (selector && (selector.startsWith('/') || selector.startsWith('//')) ? selector : null) ??
+      selectedStep?.x_path ??
+      null;
 
     const templatesPayload = (guide.steps ?? guide.templates ?? [])
       .slice()
@@ -150,6 +163,7 @@ export function GuideEditor({
         step_order: step.step_order,
         url: step.template_id === selectedTemplateId ? currentUrl : (step.url ?? currentUrl),
         x_path: step.template_id === selectedTemplateId ? selectedXpath : step.x_path,
+        auto_click_target: step.template_id === selectedTemplateId ? autoClickTarget : (step.auto_click_target ?? false),
       }));
 
     const payload = {
@@ -188,6 +202,7 @@ export function GuideEditor({
         step_order: step.step_order,
         url: step.url ?? currentUrl,
         x_path: step.x_path,
+        auto_click_target: step.auto_click_target ?? false,
       }));
 
     const payload = {
@@ -413,6 +428,18 @@ export function GuideEditor({
                         <div style={editorStyles.elementInfoText}>{formatElementInfo(elementInfo)}</div>
                       </div>
                     )}
+                    <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <input
+                        type="checkbox"
+                        id="autoClickTargetNew"
+                        checked={autoClickTarget}
+                        onChange={(e) => setAutoClickTarget((e.target as HTMLInputElement).checked)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <label htmlFor="autoClickTargetNew" style={{ ...editorStyles.label, marginTop: 0, cursor: 'pointer' }}>
+                        Auto-click element on Next
+                      </label>
+                    </div>
                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
                       <EditorButton
                         variant={selectionModeActive ? 'primary' : 'secondary'}
@@ -464,6 +491,18 @@ export function GuideEditor({
                   <>
                     <div style={editorStyles.selectorBox} title={selectedStep.x_path}>
                       {selectedStep.x_path.length > 60 ? selectedStep.x_path.slice(0, 60) + '…' : selectedStep.x_path}
+                    </div>
+                    <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <input
+                        type="checkbox"
+                        id="autoClickTargetExisting"
+                        checked={autoClickTarget}
+                        onChange={(e) => setAutoClickTarget((e.target as HTMLInputElement).checked)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <label htmlFor="autoClickTargetExisting" style={{ ...editorStyles.label, marginTop: 0, cursor: 'pointer' }}>
+                        Auto-click element on Next
+                      </label>
                     </div>
                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
                       <EditorButton
