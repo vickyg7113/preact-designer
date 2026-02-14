@@ -68,18 +68,18 @@ function computeTooltipPosition(
  */
 export class GuideRenderer {
   private container: HTMLElement | null = null;
-  private onDismiss: (guideId: string, stepIndex: number) => void = () => { };
-  private onNext: (guideId: string, currentStepIndex: number, totalSteps: number) => void = () => { };
+  private onDismiss: (guide: GuideByIdData, stepIndex: number) => void | Promise<void> = () => { };
+  private onNext: (guide: GuideByIdData, currentStepIndex: number, totalSteps: number) => void | Promise<void> = () => { };
   private lastGuides: Guide[] = [];
   private triggeredGuide: GuideByIdData | null = null;
   private currentStepIndex: number = 0;
   private dismissedThisSession = new Set<string>();
 
-  setOnDismiss(cb: (guideId: string, stepIndex: number) => void) {
+  setOnDismiss(cb: (guide: GuideByIdData, stepIndex: number) => void | Promise<void>) {
     this.onDismiss = cb;
   }
 
-  setOnNext(cb: (guideId: string, currentStepIndex: number, totalSteps: number) => void) {
+  setOnNext(cb: (guide: GuideByIdData, currentStepIndex: number, totalSteps: number) => void | Promise<void>) {
     this.onNext = cb;
   }
 
@@ -206,6 +206,10 @@ export class GuideRenderer {
     const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
     const currentStep = sortedTemplates[this.currentStepIndex];
 
+    // Trigger event for the step just passed BEFORE any potential navigation
+    // NOTE: We do NOT await this to ensure the UI progresses immediately (Zero Latency)
+    this.onNext(this.triggeredGuide, this.currentStepIndex, sortedTemplates.length);
+
     // Auto-click underlying element if enabled for this step
     if (currentStep && currentStep.auto_click_target && currentStep.x_path) {
       console.log(`[Visual Designer] Auto-clicking target element for step: ${currentStep.template_id}`);
@@ -218,8 +222,6 @@ export class GuideRenderer {
     }
 
     if (this.currentStepIndex < sortedTemplates.length - 1) {
-      // Trigger event for the step just passed
-      this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, sortedTemplates.length);
       this.currentStepIndex++;
 
       // Wait for the NEXT step's element to appear
@@ -236,18 +238,16 @@ export class GuideRenderer {
 
       this.renderGuides(this.lastGuides);
     } else {
-      // Trigger event for the LAST step just passed
-      this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, sortedTemplates.length);
       this.dismissTriggeredGuide();
     }
   }
 
   dismissTriggeredGuide(): void {
     if (this.triggeredGuide) {
-      const gId = this.triggeredGuide.guide_id;
+      const guideData = this.triggeredGuide;
       const sIdx = this.currentStepIndex;
-      this.dismissedThisSession.add(gId);
-      this.onDismiss(gId, sIdx);
+      this.dismissedThisSession.add(guideData.guide_id);
+      this.onDismiss(guideData, sIdx);
       this.triggeredGuide = null;
       this.renderGuides(this.lastGuides);
     }
@@ -259,7 +259,14 @@ export class GuideRenderer {
 
   dismissGuide(guideId: string): void {
     this.dismissedThisSession.add(guideId);
-    this.onDismiss(guideId, 0);
+    const guideData = this.lastGuides.find(g => g.id === guideId);
+    if (guideData) {
+      this.onDismiss({
+        guide_id: guideData.id,
+        guide_name: guideData.content || 'Untitled Guide',
+        templates: [],
+      } as any, 0);
+    }
     this.renderGuides(this.lastGuides);
   }
 

@@ -66,48 +66,46 @@ export class DesignerSDK {
     this.injectMontserratFont();
     this.injectIconifyScript();
 
-    this.guideRenderer.setOnDismiss((id, stepIndex) => {
-      const properties: Record<string, any> = { guide_id: id, step_index: stepIndex };
+    this.guideRenderer.setOnDismiss((guide, stepIndex) => {
+      const properties: Record<string, any> = {
+        guide_id: guide.guide_id,
+        step_index: stepIndex
+      };
 
-      // Try to find template info if possible
-      const guide = this.fetchedGuides.find(g => g.guide_id === id);
-      if (guide) {
-        const activeTemplates = (guide.templates || []).filter(t => t.is_active);
-        const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
-        const currentTemplate = sortedTemplates[stepIndex];
-        if (currentTemplate) {
-          properties.template_id = currentTemplate.template_id;
-          properties.template_key = currentTemplate.template.template_key;
-          properties.step_order = currentTemplate.step_order;
-          properties.xpath = currentTemplate.x_path;
-        }
+      const activeTemplates = (guide.templates || []).filter(t => t.is_active);
+      const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+      const currentTemplate = sortedTemplates[stepIndex];
+
+      if (currentTemplate) {
+        properties.template_id = currentTemplate.template_id;
+        properties.template_key = currentTemplate.template.template_key;
+        properties.step_order = currentTemplate.step_order;
+        properties.xpath = currentTemplate.x_path;
       }
 
-      this.trackEvent('dismissed', properties);
-      this.config.onGuideDismissed?.(id);
+      this.config.onGuideDismissed?.(guide.guide_id);
+      return this.trackEvent('dismissed', properties);
     });
-    this.guideRenderer.setOnNext((guideId, stepIndex, totalSteps) => {
-      const guide = this.fetchedGuides.find(g => g.guide_id === guideId);
-      if (guide) {
-        const activeTemplates = (guide.templates || []).filter(t => t.is_active);
-        const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
-        const currentTemplate = sortedTemplates[stepIndex];
 
-        if (currentTemplate) {
-          let guideStepMarker = 'middle';
-          if (stepIndex === 0) guideStepMarker = 'first';
-          else if (stepIndex === totalSteps - 1) guideStepMarker = 'last';
+    this.guideRenderer.setOnNext((guide, stepIndex, totalSteps) => {
+      const activeTemplates = (guide.templates || []).filter(t => t.is_active);
+      const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+      const currentTemplate = sortedTemplates[stepIndex];
 
-          this.trackEvent('viewed', {
-            guide_id: guideId,
-            template_id: currentTemplate.template_id,
-            map_id: currentTemplate.map_id,
-            step_order: currentTemplate.step_order,
-            template_key: currentTemplate.template.template_key,
-            guide_step: guideStepMarker,
-            xpath: currentTemplate.x_path
-          });
-        }
+      if (currentTemplate) {
+        let guideStepMarker = 'middle';
+        if (stepIndex === 0) guideStepMarker = 'first';
+        else if (stepIndex === totalSteps - 1) guideStepMarker = 'last';
+
+        return this.trackEvent('viewed', {
+          guide_id: guide.guide_id,
+          template_id: currentTemplate.template_id,
+          map_id: currentTemplate.map_id,
+          step_order: currentTemplate.step_order,
+          template_key: currentTemplate.template.template_key,
+          guide_step: guideStepMarker,
+          xpath: currentTemplate.x_path
+        });
       }
     });
 
@@ -387,7 +385,7 @@ export class DesignerSDK {
 
       await apiClient.post('/guide-events', {
         events: canonicalEvents
-      });
+      }, { keepalive: true });
     } catch (error) {
       console.error('[Visual Designer] Failed to track events:', error);
     }

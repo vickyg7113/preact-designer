@@ -1176,13 +1176,13 @@ class tr {
   async handleNext() {
     if (!this.triggeredGuide) return;
     const i = [...(this.triggeredGuide.templates || []).filter((r) => r.is_active)].sort((r, o) => r.step_order - o.step_order), n = i[this.currentStepIndex];
-    if (n && n.auto_click_target && n.x_path) {
+    if (this.onNext(this.triggeredGuide, this.currentStepIndex, i.length), n && n.auto_click_target && n.x_path) {
       console.log(`[Visual Designer] Auto-clicking target element for step: ${n.template_id}`);
       const r = pe.findElement(n.x_path);
       r instanceof HTMLElement ? r.click() : r && r.click?.();
     }
     if (this.currentStepIndex < i.length - 1) {
-      this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, i.length), this.currentStepIndex++;
+      this.currentStepIndex++;
       const r = i[this.currentStepIndex];
       if (r && r.x_path)
         try {
@@ -1192,19 +1192,25 @@ class tr {
         }
       this.renderGuides(this.lastGuides);
     } else
-      this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, i.length), this.dismissTriggeredGuide();
+      this.dismissTriggeredGuide();
   }
   dismissTriggeredGuide() {
     if (this.triggeredGuide) {
-      const e = this.triggeredGuide.guide_id, i = this.currentStepIndex;
-      this.dismissedThisSession.add(e), this.onDismiss(e, i), this.triggeredGuide = null, this.renderGuides(this.lastGuides);
+      const e = this.triggeredGuide, i = this.currentStepIndex;
+      this.dismissedThisSession.add(e.guide_id), this.onDismiss(e, i), this.triggeredGuide = null, this.renderGuides(this.lastGuides);
     }
   }
   updatePositions(e) {
     this.renderGuides(e);
   }
   dismissGuide(e) {
-    this.dismissedThisSession.add(e), this.onDismiss(e, 0), this.renderGuides(this.lastGuides);
+    this.dismissedThisSession.add(e);
+    const i = this.lastGuides.find((n) => n.id === e);
+    i && this.onDismiss({
+      guide_id: i.id,
+      guide_name: i.content || "Untitled Guide",
+      templates: []
+    }, 0), this.renderGuides(this.lastGuides);
   }
   clear() {
     this.dismissedThisSession.clear(), this.container && Oe(null, this.container);
@@ -5754,28 +5760,24 @@ class In {
   init() {
     if (this.isInitialized) return;
     this.isInitialized = !0, this.injectMontserratFont(), this.injectIconifyScript(), this.guideRenderer.setOnDismiss((i, n) => {
-      const r = { guide_id: i, step_index: n }, o = this.fetchedGuides.find((a) => a.guide_id === i);
-      if (o) {
-        const u = [...(o.templates || []).filter((c) => c.is_active)].sort((c, h) => c.step_order - h.step_order)[n];
-        u && (r.template_id = u.template_id, r.template_key = u.template.template_key, r.step_order = u.step_order, r.xpath = u.x_path);
-      }
-      this.trackEvent("dismissed", r), this.config.onGuideDismissed?.(i);
+      const r = {
+        guide_id: i.guide_id,
+        step_index: n
+      }, l = [...(i.templates || []).filter((u) => u.is_active)].sort((u, c) => u.step_order - c.step_order)[n];
+      return l && (r.template_id = l.template_id, r.template_key = l.template.template_key, r.step_order = l.step_order, r.xpath = l.x_path), this.config.onGuideDismissed?.(i.guide_id), this.trackEvent("dismissed", r);
     }), this.guideRenderer.setOnNext((i, n, r) => {
-      const o = this.fetchedGuides.find((a) => a.guide_id === i);
-      if (o) {
-        const u = [...(o.templates || []).filter((c) => c.is_active)].sort((c, h) => c.step_order - h.step_order)[n];
-        if (u) {
-          let c = "middle";
-          n === 0 ? c = "first" : n === r - 1 && (c = "last"), this.trackEvent("viewed", {
-            guide_id: i,
-            template_id: u.template_id,
-            map_id: u.map_id,
-            step_order: u.step_order,
-            template_key: u.template.template_key,
-            guide_step: c,
-            xpath: u.x_path
-          });
-        }
+      const l = [...(i.templates || []).filter((u) => u.is_active)].sort((u, c) => u.step_order - c.step_order)[n];
+      if (l) {
+        let u = "middle";
+        return n === 0 ? u = "first" : n === r - 1 && (u = "last"), this.trackEvent("viewed", {
+          guide_id: i.guide_id,
+          template_id: l.template_id,
+          map_id: l.map_id,
+          step_order: l.step_order,
+          template_key: l.template.template_key,
+          guide_step: u,
+          xpath: l.x_path
+        });
       }
     }), this.shouldEnableEditorMode() ? (this.showLoading = !0, this.renderOverlays(), this.enableEditor()) : this.loadGuides(), this.heatmapEnabled = localStorage.getItem("designerHeatmapEnabled") === "true", this.renderFeatureHeatmap(), this.setupEventListeners(), this.fetchGuides(), this.injectGlobalProtectionStyles();
   }
@@ -5926,7 +5928,7 @@ class In {
       });
       console.log("[Visual Designer] Tracking Batch:", c), await te.post("/guide-events", {
         events: c
-      });
+      }, { keepalive: !0 });
     } catch (i) {
       console.error("[Visual Designer] Failed to track events:", i);
     }
