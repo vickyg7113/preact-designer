@@ -3,7 +3,7 @@ import { SelectorEngine } from './SelectorEngine';
 import { getCurrentPage, scrollIntoViewIfNeeded } from '../utils/dom';
 import { GuideTooltip } from '../components/GuideTooltip';
 import { LiveGuideCard } from '../components/LiveGuideCard';
-import { GuideOverlay } from '../components/GuideOverlay';
+import { SpotlightOverlay } from '../components/SpotlightOverlay';
 import { SDK_STYLES } from '../styles/constants';
 import type { Guide, GuideByIdData, GuideTemplateMapItem } from '../types';
 
@@ -29,38 +29,36 @@ function computeTooltipPosition(
   tooltipHeight: number
 ): { top: number; left: number; arrowStyle: Record<string, string> } {
   const targetRect = targetElement.getBoundingClientRect();
-  const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-  const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-
   let top = 0;
   let left = 0;
 
   switch (placement) {
     case 'top':
-      top = targetRect.top + scrollY - tooltipHeight - 12;
-      left = targetRect.left + scrollX + targetRect.width / 2 - tooltipWidth / 2;
+      top = targetRect.top - tooltipHeight - 12;
+      left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
       break;
     case 'bottom':
-      top = targetRect.bottom + scrollY + 12;
-      left = targetRect.left + scrollX + targetRect.width / 2 - tooltipWidth / 2;
+      top = targetRect.bottom + 12;
+      left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
       break;
     case 'left':
-      top = targetRect.top + scrollY + targetRect.height / 2 - tooltipHeight / 2;
-      left = targetRect.left + scrollX - tooltipWidth - 12;
+      top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
+      left = targetRect.left - tooltipWidth - 12;
       break;
     case 'right':
     default:
-      top = targetRect.top + scrollY + targetRect.height / 2 - tooltipHeight / 2;
-      left = targetRect.right + scrollX + 12;
+      top = targetRect.top + targetRect.height / 2 - tooltipHeight / 2;
+      left = targetRect.right + 12;
       break;
   }
 
-  if (left < scrollX) left = scrollX + 10;
-  else if (left + tooltipWidth > scrollX + vw) left = scrollX + vw - tooltipWidth - 10;
-  if (top < scrollY) top = scrollY + 10;
-  else if (top + tooltipHeight > scrollY + vh) top = scrollY + vh - tooltipHeight - 10;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  if (left < 10) left = 10;
+  else if (left + tooltipWidth > vw - 10) left = vw - tooltipWidth - 10;
+  if (top < 10) top = 10;
+  else if (top + tooltipHeight > vh - 10) top = vh - tooltipHeight - 10;
 
   return { top, left, arrowStyle: getArrowStyle(placement) };
 }
@@ -96,7 +94,7 @@ export class GuideRenderer {
     if (!this.container) return;
 
     const tooltips: { guide: Guide; target: Element; pos: { top: number; left: number; arrowStyle: Record<string, string> } }[] = [];
-    const triggeredTooltips: { template: GuideTemplateMapItem; target: Element; pos: { top: number; left: number } }[] = [];
+    const triggeredTooltips: { template: GuideTemplateMapItem; target: Element; pos: { top: number; left: number }; targetRect: DOMRect }[] = [];
 
     for (const guide of pageGuides) {
       const target = SelectorEngine.findElement(guide.selector);
@@ -119,15 +117,14 @@ export class GuideRenderer {
           const pos = computeTooltipPosition(target, 'bottom', 300, 160);
 
           const targetRect = target.getBoundingClientRect();
-          const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-          const targetCenter = targetRect.left + scrollX + targetRect.width / 2;
+          const targetCenter = targetRect.left + targetRect.width / 2;
           pos.left = targetCenter - 16 - 16;
 
           const vw = window.innerWidth;
-          if (pos.left < scrollX + 10) pos.left = scrollX + 10;
-          else if (pos.left + 300 > scrollX + vw - 10) pos.left = scrollX + vw - 300 - 10;
+          if (pos.left < 10) pos.left = 10;
+          else if (pos.left + 300 > vw - 10) pos.left = vw - 300 - 10;
 
-          triggeredTooltips.push({ template, target, pos });
+          triggeredTooltips.push({ template, target, pos, targetRect });
         } else {
           console.warn(`[Visual Designer] Target element not found for template "${template.template_id}" using selector: ${template.x_path}`);
         }
@@ -143,17 +140,19 @@ export class GuideRenderer {
       <div
         id="designer-guides-container"
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
-          width: '100%',
-          height: '100%',
+          width: '100vw',
+          height: '100vh',
           pointerEvents: 'none',
           zIndex: SDK_STYLES.zIndex.guides,
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
-        {triggeredTooltips.length > 0 && <GuideOverlay onClick={() => this.dismissTriggeredGuide()} />}
+        {triggeredTooltips.length > 0 && (
+          <SpotlightOverlay targetRect={triggeredTooltips[0].targetRect} />
+        )}
         {tooltips.map(({ guide, pos }) => (
           <GuideTooltip
             key={guide.id}
@@ -283,7 +282,7 @@ export class GuideRenderer {
     }
     this.container = document.createElement('div');
     this.container.id = 'designer-guides-root';
-    this.container.style.position = 'absolute';
+    this.container.style.position = 'fixed';
     this.container.style.top = '0';
     this.container.style.left = '0';
     this.container.style.width = '100vw';
