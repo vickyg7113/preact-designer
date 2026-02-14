@@ -179,15 +179,28 @@ export class GuideRenderer {
     );
   }
 
-  renderTriggeredGuide(guide: GuideByIdData): void {
-    console.log('[Visual Designer] Rendering Triggered Guide:', guide);
+  async renderTriggeredGuide(guide: GuideByIdData): Promise<void> {
     this.triggeredGuide = guide;
     this.currentStepIndex = 0;
     this.dismissedThisSession.delete(guide.guide_id); // Re-show if triggered again
+
+    // Wait for the first step's element if it exists
+    const activeTemplates = (guide.templates || []).filter(t => t.is_active);
+    const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+    const firstTemplate = sortedTemplates[0];
+
+    if (firstTemplate && firstTemplate.x_path) {
+      try {
+        await SelectorEngine.waitForElement(firstTemplate.x_path);
+      } catch (err) {
+        console.warn(`[Visual Designer] Timeout waiting for first step element: ${firstTemplate.x_path}`, err);
+      }
+    }
+
     this.renderGuides(this.lastGuides);
   }
 
-  handleNext(): void {
+  async handleNext(): Promise<void> {
     if (!this.triggeredGuide) return;
 
     const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
@@ -209,6 +222,19 @@ export class GuideRenderer {
       // Trigger event for the step just passed
       this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, sortedTemplates.length);
       this.currentStepIndex++;
+
+      // Wait for the NEXT step's element to appear
+      const nextStep = sortedTemplates[this.currentStepIndex];
+      if (nextStep && nextStep.x_path) {
+        try {
+          // Temporarily hide triggering guide while waiting for next target
+          this.renderGuides(this.lastGuides);
+          await SelectorEngine.waitForElement(nextStep.x_path);
+        } catch (err) {
+          console.warn(`[Visual Designer] Target element not found for step: ${nextStep.template_id}`);
+        }
+      }
+
       this.renderGuides(this.lastGuides);
     } else {
       // Trigger event for the LAST step just passed
@@ -257,6 +283,13 @@ export class GuideRenderer {
     }
     this.container = document.createElement('div');
     this.container.id = 'designer-guides-root';
+    this.container.style.position = 'absolute';
+    this.container.style.top = '0';
+    this.container.style.left = '0';
+    this.container.style.width = '100vw';
+    this.container.style.height = '100vh';
+    this.container.style.pointerEvents = 'none';
+    this.container.style.zIndex = String(SDK_STYLES.zIndex.guides);
     document.body.appendChild(this.container);
   }
 }

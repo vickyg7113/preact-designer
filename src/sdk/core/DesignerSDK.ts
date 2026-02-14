@@ -46,6 +46,7 @@ export class DesignerSDK {
   private fetchedGuides: GuideByIdData[] = [];
   /** Current URL to detect page changes */
   private currentUrl: string = typeof window !== 'undefined' ? window.location.href : '';
+  private styleInjected: boolean = false;
 
   constructor(config: SDKConfig = {}) {
     this.config = config;
@@ -126,6 +127,9 @@ export class DesignerSDK {
 
     // Initial fetch of guides for the current page
     this.fetchGuides();
+
+    // Ensure SDK elements are correctly stacked (once on init)
+    this.injectGlobalProtectionStyles();
   }
 
   enableEditor(): void {
@@ -593,6 +597,29 @@ export class DesignerSDK {
     this.sdkRoot = document.createElement('div');
     this.sdkRoot.id = 'designer-sdk-root';
     document.body.appendChild(this.sdkRoot);
+  }
+
+  private injectGlobalProtectionStyles(): void {
+    if (this.styleInjected || typeof document === 'undefined') return;
+
+    const style = document.createElement('style');
+    style.id = 'designer-protection-styles';
+    style.textContent = `
+    #designer-editor-frame {
+      pointer-events: auto !important;
+      position: fixed !important;
+      z-index: 2147483647 !important;
+    }
+
+    #designer-editor-drag-handle {
+      pointer-events: auto !important;
+      position: fixed !important;
+      z-index: 2147483647 !important;
+    }
+  `;
+
+    document.head.appendChild(style);
+    this.styleInjected = true;
   }
 
   private renderOverlays(): void {

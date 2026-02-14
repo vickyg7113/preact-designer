@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GuideEditor } from './components/GuideEditor';
 import { TagPageEditor } from './components/TagPageEditor';
 import { TagFeatureEditor } from './components/TagFeatureEditor';
+import { SDK_STYLES } from '../styles/constants';
 import type { EditorMessage, ElementSelectedMessage, ElementInfo } from '../types';
 
 // Editor styles (minimal - iconify base only)
@@ -68,7 +69,7 @@ export class EditorFrame {
       background: white;
       border: 1px solid rgba(0, 0, 0, 0.06);
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
-      z-index: 999999;
+      z-index: ${SDK_STYLES.zIndex.editor};
       display: none;
       overflow: hidden;
     `;
@@ -300,7 +301,7 @@ export class EditorFrame {
       height: 70px;
       background: transparent;
       cursor: default;
-      z-index: 1000000;
+      z-index: ${SDK_STYLES.zIndex.controls};
       display: none;
       pointer-events: none;
       user-select: none;

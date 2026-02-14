@@ -19,6 +19,7 @@ export function LoadingOverlay() {
         alignItems: 'center',
         justifyContent: 'center',
         fontFamily: SDK_STYLES.fontFamily,
+        pointerEvents: 'auto',
       }}
     >
       <div

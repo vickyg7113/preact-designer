@@ -14,13 +14,13 @@ export const SDK_STYLES = {
   shadowHover: "0 6px 16px rgba(0, 0, 0, 0.2)",
   borderRadius: "8px",
   zIndex: {
-    overlay: 999995,
-    guides: 999996,
-    tooltip: 999997,
-    highlight: 999998,
-    editor: 999999,
-    controls: 1000000,
-    badge: 1000001,
-    loading: 1000002,
+    overlay: 2147483640,
+    guides: 2147483641,
+    tooltip: 2147483642,
+    highlight: 2147483643,
+    editor: 2147483644,
+    controls: 2147483645,
+    badge: 2147483646,
+    loading: 2147483647, // Max safe 32-bit signed int
   },
 } as const;

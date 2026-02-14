@@ -1,4 +1,4 @@
-class ke {
+class pe {
   static generateSelector(e) {
     if (e.id)
       return {
@@ -107,6 +107,25 @@ class ke {
     } catch {
       return !1;
     }
+  }
+  /**
+   * Waits for an element to appear in the DOM using MutationObserver.
+   * Leverages findElement for consistent behavior with XPaths/Selectors.
+   */
+  static waitForElement(e, i = 5e3) {
+    return new Promise((n, r) => {
+      const o = this.findElement(e);
+      if (o) return n(o);
+      const a = new MutationObserver(() => {
+        const l = this.findElement(e);
+        l && (a.disconnect(), n(l));
+      });
+      a.observe(document.body, {
+        childList: !0
+      }), setTimeout(() => {
+        a.disconnect(), r(new Error(`Element not found: ${e}`));
+      }, i);
+    });
   }
   static getSemanticDataAttributes(e) {
     const i = ["data-id", "data-name", "data-role", "data-component", "data-element"], n = [];
@@ -344,7 +363,7 @@ class Nn {
   }
   selectElement(e) {
     this.highlightElement(e);
-    const i = ke.generateSelector(e), n = Fn(e), r = ke.getXPath(e);
+    const i = pe.generateSelector(e), n = Fn(e), r = pe.getXPath(e);
     this.messageCallback?.({
       type: "ELEMENT_SELECTED",
       selector: i.selector,
@@ -363,8 +382,8 @@ class Nn {
     document.getElementById("designer-editor-styles")?.remove();
   }
 }
-var pt, I, Vi, Te, di, qi, ji, Yi, Kt, Ct, Tt, Xi, Qe = {}, Ji = [], Un = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i, qe = Array.isArray;
-function pe(t, e) {
+var pt, I, Vi, Ie, di, qi, ji, Yi, Kt, Ct, Tt, Xi, Qe = {}, Ji = [], Un = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i, qe = Array.isArray;
+function me(t, e) {
   for (var i in e) t[i] = e[i];
   return t;
 }
@@ -403,15 +422,15 @@ function Zi(t) {
   }
 }
 function kt(t) {
-  (!t.__d && (t.__d = !0) && Te.push(t) && !lt.__r++ || di != I.debounceRendering) && ((di = I.debounceRendering) || qi)(lt);
+  (!t.__d && (t.__d = !0) && Ie.push(t) && !lt.__r++ || di != I.debounceRendering) && ((di = I.debounceRendering) || qi)(lt);
 }
 function lt() {
-  for (var t, e, i, n, r, o, a, l = 1; Te.length; ) Te.length > l && Te.sort(ji), t = Te.shift(), l = Te.length, t.__d && (i = void 0, n = void 0, r = (n = (e = t).__v).__e, o = [], a = [], e.__P && ((i = pe({}, n)).__v = n.__v + 1, I.vnode && I.vnode(i), Vt(e.__P, i, n, e.__n, e.__P.namespaceURI, 32 & n.__u ? [r] : null, o, r ?? Me(n), !!(32 & n.__u), a), i.__v = n.__v, i.__.__k[i.__i] = i, nn(o, i, a), n.__e = n.__ = null, i.__e != r && Zi(i)));
+  for (var t, e, i, n, r, o, a, l = 1; Ie.length; ) Ie.length > l && Ie.sort(ji), t = Ie.shift(), l = Ie.length, t.__d && (i = void 0, n = void 0, r = (n = (e = t).__v).__e, o = [], a = [], e.__P && ((i = me({}, n)).__v = n.__v + 1, I.vnode && I.vnode(i), Vt(e.__P, i, n, e.__n, e.__P.namespaceURI, 32 & n.__u ? [r] : null, o, r ?? Me(n), !!(32 & n.__u), a), i.__v = n.__v, i.__.__k[i.__i] = i, nn(o, i, a), n.__e = n.__ = null, i.__e != r && Zi(i)));
   lt.__r = 0;
 }
 function en(t, e, i, n, r, o, a, l, d, c, h) {
-  var u, p, g, _, v, C, b, w = n && n.__k || Ji, M = e.length;
-  for (d = zn(i, e, w, d, M), u = 0; u < M; u++) (g = i.__k[u]) != null && (p = g.__i == -1 ? Qe : w[g.__i] || Qe, g.__i = u, C = Vt(t, g, p, r, o, a, l, d, c, h), _ = g.__e, g.ref && p.ref != g.ref && (p.ref && qt(p.ref, null, g), h.push(g.ref, g.__c || _, g)), v == null && _ != null && (v = _), (b = !!(4 & g.__u)) || p.__k === g.__k ? d = tn(g, d, t, b) : typeof g.type == "function" && C !== void 0 ? d = C : _ && (d = _.nextSibling), g.__u &= -7);
+  var u, p, m, _, v, T, b, w = n && n.__k || Ji, M = e.length;
+  for (d = zn(i, e, w, d, M), u = 0; u < M; u++) (m = i.__k[u]) != null && (p = m.__i == -1 ? Qe : w[m.__i] || Qe, m.__i = u, T = Vt(t, m, p, r, o, a, l, d, c, h), _ = m.__e, m.ref && p.ref != m.ref && (p.ref && qt(p.ref, null, m), h.push(m.ref, m.__c || _, m)), v == null && _ != null && (v = _), (b = !!(4 & m.__u)) || p.__k === m.__k ? d = tn(m, d, t, b) : typeof m.type == "function" && T !== void 0 ? d = T : _ && (d = _.nextSibling), m.__u &= -7);
   return i.__e = v, d;
 }
 function zn(t, e, i, n, r) {
@@ -477,40 +496,40 @@ function hi(t) {
   };
 }
 function Vt(t, e, i, n, r, o, a, l, d, c) {
-  var h, u, p, g, _, v, C, b, w, M, N, F, B, P, x, U, G, A = e.type;
+  var h, u, p, m, _, v, T, b, w, M, N, F, B, P, C, U, $, A = e.type;
   if (e.constructor !== void 0) return null;
   128 & i.__u && (d = !!(32 & i.__u), o = [l = e.__e = i.__e]), (h = I.__b) && h(e);
   e: if (typeof A == "function") try {
-    if (b = e.props, w = "prototype" in A && A.prototype.render, M = (h = A.contextType) && n[h.__c], N = h ? M ? M.props.value : h.__ : n, i.__c ? C = (u = e.__c = i.__c).__ = u.__E : (w ? e.__c = u = new A(b, N) : (e.__c = u = new ge(b, N), u.constructor = A, u.render = Gn), M && M.sub(u), u.state || (u.state = {}), u.__n = n, p = u.__d = !0, u.__h = [], u._sb = []), w && u.__s == null && (u.__s = u.state), w && A.getDerivedStateFromProps != null && (u.__s == u.state && (u.__s = pe({}, u.__s)), pe(u.__s, A.getDerivedStateFromProps(b, u.__s))), g = u.props, _ = u.state, u.__v = e, p) w && A.getDerivedStateFromProps == null && u.componentWillMount != null && u.componentWillMount(), w && u.componentDidMount != null && u.__h.push(u.componentDidMount);
+    if (b = e.props, w = "prototype" in A && A.prototype.render, M = (h = A.contextType) && n[h.__c], N = h ? M ? M.props.value : h.__ : n, i.__c ? T = (u = e.__c = i.__c).__ = u.__E : (w ? e.__c = u = new A(b, N) : (e.__c = u = new ge(b, N), u.constructor = A, u.render = $n), M && M.sub(u), u.state || (u.state = {}), u.__n = n, p = u.__d = !0, u.__h = [], u._sb = []), w && u.__s == null && (u.__s = u.state), w && A.getDerivedStateFromProps != null && (u.__s == u.state && (u.__s = me({}, u.__s)), me(u.__s, A.getDerivedStateFromProps(b, u.__s))), m = u.props, _ = u.state, u.__v = e, p) w && A.getDerivedStateFromProps == null && u.componentWillMount != null && u.componentWillMount(), w && u.componentDidMount != null && u.__h.push(u.componentDidMount);
     else {
-      if (w && A.getDerivedStateFromProps == null && b !== g && u.componentWillReceiveProps != null && u.componentWillReceiveProps(b, N), e.__v == i.__v || !u.__e && u.shouldComponentUpdate != null && u.shouldComponentUpdate(b, u.__s, N) === !1) {
-        for (e.__v != i.__v && (u.props = b, u.state = u.__s, u.__d = !1), e.__e = i.__e, e.__k = i.__k, e.__k.some(function($) {
-          $ && ($.__ = e);
+      if (w && A.getDerivedStateFromProps == null && b !== m && u.componentWillReceiveProps != null && u.componentWillReceiveProps(b, N), e.__v == i.__v || !u.__e && u.shouldComponentUpdate != null && u.shouldComponentUpdate(b, u.__s, N) === !1) {
+        for (e.__v != i.__v && (u.props = b, u.state = u.__s, u.__d = !1), e.__e = i.__e, e.__k = i.__k, e.__k.some(function(G) {
+          G && (G.__ = e);
         }), F = 0; F < u._sb.length; F++) u.__h.push(u._sb[F]);
         u._sb = [], u.__h.length && a.push(u);
         break e;
       }
       u.componentWillUpdate != null && u.componentWillUpdate(b, u.__s, N), w && u.componentDidUpdate != null && u.__h.push(function() {
-        u.componentDidUpdate(g, _, v);
+        u.componentDidUpdate(m, _, v);
       });
     }
     if (u.context = N, u.props = b, u.__P = t, u.__e = !1, B = I.__r, P = 0, w) {
-      for (u.state = u.__s, u.__d = !1, B && B(e), h = u.render(u.props, u.state, u.context), x = 0; x < u._sb.length; x++) u.__h.push(u._sb[x]);
+      for (u.state = u.__s, u.__d = !1, B && B(e), h = u.render(u.props, u.state, u.context), C = 0; C < u._sb.length; C++) u.__h.push(u._sb[C]);
       u._sb = [];
     } else do
       u.__d = !1, B && B(e), h = u.render(u.props, u.state, u.context), u.state = u.__s;
     while (u.__d && ++P < 25);
-    u.state = u.__s, u.getChildContext != null && (n = pe(pe({}, n), u.getChildContext())), w && !p && u.getSnapshotBeforeUpdate != null && (v = u.getSnapshotBeforeUpdate(g, _)), U = h, h != null && h.type === X && h.key == null && (U = rn(h.props.children)), l = en(t, qe(U) ? U : [U], e, i, n, r, o, a, l, d, c), u.base = e.__e, e.__u &= -161, u.__h.length && a.push(u), C && (u.__E = u.__ = null);
-  } catch ($) {
-    if (e.__v = null, d || o != null) if ($.then) {
+    u.state = u.__s, u.getChildContext != null && (n = me(me({}, n), u.getChildContext())), w && !p && u.getSnapshotBeforeUpdate != null && (v = u.getSnapshotBeforeUpdate(m, _)), U = h, h != null && h.type === X && h.key == null && (U = rn(h.props.children)), l = en(t, qe(U) ? U : [U], e, i, n, r, o, a, l, d, c), u.base = e.__e, e.__u &= -161, u.__h.length && a.push(u), T && (u.__E = u.__ = null);
+  } catch (G) {
+    if (e.__v = null, d || o != null) if (G.then) {
       for (e.__u |= d ? 160 : 128; l && l.nodeType == 8 && l.nextSibling; ) l = l.nextSibling;
       o[o.indexOf(l)] = null, e.__e = l;
     } else {
-      for (G = o.length; G--; ) Qt(o[G]);
+      for ($ = o.length; $--; ) Qt(o[$]);
       Ot(e);
     }
-    else e.__e = i.__e, e.__k = i.__k, $.then || Ot(e);
-    I.__e($, e, i);
+    else e.__e = i.__e, e.__k = i.__k, G.then || Ot(e);
+    I.__e(G, e, i);
   }
   else o == null && e.__v == i.__v ? (e.__k = i.__k, e.__e = i.__e) : l = e.__e = Hn(i.__e, e, i, n, r, o, a, d, c);
   return (h = I.diffed) && h(e), 128 & e.__u ? void 0 : l;
@@ -531,13 +550,13 @@ function nn(t, e, i) {
   });
 }
 function rn(t) {
-  return typeof t != "object" || t == null || t.__b && t.__b > 0 ? t : qe(t) ? t.map(rn) : pe({}, t);
+  return typeof t != "object" || t == null || t.__b && t.__b > 0 ? t : qe(t) ? t.map(rn) : me({}, t);
 }
 function Hn(t, e, i, n, r, o, a, l, d) {
-  var c, h, u, p, g, _, v, C = i.props || Qe, b = e.props, w = e.type;
+  var c, h, u, p, m, _, v, T = i.props || Qe, b = e.props, w = e.type;
   if (w == "svg" ? r = "http://www.w3.org/2000/svg" : w == "math" ? r = "http://www.w3.org/1998/Math/MathML" : r || (r = "http://www.w3.org/1999/xhtml"), o != null) {
-    for (c = 0; c < o.length; c++) if ((g = o[c]) && "setAttribute" in g == !!w && (w ? g.localName == w : g.nodeType == 3)) {
-      t = g, o[c] = null;
+    for (c = 0; c < o.length; c++) if ((m = o[c]) && "setAttribute" in m == !!w && (w ? m.localName == w : m.nodeType == 3)) {
+      t = m, o[c] = null;
       break;
     }
   }
@@ -545,20 +564,20 @@ function Hn(t, e, i, n, r, o, a, l, d) {
     if (w == null) return document.createTextNode(b);
     t = document.createElementNS(r, w, b.is && b), l && (I.__m && I.__m(e, o), l = !1), o = null;
   }
-  if (w == null) C === b || l && t.data == b || (t.data = b);
+  if (w == null) T === b || l && t.data == b || (t.data = b);
   else {
-    if (o = o && pt.call(t.childNodes), !l && o != null) for (C = {}, c = 0; c < t.attributes.length; c++) C[(g = t.attributes[c]).name] = g.value;
-    for (c in C) if (g = C[c], c != "children") {
-      if (c == "dangerouslySetInnerHTML") u = g;
+    if (o = o && pt.call(t.childNodes), !l && o != null) for (T = {}, c = 0; c < t.attributes.length; c++) T[(m = t.attributes[c]).name] = m.value;
+    for (c in T) if (m = T[c], c != "children") {
+      if (c == "dangerouslySetInnerHTML") u = m;
       else if (!(c in b)) {
         if (c == "value" && "defaultValue" in b || c == "checked" && "defaultChecked" in b) continue;
-        Je(t, c, null, g, r);
+        Je(t, c, null, m, r);
       }
     }
-    for (c in b) g = b[c], c == "children" ? p = g : c == "dangerouslySetInnerHTML" ? h = g : c == "value" ? _ = g : c == "checked" ? v = g : l && typeof g != "function" || C[c] === g || Je(t, c, g, C[c], r);
+    for (c in b) m = b[c], c == "children" ? p = m : c == "dangerouslySetInnerHTML" ? h = m : c == "value" ? _ = m : c == "checked" ? v = m : l && typeof m != "function" || T[c] === m || Je(t, c, m, T[c], r);
     if (h) l || u && (h.__html == u.__html || h.__html == t.innerHTML) || (t.innerHTML = h.__html), e.__k = [];
     else if (u && (t.innerHTML = ""), en(e.type == "template" ? t.content : t, qe(p) ? p : [p], e, i, n, w == "foreignObject" ? "http://www.w3.org/1999/xhtml" : r, o, a, o ? o[0] : i.__k && Me(i, 0), l, d), o != null) for (c = o.length; c--; ) Qt(o[c]);
-    l || (c = "value", w == "progress" && _ == null ? t.removeAttribute("value") : _ != null && (_ !== t[c] || w == "progress" && !_ || w == "option" && _ != C[c]) && Je(t, c, _, C[c], r), c = "checked", v != null && v != t[c] && Je(t, c, v, C[c], r));
+    l || (c = "value", w == "progress" && _ == null ? t.removeAttribute("value") : _ != null && (_ !== t[c] || w == "progress" && !_ || w == "option" && _ != T[c]) && Je(t, c, _, T[c], r), c = "checked", v != null && v != t[c] && Je(t, c, v, T[c], r));
   }
   return t;
 }
@@ -585,7 +604,7 @@ function sn(t, e, i) {
   if (n = t.__k) for (r = 0; r < n.length; r++) n[r] && sn(n[r], e, i || typeof t.type != "function");
   i || Qt(t.__e), t.__c = t.__ = t.__e = void 0;
 }
-function Gn(t, e, i) {
+function $n(t, e, i) {
   return this.constructor(t, i);
 }
 function Oe(t, e, i) {
@@ -624,22 +643,22 @@ pt = Ji.slice, I = { __e: function(t, e, i, n) {
   throw t;
 } }, Vi = 0, ge.prototype.setState = function(t, e) {
   var i;
-  i = this.__s != null && this.__s != this.state ? this.__s : this.__s = pe({}, this.state), typeof t == "function" && (t = t(pe({}, i), this.props)), t && pe(i, t), t != null && this.__v && (e && this._sb.push(e), kt(this));
+  i = this.__s != null && this.__s != this.state ? this.__s : this.__s = me({}, this.state), typeof t == "function" && (t = t(me({}, i), this.props)), t && me(i, t), t != null && this.__v && (e && this._sb.push(e), kt(this));
 }, ge.prototype.forceUpdate = function(t) {
   this.__v && (this.__e = !0, t && this.__h.push(t), kt(this));
-}, ge.prototype.render = X, Te = [], qi = typeof Promise == "function" ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, ji = function(t, e) {
+}, ge.prototype.render = X, Ie = [], qi = typeof Promise == "function" ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, ji = function(t, e) {
   return t.__v.__b - e.__v.__b;
 }, lt.__r = 0, Yi = /(PointerCapture)$|Capture$/i, Kt = 0, Ct = hi(!1), Tt = hi(!0), Xi = 0;
-var $n = 0;
+var Gn = 0;
 function s(t, e, i, n, r, o) {
   e || (e = {});
   var a, l, d = e;
   if ("ref" in d) for (l in d = {}, e) l == "ref" ? a = e[l] : d[l] = e[l];
-  var c = { type: t, props: d, key: i, ref: a, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --$n, __i: -1, __u: 0, __source: r, __self: o };
+  var c = { type: t, props: d, key: i, ref: a, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --Gn, __i: -1, __u: 0, __source: r, __self: o };
   if (typeof t == "function" && (a = t.defaultProps)) for (l in a) d[l] === void 0 && (d[l] = a[l]);
   return I.vnode && I.vnode(c), c;
 }
-const T = {
+const x = {
   fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif",
   primary: "#3b82f6",
   text: "#111827",
@@ -648,13 +667,15 @@ const T = {
   shadowHover: "0 6px 16px rgba(0, 0, 0, 0.2)",
   borderRadius: "8px",
   zIndex: {
-    overlay: 999995,
-    guides: 999996,
-    tooltip: 999997,
-    highlight: 999998,
-    controls: 1e6,
-    badge: 1000001,
-    loading: 1000002
+    overlay: 2147483640,
+    guides: 2147483641,
+    tooltip: 2147483642,
+    highlight: 2147483643,
+    editor: 2147483644,
+    controls: 2147483645,
+    badge: 2147483646,
+    loading: 2147483647
+    // Max safe 32-bit signed int
   }
 };
 function Wn({ guide: t, top: e, left: i, arrowStyle: n, onDismiss: r }) {
@@ -665,17 +686,17 @@ function Wn({ guide: t, top: e, left: i, arrowStyle: n, onDismiss: r }) {
       "data-guide-id": t.id,
       style: {
         position: "absolute",
-        background: T.bg,
-        border: `2px solid ${T.primary}`,
-        borderRadius: T.borderRadius,
+        background: x.bg,
+        border: `2px solid ${x.primary}`,
+        borderRadius: x.borderRadius,
         padding: "12px 16px",
         boxShadow: "0 10px 25px rgba(0, 0, 0, 0.15)",
-        zIndex: T.zIndex.tooltip,
+        zIndex: x.zIndex.tooltip,
         maxWidth: 300,
-        fontFamily: T.fontFamily,
+        fontFamily: x.fontFamily,
         fontSize: 14,
         lineHeight: 1.5,
-        color: T.text,
+        color: x.text,
         top: `${e}px`,
         left: `${i}px`,
         pointerEvents: "auto"
@@ -688,8 +709,8 @@ function Wn({ guide: t, top: e, left: i, arrowStyle: n, onDismiss: r }) {
             type: "button",
             onClick: r,
             style: {
-              background: T.primary,
-              color: T.bg,
+              background: x.primary,
+              color: x.bg,
               border: "none",
               borderRadius: 4,
               padding: "6px 12px",
@@ -718,7 +739,7 @@ function Wn({ guide: t, top: e, left: i, arrowStyle: n, onDismiss: r }) {
     }
   );
 }
-var Re, z, yt, fi, dt = 0, on = [], H = I, pi = H.__b, gi = H.__r, mi = H.diffed, _i = H.__c, yi = H.unmount, vi = H.__;
+var Re, z, yt, fi, dt = 0, on = [], H = I, pi = H.__b, mi = H.__r, gi = H.diffed, _i = H.__c, yi = H.unmount, vi = H.__;
 function je(t, e) {
   H.__h && H.__h(z, t, dt || e), dt = 0;
   var i = z.__H || (z.__H = { __: [], __h: [] });
@@ -744,8 +765,8 @@ function Kn(t, e, i) {
       var u = n.__c.props !== l;
       return h.forEach(function(p) {
         if (p.__N) {
-          var g = p.__[0];
-          p.__ = p.__N, p.__N = void 0, g !== p.__[0] && (u = !0);
+          var m = p.__[0];
+          p.__ = p.__N, p.__N = void 0, m !== p.__[0] && (u = !0);
         }
       }), o && o.call(this, l, d, c) || u;
     };
@@ -794,13 +815,13 @@ H.__b = function(t) {
 }, H.__ = function(t, e) {
   t && e.__k && e.__k.__m && (t.__m = e.__k.__m), vi && vi(t, e);
 }, H.__r = function(t) {
-  gi && gi(t), Re = 0;
+  mi && mi(t), Re = 0;
   var e = (z = t.__c).__H;
   e && (yt === z ? (e.__h = [], z.__h = [], e.__.forEach(function(i) {
     i.__N && (i.__ = i.__N), i.u = i.__N = void 0;
   })) : (e.__h.forEach(ot), e.__h.forEach(Rt), e.__h = [], Re = 0)), yt = z;
 }, H.diffed = function(t) {
-  mi && mi(t);
+  gi && gi(t);
   var e = t.__c;
   e && e.__H && (e.__H.__h.length && (on.push(e) !== 1 && fi === H.requestAnimationFrame || ((fi = H.requestAnimationFrame) || qn)(Vn)), e.__H.__.forEach(function(i) {
     i.u && (i.__H = i.u), i.u = void 0;
@@ -877,7 +898,7 @@ const Yn = {
   paddingRight: 16,
   paddingBottom: 24,
   paddingLeft: 16,
-  fontFamily: T.fontFamily
+  fontFamily: x.fontFamily
 };
 function Xn({
   title: t = Pt,
@@ -922,7 +943,7 @@ function Jn({ template: t, top: e, left: i, onDismiss: n, onNext: r }) {
         position: "absolute",
         top: `${e}px`,
         left: `${i}px`,
-        zIndex: T.zIndex.tooltip,
+        zIndex: x.zIndex.tooltip,
         pointerEvents: "auto",
         maxWidth: 300,
         transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -989,7 +1010,7 @@ function Zn({ onClick: t }) {
         width: "100vw",
         height: "100vh",
         background: "rgba(0, 0, 0, 0.4)",
-        zIndex: T.zIndex.overlay,
+        zIndex: x.zIndex.overlay,
         pointerEvents: "auto",
         transition: "opacity 0.3s ease-in-out"
       }
@@ -1000,13 +1021,13 @@ function er(t) {
   const e = { position: "absolute" };
   switch (t) {
     case "top":
-      return { ...e, bottom: "-8px", left: "50%", transform: "translateX(-50%)", borderWidth: "8px 8px 0 8px", borderColor: `${T.primary} transparent transparent transparent` };
+      return { ...e, bottom: "-8px", left: "50%", transform: "translateX(-50%)", borderWidth: "8px 8px 0 8px", borderColor: `${x.primary} transparent transparent transparent` };
     case "bottom":
-      return { ...e, top: "-8px", left: "50%", transform: "translateX(-50%)", borderWidth: "0 8px 8px 8px", borderColor: `transparent transparent ${T.primary} transparent` };
+      return { ...e, top: "-8px", left: "50%", transform: "translateX(-50%)", borderWidth: "0 8px 8px 8px", borderColor: `transparent transparent ${x.primary} transparent` };
     case "left":
-      return { ...e, right: "-8px", top: "50%", transform: "translateY(-50%)", borderWidth: "8px 0 8px 8px", borderColor: `transparent transparent transparent ${T.primary}` };
+      return { ...e, right: "-8px", top: "50%", transform: "translateY(-50%)", borderWidth: "8px 0 8px 8px", borderColor: `transparent transparent transparent ${x.primary}` };
     default:
-      return { ...e, left: "-8px", top: "50%", transform: "translateY(-50%)", borderWidth: "8px 8px 8px 0", borderColor: `transparent ${T.primary} transparent transparent` };
+      return { ...e, left: "-8px", top: "50%", transform: "translateY(-50%)", borderWidth: "8px 8px 8px 0", borderColor: `transparent ${x.primary} transparent transparent` };
   }
 }
 function wi(t, e, i, n) {
@@ -1052,7 +1073,7 @@ class tr {
     if (this.ensureContainer(), !this.container) return;
     const r = [], o = [];
     for (const a of n) {
-      const l = ke.findElement(a.selector);
+      const l = pe.findElement(a.selector);
       if (!l) continue;
       li(l);
       const d = wi(l, a.placement, 280, 80);
@@ -1061,11 +1082,11 @@ class tr {
     if (this.triggeredGuide && !this.dismissedThisSession.has(this.triggeredGuide.guide_id)) {
       const d = [...(this.triggeredGuide.templates || []).filter((c) => c.is_active)].sort((c, h) => c.step_order - h.step_order)[this.currentStepIndex];
       if (d && d.x_path) {
-        const c = ke.findElement(d.x_path);
+        const c = pe.findElement(d.x_path);
         if (c) {
           li(c);
-          const h = wi(c, "bottom", 300, 160), u = c.getBoundingClientRect(), p = window.pageXOffset || document.documentElement.scrollLeft, g = u.left + p + u.width / 2;
-          h.left = g - 16 - 16;
+          const h = wi(c, "bottom", 300, 160), u = c.getBoundingClientRect(), p = window.pageXOffset || document.documentElement.scrollLeft, m = u.left + p + u.width / 2;
+          h.left = m - 16 - 16;
           const _ = window.innerWidth;
           h.left < p + 10 ? h.left = p + 10 : h.left + 300 > p + _ - 10 && (h.left = p + _ - 300 - 10), o.push({ template: d, target: c, pos: h });
         } else
@@ -1088,7 +1109,7 @@ class tr {
             width: "100%",
             height: "100%",
             pointerEvents: "none",
-            zIndex: T.zIndex.guides,
+            zIndex: x.zIndex.guides,
             transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
           },
           children: [
@@ -1121,18 +1142,37 @@ class tr {
       this.container
     );
   }
-  renderTriggeredGuide(e) {
-    console.log("[Visual Designer] Rendering Triggered Guide:", e), this.triggeredGuide = e, this.currentStepIndex = 0, this.dismissedThisSession.delete(e.guide_id), this.renderGuides(this.lastGuides);
+  async renderTriggeredGuide(e) {
+    this.triggeredGuide = e, this.currentStepIndex = 0, this.dismissedThisSession.delete(e.guide_id);
+    const r = [...(e.templates || []).filter((o) => o.is_active)].sort((o, a) => o.step_order - a.step_order)[0];
+    if (r && r.x_path)
+      try {
+        await pe.waitForElement(r.x_path);
+      } catch (o) {
+        console.warn(`[Visual Designer] Timeout waiting for first step element: ${r.x_path}`, o);
+      }
+    this.renderGuides(this.lastGuides);
   }
-  handleNext() {
+  async handleNext() {
     if (!this.triggeredGuide) return;
     const i = [...(this.triggeredGuide.templates || []).filter((r) => r.is_active)].sort((r, o) => r.step_order - o.step_order), n = i[this.currentStepIndex];
     if (n && n.auto_click_target && n.x_path) {
       console.log(`[Visual Designer] Auto-clicking target element for step: ${n.template_id}`);
-      const r = ke.findElement(n.x_path);
+      const r = pe.findElement(n.x_path);
       r instanceof HTMLElement ? r.click() : r && r.click?.();
     }
-    this.currentStepIndex < i.length - 1 ? (this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, i.length), this.currentStepIndex++, this.renderGuides(this.lastGuides)) : (this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, i.length), this.dismissTriggeredGuide());
+    if (this.currentStepIndex < i.length - 1) {
+      this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, i.length), this.currentStepIndex++;
+      const r = i[this.currentStepIndex];
+      if (r && r.x_path)
+        try {
+          this.renderGuides(this.lastGuides), await pe.waitForElement(r.x_path);
+        } catch {
+          console.warn(`[Visual Designer] Target element not found for step: ${r.template_id}`);
+        }
+      this.renderGuides(this.lastGuides);
+    } else
+      this.onNext(this.triggeredGuide.guide_id, this.currentStepIndex, i.length), this.dismissTriggeredGuide();
   }
   dismissTriggeredGuide() {
     if (this.triggeredGuide) {
@@ -1159,7 +1199,7 @@ class tr {
         setTimeout(() => this.ensureContainer(), 100);
         return;
       }
-      this.container = document.createElement("div"), this.container.id = "designer-guides-root", document.body.appendChild(this.container);
+      this.container = document.createElement("div"), this.container.id = "designer-guides-root", this.container.style.position = "absolute", this.container.style.top = "0", this.container.style.left = "0", this.container.style.width = "100vw", this.container.style.height = "100vh", this.container.style.pointerEvents = "none", this.container.style.zIndex = String(x.zIndex.guides), document.body.appendChild(this.container);
     }
   }
 }
@@ -1182,7 +1222,7 @@ function ir({ feature: t, color: e, rect: i }) {
         height: i.height,
         backgroundColor: e,
         pointerEvents: "none",
-        zIndex: T.zIndex.overlay,
+        zIndex: x.zIndex.overlay,
         boxSizing: "border-box",
         borderRadius: 4,
         border: `2px solid ${e}`
@@ -1198,7 +1238,7 @@ class nr {
     const n = e.filter((o) => (o.selector || "").trim() !== "");
     if (this.ensureContainer(), !this.container) return;
     const r = n.map((o, a) => {
-      const l = ke.findElement(o.selector);
+      const l = pe.findElement(o.selector);
       if (!l) return null;
       const d = l.getBoundingClientRect(), c = Si[a % Si.length];
       return { feature: o, rect: d, color: c };
@@ -1215,7 +1255,7 @@ class nr {
             width: "100vw",
             height: "100vh",
             pointerEvents: "none",
-            zIndex: T.zIndex.overlay - 1
+            zIndex: x.zIndex.overlay - 1
           },
           children: r.map(({ feature: o, rect: a, color: l }) => /* @__PURE__ */ s(
             ir,
@@ -1314,7 +1354,7 @@ var Ne = class {
   clearInterval(t) {
     this.#e.clearInterval(t);
   }
-}, Ie = new sr();
+}, ke = new sr();
 function or(t) {
   setTimeout(t, 0);
 }
@@ -1330,7 +1370,7 @@ function Lt(t) {
 function ln(t, e) {
   return Math.max(t + (e || 0) - Date.now(), 0);
 }
-function Se(t, e) {
+function Ee(t, e) {
   return typeof t == "function" ? t(e) : t;
 }
 function se(t, e) {
@@ -1394,16 +1434,16 @@ function cn(t, e, i = 0) {
   const o = (n ? t : Object.keys(t)).length, a = n ? e : Object.keys(e), l = a.length, d = n ? new Array(l) : {};
   let c = 0;
   for (let h = 0; h < l; h++) {
-    const u = n ? h : a[h], p = t[u], g = e[u];
-    if (p === g) {
+    const u = n ? h : a[h], p = t[u], m = e[u];
+    if (p === m) {
       d[u] = p, (n ? h < o : lr.call(t, u)) && c++;
       continue;
     }
-    if (p === null || g === null || typeof p != "object" || typeof g != "object") {
-      d[u] = g;
+    if (p === null || m === null || typeof p != "object" || typeof m != "object") {
+      d[u] = m;
       continue;
     }
-    const _ = cn(p, g, i + 1);
+    const _ = cn(p, m, i + 1);
     d[u] = _, _ === p && c++;
   }
   return o === l && c === o ? t : d;
@@ -1433,7 +1473,7 @@ function Ti(t) {
 }
 function cr(t) {
   return new Promise((e) => {
-    Ie.setTimeout(e, t);
+    ke.setTimeout(e, t);
   });
 }
 function Mt(t, e, i) {
@@ -1522,7 +1562,7 @@ function Nt() {
   }, i;
 }
 var pr = or;
-function gr() {
+function mr() {
   let t = [], e = 0, i = (l) => {
     l();
   }, n = (l) => {
@@ -1581,7 +1621,7 @@ function gr() {
     }
   };
 }
-var W = gr(), mr = class extends Ne {
+var W = mr(), gr = class extends Ne {
   #e = !0;
   #t;
   #i;
@@ -1612,7 +1652,7 @@ var W = gr(), mr = class extends Ne {
   isOnline() {
     return this.#e;
   }
-}, ft = new mr();
+}, ft = new gr();
 function _r(t) {
   return Math.min(1e3 * 2 ** t, 3e4);
 }
@@ -1628,8 +1668,8 @@ function hn(t) {
   let e = !1, i = 0, n;
   const r = Nt(), o = () => r.status !== "pending", a = (v) => {
     if (!o()) {
-      const C = new Ut(v);
-      p(C), t.onCancel?.(C);
+      const T = new Ut(v);
+      p(T), t.onCancel?.(T);
     }
   }, l = () => {
     e = !0;
@@ -1639,9 +1679,9 @@ function hn(t) {
     o() || (n?.(), r.resolve(v));
   }, p = (v) => {
     o() || (n?.(), r.reject(v));
-  }, g = () => new Promise((v) => {
-    n = (C) => {
-      (o() || c()) && v(C);
+  }, m = () => new Promise((v) => {
+    n = (T) => {
+      (o() || c()) && v(T);
     }, t.onPause?.();
   }).then(() => {
     n = void 0, o() || t.onContinue?.();
@@ -1649,9 +1689,9 @@ function hn(t) {
     if (o())
       return;
     let v;
-    const C = i === 0 ? t.initialPromise : void 0;
+    const T = i === 0 ? t.initialPromise : void 0;
     try {
-      v = C ?? t.fn();
+      v = T ?? t.fn();
     } catch (b) {
       v = Promise.reject(b);
     }
@@ -1663,7 +1703,7 @@ function hn(t) {
         p(b);
         return;
       }
-      i++, t.onFail?.(i, b), cr(N).then(() => c() ? void 0 : g()).then(() => {
+      i++, t.onFail?.(i, b), cr(N).then(() => c() ? void 0 : m()).then(() => {
         e ? p(b) : _();
       });
     });
@@ -1676,7 +1716,7 @@ function hn(t) {
     cancelRetry: l,
     continueRetry: d,
     canStart: h,
-    start: () => (h() ? _() : g().then(_), r)
+    start: () => (h() ? _() : m().then(_), r)
   };
 }
 var fn = class {
@@ -1685,7 +1725,7 @@ var fn = class {
     this.clearGcTimeout();
   }
   scheduleGc() {
-    this.clearGcTimeout(), Lt(this.gcTime) && (this.#e = Ie.setTimeout(() => {
+    this.clearGcTimeout(), Lt(this.gcTime) && (this.#e = ke.setTimeout(() => {
       this.optionalRemove();
     }, this.gcTime));
   }
@@ -1696,7 +1736,7 @@ var fn = class {
     );
   }
   clearGcTimeout() {
-    this.#e && (Ie.clearTimeout(this.#e), this.#e = void 0);
+    this.#e && (ke.clearTimeout(this.#e), this.#e = void 0);
   }
 }, yr = class extends fn {
   #e;
@@ -1758,7 +1798,7 @@ var fn = class {
   }
   isStatic() {
     return this.getObserversCount() > 0 ? this.observers.some(
-      (t) => Se(t.options.staleTime, this) === "static"
+      (t) => Ee(t.options.staleTime, this) === "static"
     ) : !1;
   }
   isStale() {
@@ -2008,7 +2048,7 @@ var vr = class extends Ne {
   #o;
   #a;
   #s;
-  #g;
+  #m;
   #h;
   // This property keeps track of the last query with defined data.
   // It will be used to pass the previous data and query to the placeholder function between renders.
@@ -2060,7 +2100,7 @@ var vr = class extends Ne {
       i,
       this.options,
       e
-    ) && this.#u(), this.updateResult(), n && (this.#t !== i || se(this.options.enabled, this.#t) !== se(e.enabled, this.#t) || Se(this.options.staleTime, this.#t) !== Se(e.staleTime, this.#t)) && this.#m();
+    ) && this.#u(), this.updateResult(), n && (this.#t !== i || se(this.options.enabled, this.#t) !== se(e.enabled, this.#t) || Ee(this.options.staleTime, this.#t) !== Ee(e.staleTime, this.#t)) && this.#g();
     const r = this.#_();
     n && (this.#t !== i || se(this.options.enabled, this.#t) !== se(e.enabled, this.#t) || r !== this.#l) && this.#y(r);
   }
@@ -2109,16 +2149,16 @@ var vr = class extends Ne {
     );
     return t?.throwOnError || (e = e.catch(Y)), e;
   }
-  #m() {
+  #g() {
     this.#b();
-    const t = Se(
+    const t = Ee(
       this.options.staleTime,
       this.#t
     );
     if (Pe || this.#r.isStale || !Lt(t))
       return;
     const i = ln(this.#r.dataUpdatedAt, t) + 1;
-    this.#c = Ie.setTimeout(() => {
+    this.#c = ke.setTimeout(() => {
       this.#r.isStale || this.updateResult();
     }, i);
   }
@@ -2126,53 +2166,53 @@ var vr = class extends Ne {
     return (typeof this.options.refetchInterval == "function" ? this.options.refetchInterval(this.#t) : this.options.refetchInterval) ?? !1;
   }
   #y(t) {
-    this.#w(), this.#l = t, !(Pe || se(this.options.enabled, this.#t) === !1 || !Lt(this.#l) || this.#l === 0) && (this.#d = Ie.setInterval(() => {
+    this.#w(), this.#l = t, !(Pe || se(this.options.enabled, this.#t) === !1 || !Lt(this.#l) || this.#l === 0) && (this.#d = ke.setInterval(() => {
       (this.options.refetchIntervalInBackground || ti.isFocused()) && this.#u();
     }, this.#l));
   }
   #v() {
-    this.#m(), this.#y(this.#_());
+    this.#g(), this.#y(this.#_());
   }
   #b() {
-    this.#c && (Ie.clearTimeout(this.#c), this.#c = void 0);
+    this.#c && (ke.clearTimeout(this.#c), this.#c = void 0);
   }
   #w() {
-    this.#d && (Ie.clearInterval(this.#d), this.#d = void 0);
+    this.#d && (ke.clearInterval(this.#d), this.#d = void 0);
   }
   createResult(t, e) {
     const i = this.#t, n = this.options, r = this.#r, o = this.#n, a = this.#o, d = t !== i ? t.state : this.#i, { state: c } = t;
     let h = { ...c }, u = !1, p;
     if (e._optimisticResults) {
-      const x = this.hasListeners(), U = !x && Oi(t, e), G = x && Ri(t, i, e, n);
-      (U || G) && (h = {
+      const C = this.hasListeners(), U = !C && Oi(t, e), $ = C && Ri(t, i, e, n);
+      (U || $) && (h = {
         ...h,
         ...pn(c.data, t.options)
       }), e._optimisticResults === "isRestoring" && (h.fetchStatus = "idle");
     }
-    let { error: g, errorUpdatedAt: _, status: v } = h;
+    let { error: m, errorUpdatedAt: _, status: v } = h;
     p = h.data;
-    let C = !1;
+    let T = !1;
     if (e.placeholderData !== void 0 && p === void 0 && v === "pending") {
-      let x;
-      r?.isPlaceholderData && e.placeholderData === a?.placeholderData ? (x = r.data, C = !0) : x = typeof e.placeholderData == "function" ? e.placeholderData(
+      let C;
+      r?.isPlaceholderData && e.placeholderData === a?.placeholderData ? (C = r.data, T = !0) : C = typeof e.placeholderData == "function" ? e.placeholderData(
         this.#f?.state.data,
         this.#f
-      ) : e.placeholderData, x !== void 0 && (v = "success", p = Mt(
+      ) : e.placeholderData, C !== void 0 && (v = "success", p = Mt(
         r?.data,
-        x,
+        C,
         e
       ), u = !0);
     }
-    if (e.select && p !== void 0 && !C)
-      if (r && p === o?.data && e.select === this.#g)
+    if (e.select && p !== void 0 && !T)
+      if (r && p === o?.data && e.select === this.#m)
         p = this.#h;
       else
         try {
-          this.#g = e.select, p = e.select(p), p = Mt(r?.data, p, e), this.#h = p, this.#s = null;
-        } catch (x) {
-          this.#s = x;
+          this.#m = e.select, p = e.select(p), p = Mt(r?.data, p, e), this.#h = p, this.#s = null;
+        } catch (C) {
+          this.#s = C;
         }
-    this.#s && (g = this.#s, p = this.#h, _ = Date.now(), v = "error");
+    this.#s && (m = this.#s, p = this.#h, _ = Date.now(), v = "error");
     const b = h.fetchStatus === "fetching", w = v === "pending", M = v === "error", N = w && b, F = p !== void 0, P = {
       status: v,
       fetchStatus: h.fetchStatus,
@@ -2183,7 +2223,7 @@ var vr = class extends Ne {
       isLoading: N,
       data: p,
       dataUpdatedAt: h.dataUpdatedAt,
-      error: g,
+      error: m,
       errorUpdatedAt: _,
       failureCount: h.fetchFailureCount,
       failureReason: h.fetchFailureReason,
@@ -2202,21 +2242,21 @@ var vr = class extends Ne {
       isEnabled: se(e.enabled, t) !== !1
     };
     if (this.options.experimental_prefetchInRender) {
-      const x = P.data !== void 0, U = P.status === "error" && !x, G = (S) => {
-        U ? S.reject(P.error) : x && S.resolve(P.data);
+      const C = P.data !== void 0, U = P.status === "error" && !C, $ = (S) => {
+        U ? S.reject(P.error) : C && S.resolve(P.data);
       }, A = () => {
         const S = this.#a = P.promise = Nt();
-        G(S);
-      }, $ = this.#a;
-      switch ($.status) {
+        $(S);
+      }, G = this.#a;
+      switch (G.status) {
         case "pending":
-          t.queryHash === i.queryHash && G($);
+          t.queryHash === i.queryHash && $(G);
           break;
         case "fulfilled":
-          (U || P.data !== $.value) && A();
+          (U || P.data !== G.value) && A();
           break;
         case "rejected":
-          (!U || P.error !== $.reason) && A();
+          (!U || P.error !== G.reason) && A();
           break;
       }
     }
@@ -2271,7 +2311,7 @@ function Oi(t, e) {
   return br(t, e) || t.state.data !== void 0 && zt(t, e, e.refetchOnMount);
 }
 function zt(t, e, i) {
-  if (se(e.enabled, t) !== !1 && Se(e.staleTime, t) !== "static") {
+  if (se(e.enabled, t) !== !1 && Ee(e.staleTime, t) !== "static") {
     const n = typeof i == "function" ? i(t) : i;
     return n === "always" || n !== !1 && ii(t, e);
   }
@@ -2281,7 +2321,7 @@ function Ri(t, e, i, n) {
   return (t !== e || se(n.enabled, t) === !1) && (!i.suspense || t.state.status !== "error") && ii(t, i);
 }
 function ii(t, e) {
-  return se(e.enabled, t) !== !1 && t.isStaleByTime(Se(e.staleTime, t));
+  return se(e.enabled, t) !== !1 && t.isStaleByTime(Ee(e.staleTime, t));
 }
 function wr(t, e) {
   return !ht(t.getCurrentResult(), e);
@@ -2299,7 +2339,7 @@ function Pi(t) {
             () => e.signal,
             () => h = !0
           );
-        }, p = dn(e.options, e.fetchOptions), g = async (_, v, C) => {
+        }, p = dn(e.options, e.fetchOptions), m = async (_, v, T) => {
           if (h)
             return Promise.reject();
           if (v == null && _.pages.length)
@@ -2309,29 +2349,29 @@ function Pi(t) {
               client: e.client,
               queryKey: e.queryKey,
               pageParam: v,
-              direction: C ? "backward" : "forward",
+              direction: T ? "backward" : "forward",
               meta: e.options.meta
             };
             return u(B), B;
-          })(), M = await p(w), { maxPages: N } = e.options, F = C ? ur : dr;
+          })(), M = await p(w), { maxPages: N } = e.options, F = T ? ur : dr;
           return {
             pages: F(_.pages, M, N),
             pageParams: F(_.pageParams, v, N)
           };
         };
         if (r && o.length) {
-          const _ = r === "backward", v = _ ? Sr : Ai, C = {
+          const _ = r === "backward", v = _ ? Sr : Ai, T = {
             pages: o,
             pageParams: a
-          }, b = v(n, C);
-          l = await g(C, b, _);
+          }, b = v(n, T);
+          l = await m(T, b, _);
         } else {
           const _ = t ?? o.length;
           do {
             const v = d === 0 ? a[0] ?? n.initialPageParam : Ai(n, l);
             if (d > 0 && v == null)
               break;
-            l = await g(l, v), d++;
+            l = await m(l, v), d++;
           } while (d < _);
         }
         return l;
@@ -2367,7 +2407,7 @@ var Er = class extends fn {
   #i;
   #r;
   constructor(t) {
-    super(), this.#e = t.client, this.mutationId = t.mutationId, this.#i = t.mutationCache, this.#t = [], this.state = t.state || gn(), this.setOptions(t.options), this.scheduleGc();
+    super(), this.#e = t.client, this.mutationId = t.mutationId, this.#i = t.mutationCache, this.#t = [], this.state = t.state || mn(), this.setOptions(t.options), this.scheduleGc();
   }
   setOptions(t) {
     this.options = t, this.updateGcTime(this.options.gcTime);
@@ -2580,7 +2620,7 @@ var Er = class extends fn {
     });
   }
 };
-function gn() {
+function mn() {
   return {
     context: void 0,
     data: void 0,
@@ -2690,25 +2730,25 @@ var Cr = class extends Ne {
   #t = void 0;
   #i;
   #r;
-  constructor(t, e) {
-    super(), this.#e = t, this.setOptions(e), this.bindMethods(), this.#n();
+  constructor(e, i) {
+    super(), this.#e = e, this.setOptions(i), this.bindMethods(), this.#n();
   }
   bindMethods() {
     this.mutate = this.mutate.bind(this), this.reset = this.reset.bind(this);
   }
-  setOptions(t) {
-    const e = this.options;
-    this.options = this.#e.defaultMutationOptions(t), ht(this.options, e) || this.#e.getMutationCache().notify({
+  setOptions(e) {
+    const i = this.options;
+    this.options = this.#e.defaultMutationOptions(e), ht(this.options, i) || this.#e.getMutationCache().notify({
       type: "observerOptionsUpdated",
       mutation: this.#i,
       observer: this
-    }), e?.mutationKey && this.options.mutationKey && Ae(e.mutationKey) !== Ae(this.options.mutationKey) ? this.reset() : this.#i?.state.status === "pending" && this.#i.setOptions(this.options);
+    }), i?.mutationKey && this.options.mutationKey && Ae(i.mutationKey) !== Ae(this.options.mutationKey) ? this.reset() : this.#i?.state.status === "pending" && this.#i.setOptions(this.options);
   }
   onUnsubscribe() {
     this.hasListeners() || this.#i?.removeObserver(this);
   }
-  onMutationUpdate(t) {
-    this.#n(), this.#o(t);
+  onMutationUpdate(e) {
+    this.#n(), this.#o(e);
   }
   getCurrentResult() {
     return this.#t;
@@ -2716,77 +2756,77 @@ var Cr = class extends Ne {
   reset() {
     this.#i?.removeObserver(this), this.#i = void 0, this.#n(), this.#o();
   }
-  mutate(t, e) {
-    return this.#r = e, this.#i?.removeObserver(this), this.#i = this.#e.getMutationCache().build(this.#e, this.options), this.#i.addObserver(this), this.#i.execute(t);
+  mutate(e, i) {
+    return this.#r = i, this.#i?.removeObserver(this), this.#i = this.#e.getMutationCache().build(this.#e, this.options), this.#i.addObserver(this), this.#i.execute(e);
   }
   #n() {
-    const t = this.#i?.state ?? gn();
+    const e = this.#i?.state ?? mn();
     this.#t = {
-      ...t,
-      isPending: t.status === "pending",
-      isSuccess: t.status === "success",
-      isError: t.status === "error",
-      isIdle: t.status === "idle",
+      ...e,
+      isPending: e.status === "pending",
+      isSuccess: e.status === "success",
+      isError: e.status === "error",
+      isIdle: e.status === "idle",
       mutate: this.mutate,
       reset: this.reset
     };
   }
-  #o(t) {
+  #o(e) {
     W.batch(() => {
       if (this.#r && this.hasListeners()) {
-        const e = this.#t.variables, i = this.#t.context, n = {
+        const i = this.#t.variables, n = this.#t.context, r = {
           client: this.#e,
           meta: this.options.meta,
           mutationKey: this.options.mutationKey
         };
-        if (t?.type === "success") {
+        if (e?.type === "success") {
           try {
             this.#r.onSuccess?.(
-              t.data,
-              e,
+              e.data,
               i,
-              n
+              n,
+              r
             );
-          } catch (r) {
-            Promise.reject(r);
+          } catch (o) {
+            Promise.reject(o);
           }
           try {
             this.#r.onSettled?.(
-              t.data,
+              e.data,
               null,
-              e,
               i,
-              n
+              n,
+              r
             );
-          } catch (r) {
-            Promise.reject(r);
+          } catch (o) {
+            Promise.reject(o);
           }
-        } else if (t?.type === "error") {
+        } else if (e?.type === "error") {
           try {
             this.#r.onError?.(
-              t.error,
-              e,
+              e.error,
               i,
-              n
+              n,
+              r
             );
-          } catch (r) {
-            Promise.reject(r);
+          } catch (o) {
+            Promise.reject(o);
           }
           try {
             this.#r.onSettled?.(
               void 0,
-              t.error,
-              e,
+              e.error,
               i,
-              n
+              n,
+              r
             );
-          } catch (r) {
-            Promise.reject(r);
+          } catch (o) {
+            Promise.reject(o);
           }
         }
       }
-      this.listeners.forEach((e) => {
-        e(this.#t);
+      this.listeners.forEach((i) => {
+        i(this.#t);
       });
     });
   }
@@ -2902,7 +2942,7 @@ var Cr = class extends Ne {
   }
   ensureQueryData(t) {
     const e = this.defaultQueryOptions(t), i = this.#e.build(this, e), n = i.state.data;
-    return n === void 0 ? this.fetchQuery(t) : (t.revalidateIfStale && i.isStaleByTime(Se(e.staleTime, i)) && this.prefetchQuery(e), Promise.resolve(n));
+    return n === void 0 ? this.fetchQuery(t) : (t.revalidateIfStale && i.isStaleByTime(Ee(e.staleTime, i)) && this.prefetchQuery(e), Promise.resolve(n));
   }
   getQueriesData(t) {
     return this.#e.findAll(t).map(({ queryKey: e, state: i }) => {
@@ -2985,7 +3025,7 @@ var Cr = class extends Ne {
     e.retry === void 0 && (e.retry = !1);
     const i = this.#e.build(this, e);
     return i.isStaleByTime(
-      Se(e.staleTime, i)
+      Ee(e.staleTime, i)
     ) ? i.fetch(e) : Promise.resolve(i.state.data);
   }
   prefetchQuery(t) {
@@ -3074,7 +3114,7 @@ function Di(t, e) {
   for (var n in e) if (n !== "__source" && t[n] !== e[n]) return !0;
   return !1;
 }
-function mn(t, e) {
+function gn(t, e) {
   var i = e(), n = E({ t: { __: i, u: e } }), r = n[0].t, o = n[1];
   return Qn(function() {
     r.__ = i, r.u = e, vt(r) && o({ t: r });
@@ -3263,7 +3303,7 @@ var bn = jt(
   t.unmount();
 }), [t]), /* @__PURE__ */ s(bn.Provider, { value: t, children: e })), wn = jt(!1), Hr = () => Yt(wn);
 wn.Provider;
-function Gr() {
+function $r() {
   let t = !1;
   return {
     clearReset: () => {
@@ -3275,7 +3315,7 @@ function Gr() {
     isReset: () => t
   };
 }
-var $r = jt(Gr()), Wr = () => Yt($r), Kr = (t, e, i) => {
+var Gr = jt($r()), Wr = () => Yt(Gr), Kr = (t, e, i) => {
   const n = i?.state.error && typeof t.throwOnError == "function" ? ei(t.throwOnError, [i.state.error, i]) : t.throwOnError;
   (t.suspense || t.experimental_prefetchInRender || n) && (e.isReset() || (t.retryOnMount = !1));
 }, Qr = (t) => {
@@ -3296,7 +3336,7 @@ var $r = jt(Gr()), Wr = () => Yt($r), Kr = (t, e, i) => {
       1e3
     ));
   }
-}, jr = (t, e) => t.isLoading && t.isFetching && !e, Yr = (t, e) => t?.suspense && e.isPending, Gi = (t, e, i) => e.fetchOptimistic(t).catch(() => {
+}, jr = (t, e) => t.isLoading && t.isFetching && !e, Yr = (t, e) => t?.suspense && e.isPending, $i = (t, e, i) => e.fetchOptimistic(t).catch(() => {
   i.clearReset();
 });
 function Xr(t, e, i) {
@@ -3312,11 +3352,11 @@ function Xr(t, e, i) {
       a
     )
   ), h = c.getOptimisticResult(a), u = !n && t.subscribed !== !1;
-  if (mn(
+  if (gn(
     ae(
       (p) => {
-        const g = u ? c.subscribe(W.batchCalls(p)) : Y;
-        return c.updateResult(), g;
+        const m = u ? c.subscribe(W.batchCalls(p)) : Y;
+        return c.updateResult(), m;
       },
       [c, u]
     ),
@@ -3324,7 +3364,7 @@ function Xr(t, e, i) {
   ), V(() => {
     c.setOptions(a);
   }, [a, c]), Yr(a, h))
-    throw Gi(a, c, r);
+    throw $i(a, c, r);
   if (Vr({
     result: h,
     errorResetBoundary: r,
@@ -3338,7 +3378,7 @@ function Xr(t, e, i) {
     h
   ), a.experimental_prefetchInRender && !Pe && jr(h, n) && (d ? (
     // Fetch immediately on render in order to ensure `.promise` is resolved even if the component is unmounted
-    Gi(a, c, r)
+    $i(a, c, r)
   ) : (
     // subscribe to the "cache promise" so that we can finalize the currentThenable once data comes in
     l?.promise
@@ -3346,7 +3386,7 @@ function Xr(t, e, i) {
     c.updateResult();
   }), a.notifyOnChangeProps ? h : c.trackResult(h);
 }
-function gt(t, e) {
+function mt(t, e) {
   return Xr(t, vr);
 }
 function De(t, e) {
@@ -3359,7 +3399,7 @@ function De(t, e) {
   V(() => {
     n.setOptions(t);
   }, [n, t]);
-  const r = mn(
+  const r = gn(
     ae(
       (a) => n.subscribe(W.batchCalls(a)),
       [n]
@@ -3854,7 +3894,7 @@ async function ts(t) {
   return te.get(`/guides?${e.toString()}`);
 }
 function is(t) {
-  return gt({
+  return mt({
     queryKey: En(t),
     queryFn: () => ts(t),
     enabled: !!t,
@@ -3878,20 +3918,20 @@ function ss() {
     }
   });
 }
-const Bt = "Template", Ht = "Description", Gt = "Next";
+const Bt = "Template", Ht = "Description", $t = "Next";
 function os(t) {
   try {
     const e = JSON.parse(t || "{}");
     return {
       title: e.title ?? Bt,
       description: e.description ?? Ht,
-      buttonContent: e.buttonContent ?? Gt
+      buttonContent: e.buttonContent ?? $t
     };
   } catch {
     return {
       title: Bt,
       description: Ht,
-      buttonContent: Gt
+      buttonContent: $t
     };
   }
 }
@@ -3912,7 +3952,7 @@ const xn = {
 function Cn({
   title: t = Bt,
   description: e = Ht,
-  buttonContent: i = Gt
+  buttonContent: i = $t
 }) {
   return /* @__PURE__ */ s("div", { style: { display: "flex", flexDirection: "column", gap: 8, padding: 4, position: "relative" }, children: [
     /* @__PURE__ */ s("h3", { style: { fontSize: 14, fontWeight: 600, color: "#1855BC", lineHeight: 1.3, margin: 0 }, children: t }),
@@ -4050,11 +4090,11 @@ function us({
   guideId: i = null,
   templateId: n = null
 }) {
-  const [r, o] = E(""), [a, l] = E(void 0), [d, c] = E(null), [h, u] = E(""), [p] = E("right"), [g, _] = E(""), [v, C] = E(n ?? null), [b, w] = E(!1), [M, N] = E("on_click"), [F, B] = E(null), [P, x] = E(!1), [U, G] = E(!1), { data: A, isLoading: $ } = is(i), S = A?.data, oe = S?.templates ?? [], Q = ss(), J = v ? oe.find((k) => k.template_id === v) : null;
+  const [r, o] = E(""), [a, l] = E(void 0), [d, c] = E(null), [h, u] = E(""), [p] = E("right"), [m, _] = E(""), [v, T] = E(n ?? null), [b, w] = E(!1), [M, N] = E("on_click"), [F, B] = E(null), [P, C] = E(!1), [U, $] = E(!1), { data: A, isLoading: G } = is(i), S = A?.data, oe = S?.templates ?? [], Q = ss(), J = v ? oe.find((k) => k.template_id === v) : null;
   V(() => {
-    S && n && oe.some((k) => k.template_id === n) && C(n);
+    S && n && oe.some((k) => k.template_id === n) && T(n);
   }, [S, n, oe]), V(() => {
-    G(J ? J.auto_click_target ?? !1 : !1);
+    $(J ? J.auto_click_target ?? !1 : !1);
   }, [J]), V(() => {
     t({ type: "EDITOR_READY" });
   }, []), V(() => {
@@ -4065,8 +4105,8 @@ function us({
     }) : (o(e.selector), l(e.xpath), c(e.elementInfo), u(""), _("")) : b && B(null);
   }, [e, b]);
   const ue = () => {
-    x(!1), o(""), l(void 0), c(null), u(""), _(""), t({ type: "CLEAR_SELECTION_CLICKED" });
-  }, _e = async () => {
+    C(!1), o(""), l(void 0), c(null), u(""), _(""), t({ type: "CLEAR_SELECTION_CLICKED" });
+  }, ye = async () => {
     if (!S || !i) return;
     const k = Fe(), q = a ?? (r && (r.startsWith("/") || r.startsWith("//")) ? r : null) ?? J?.x_path ?? null, ce = (S.steps ?? S.templates ?? []).slice().sort((D, Z) => D.step_order - Z.step_order).map((D) => ({
       template_id: D.template_id,
@@ -4134,7 +4174,7 @@ function us({
           variant: "secondary",
           style: { alignSelf: "flex-start" },
           onClick: () => {
-            x(!1), w(!1), B(null), t({ type: "CLEAR_SELECTION_CLICKED" });
+            C(!1), w(!1), B(null), t({ type: "CLEAR_SELECTION_CLICKED" });
           },
           children: [
             /* @__PURE__ */ s("iconify-icon", { icon: "mdi:arrow-left", style: { marginRight: "0.5rem" } }),
@@ -4187,7 +4227,7 @@ function us({
                 variant: P ? "primary" : "secondary",
                 style: { flex: 1 },
                 onClick: () => {
-                  x(!0), t({ type: "ACTIVATE_SELECTOR" });
+                  C(!0), t({ type: "ACTIVATE_SELECTOR" });
                 },
                 children: "Re-Select"
               }
@@ -4198,7 +4238,7 @@ function us({
                 variant: "secondary",
                 style: P ? void 0 : { borderWidth: "2px", borderColor: "#3b82f6", background: "rgba(59, 130, 246, 0.08)", color: "#1d4ed8" },
                 onClick: () => {
-                  x(!1), t({ type: "CLEAR_SELECTION_CLICKED" });
+                  C(!1), t({ type: "CLEAR_SELECTION_CLICKED" });
                 },
                 children: "Hide Selector"
               }
@@ -4209,7 +4249,7 @@ function us({
                 variant: "secondary",
                 style: { flex: 1, borderColor: "#ef4444", color: "#dc2626" },
                 onClick: () => {
-                  x(!1), B(null), t({ type: "CLEAR_SELECTION_CLICKED" });
+                  C(!1), B(null), t({ type: "CLEAR_SELECTION_CLICKED" });
                 },
                 children: [
                   /* @__PURE__ */ s("iconify-icon", { icon: "mdi:undo", style: { marginRight: "0.25rem" } }),
@@ -4224,7 +4264,7 @@ function us({
             variant: P ? "primary" : "secondary",
             style: { marginTop: "0.5rem" },
             onClick: () => {
-              x(!0), t({ type: "ACTIVATE_SELECTOR" });
+              C(!0), t({ type: "ACTIVATE_SELECTOR" });
             },
             children: [
               /* @__PURE__ */ s("iconify-icon", { icon: "mdi:selection-marker" }),
@@ -4243,11 +4283,11 @@ function us({
           children: Q.isPending ? "Updating…" : "Update Action"
         }
       ) }),
-      g && /* @__PURE__ */ s("div", { style: f.errorBox, children: [
+      m && /* @__PURE__ */ s("div", { style: f.errorBox, children: [
         /* @__PURE__ */ s("iconify-icon", { icon: "mdi:alert-circle" }),
-        g
+        m
       ] })
-    ] }) : /* @__PURE__ */ s(X, { children: i && $ ? /* @__PURE__ */ s("div", { style: { ...f.emptyState, padding: "2rem" }, children: [
+    ] }) : /* @__PURE__ */ s(X, { children: i && G ? /* @__PURE__ */ s("div", { style: { ...f.emptyState, padding: "2rem" }, children: [
       /* @__PURE__ */ s("iconify-icon", { icon: "mdi:loading", className: "editor-spinner", style: { fontSize: "2rem", color: "#3b82f6" } }),
       /* @__PURE__ */ s("p", { style: f.emptyStateText, children: "Loading guide…" })
     ] }) : i && !S ? /* @__PURE__ */ s("div", { style: { ...f.emptyState, padding: "2rem" }, children: [
@@ -4269,7 +4309,7 @@ function us({
               {
                 item: k,
                 selected: v === k.template_id,
-                onClick: () => C(k.template_id)
+                onClick: () => T(k.template_id)
               },
               `${k.template_id}-${k.step_order}`
             ))
@@ -4291,7 +4331,7 @@ function us({
                 type: "checkbox",
                 id: "autoClickTargetNew",
                 checked: U,
-                onChange: (k) => G(k.target.checked),
+                onChange: (k) => $(k.target.checked),
                 style: { cursor: "pointer" }
               }
             ),
@@ -4304,7 +4344,7 @@ function us({
                 variant: P ? "primary" : "secondary",
                 style: { flex: 1 },
                 onClick: () => {
-                  x(!0), t({ type: "ACTIVATE_SELECTOR" });
+                  C(!0), t({ type: "ACTIVATE_SELECTOR" });
                 },
                 children: "Re-Select"
               }
@@ -4315,7 +4355,7 @@ function us({
                 variant: "secondary",
                 style: P ? void 0 : { borderWidth: "2px", borderColor: "#3b82f6", background: "rgba(59, 130, 246, 0.08)", color: "#1d4ed8" },
                 onClick: () => {
-                  x(!1), t({ type: "CLEAR_SELECTION_CLICKED" });
+                  C(!1), t({ type: "CLEAR_SELECTION_CLICKED" });
                 },
                 children: "Hide Selector"
               }
@@ -4338,7 +4378,7 @@ function us({
             {
               variant: "primary",
               style: { flex: 1 },
-              onClick: _e,
+              onClick: ye,
               disabled: Q.isPending,
               children: Q.isPending ? "Updating…" : "Update"
             }
@@ -4352,7 +4392,7 @@ function us({
                 type: "checkbox",
                 id: "autoClickTargetExisting",
                 checked: U,
-                onChange: (k) => G(k.target.checked),
+                onChange: (k) => $(k.target.checked),
                 style: { cursor: "pointer" }
               }
             ),
@@ -4365,7 +4405,7 @@ function us({
                 variant: P ? "primary" : "secondary",
                 style: { flex: 1 },
                 onClick: () => {
-                  x(!0), t({ type: "ACTIVATE_SELECTOR" });
+                  C(!0), t({ type: "ACTIVATE_SELECTOR" });
                 },
                 children: "Re-Select"
               }
@@ -4376,7 +4416,7 @@ function us({
                 variant: "secondary",
                 style: P ? void 0 : { borderWidth: "2px", borderColor: "#3b82f6", background: "rgba(59, 130, 246, 0.08)", color: "#1d4ed8" },
                 onClick: () => {
-                  x(!1), t({ type: "CLEAR_SELECTION_CLICKED" });
+                  C(!1), t({ type: "CLEAR_SELECTION_CLICKED" });
                 },
                 children: "Hide Selector"
               }
@@ -4387,7 +4427,7 @@ function us({
             {
               variant: "primary",
               style: { flex: 1 },
-              onClick: _e,
+              onClick: ye,
               disabled: Q.isPending,
               children: Q.isPending ? "Updating…" : "Update"
             }
@@ -4397,7 +4437,7 @@ function us({
           {
             variant: P ? "primary" : "secondary",
             onClick: () => {
-              x(!0), t({ type: "ACTIVATE_SELECTOR" });
+              C(!0), t({ type: "ACTIVATE_SELECTOR" });
             },
             children: [
               /* @__PURE__ */ s("iconify-icon", { icon: "mdi:selection-marker" }),
@@ -4407,14 +4447,14 @@ function us({
         )
       ] }),
       /* @__PURE__ */ s("div", { style: { ...f.actionRow, marginTop: "0.5rem" }, children: /* @__PURE__ */ s(R, { variant: "primary", onClick: () => w(!0), children: "Next" }) }),
-      le && g && /* @__PURE__ */ s("div", { style: f.errorBox, children: [
+      le && m && /* @__PURE__ */ s("div", { style: f.errorBox, children: [
         /* @__PURE__ */ s("iconify-icon", { icon: "mdi:alert-circle" }),
-        g
+        m
       ] })
     ] }) : null })
   ] });
 }
-function Ge({
+function $e({
   type: t = "text",
   value: e,
   onInput: i,
@@ -4478,8 +4518,8 @@ function ps() {
     mutationFn: fs
   });
 }
-const gs = ["pages", "update"];
-async function ms({ pageId: t, payload: e }) {
+const ms = ["pages", "update"];
+async function gs({ pageId: t, payload: e }) {
   return te.put(`/pages/${t}`, {
     name: e.name,
     slug: e.slug,
@@ -4489,8 +4529,8 @@ async function ms({ pageId: t, payload: e }) {
 }
 function _s() {
   return De({
-    mutationKey: gs,
-    mutationFn: ms
+    mutationKey: ms,
+    mutationFn: gs
   });
 }
 const ys = ["pages", "delete"];
@@ -4508,7 +4548,7 @@ async function Ss(t) {
   return te.get(`/pages/check-slug?slug=${encodeURIComponent(t)}`);
 }
 function Es(t) {
-  return gt({
+  return mt({
     queryKey: ws(t),
     queryFn: () => Ss(t),
     enabled: !!t,
@@ -4520,7 +4560,7 @@ async function Cs() {
   return te.get("/pages");
 }
 function Ts() {
-  return gt({
+  return mt({
     queryKey: xs,
     queryFn: Cs,
     retry: 0
@@ -4544,16 +4584,16 @@ function rt() {
   }
 }
 function ks({ onMessage: t }) {
-  const [e, i] = E("overviewUntagged"), [n, r] = E(""), [o, a] = E(""), [l, d] = E(""), [c, h] = E(!1), [u, p] = E("create"), [g, _] = E(""), [v, C] = E(""), [b, w] = E("suggested"), [M, N] = E(""), [F, B] = E(!1), [P, x] = E(null), [U, G] = E(!1), A = Ye(), $ = ps(), S = _s(), oe = bs(), { data: Q, isLoading: J, isError: ue } = Es(n), { data: _e, isLoading: he } = Ts(), ne = !!n && J, le = $.isPending || S.isPending, k = (n || "").trim().toLowerCase(), ce = (_e?.data ?? []).filter((O) => (O.slug || "").trim().toLowerCase() === k).filter(
+  const [e, i] = E("overviewUntagged"), [n, r] = E(""), [o, a] = E(""), [l, d] = E(""), [c, h] = E(!1), [u, p] = E("create"), [m, _] = E(""), [v, T] = E(""), [b, w] = E("suggested"), [M, N] = E(""), [F, B] = E(!1), [P, C] = E(null), [U, $] = E(!1), A = Ye(), G = ps(), S = _s(), oe = bs(), { data: Q, isLoading: J, isError: ue } = Es(n), { data: ye, isLoading: he } = Ts(), ne = !!n && J, le = G.isPending || S.isPending, k = (n || "").trim().toLowerCase(), ce = (ye?.data ?? []).filter((O) => (O.slug || "").trim().toLowerCase() === k).filter(
     (O) => (O.name || "").toLowerCase().includes(l.toLowerCase().trim())
   ), re = ae(() => {
     i("overviewUntagged"), a(nt() || "(current page)"), h(!1), A.invalidateQueries({ queryKey: it });
   }, [A]), D = ae(() => {
     i("taggedPagesDetailView"), d("");
   }, []), Z = ae(() => {
-    x(null), i("tagPageFormView"), h(!0), N(rt()), _(""), C(""), p("create"), w("suggested"), B(!1);
-  }, []), mt = ae((O) => {
-    x(O.page_id), i("tagPageFormView"), h(!0), N(O.slug || rt()), _(O.name || ""), C(O.description || ""), p("create"), w("suggested"), B(!1);
+    C(null), i("tagPageFormView"), h(!0), N(rt()), _(""), T(""), p("create"), w("suggested"), B(!1);
+  }, []), gt = ae((O) => {
+    C(O.page_id), i("tagPageFormView"), h(!0), N(O.slug || rt()), _(O.name || ""), T(O.description || ""), p("create"), w("suggested"), B(!1);
   }, []);
   V(() => {
     t({ type: "EDITOR_READY" });
@@ -4571,44 +4611,44 @@ function ks({ onMessage: t }) {
     Q !== void 0 && (e === "overviewTagged" || e === "overviewUntagged") && i(Q.exists ? "overviewTagged" : "overviewUntagged");
   }, [n, Q, ue, e]), V(() => {
     let O = nt();
-    const ye = () => {
-      const be = nt();
-      be !== O && (O = be, r(rt()), a(be || "(current page)"), i("overviewUntagged"));
-    }, ve = () => ye(), Le = () => ye();
-    window.addEventListener("hashchange", ve), window.addEventListener("popstate", Le);
-    const Ue = setInterval(ye, 1500);
+    const ve = () => {
+      const we = nt();
+      we !== O && (O = we, r(rt()), a(we || "(current page)"), i("overviewUntagged"));
+    }, be = () => ve(), Le = () => ve();
+    window.addEventListener("hashchange", be), window.addEventListener("popstate", Le);
+    const Ue = setInterval(ve, 1500);
     return () => {
-      window.removeEventListener("hashchange", ve), window.removeEventListener("popstate", Le), clearInterval(Ue);
+      window.removeEventListener("hashchange", be), window.removeEventListener("popstate", Le), clearInterval(Ue);
     };
   }, []);
   const Xe = async () => {
-    const O = g.trim();
+    const O = m.trim();
     if (!O) {
       B(!0);
       return;
     }
     B(!1);
-    const ye = typeof window < "u" && window.parent !== window ? window.parent.location.pathname : window.location.pathname, ve = M.trim() || ye || "/";
+    const ve = typeof window < "u" && window.parent !== window ? window.parent.location.pathname : window.location.pathname, be = M.trim() || ve || "/";
     try {
       if (P)
         await S.mutateAsync({
           pageId: P,
           payload: {
             name: O,
-            slug: ve,
+            slug: be,
             description: v.trim() || void 0,
             status: "active"
           }
-        }), x(null), A.invalidateQueries({ queryKey: it }), A.invalidateQueries({ queryKey: wt }), re();
+        }), C(null), A.invalidateQueries({ queryKey: it }), A.invalidateQueries({ queryKey: wt }), re();
       else {
         const Le = typeof window < "u" && window.parent !== window ? window.parent.location.href : window.location.href, Ue = M.trim() || Le;
-        await $.mutateAsync({
+        await G.mutateAsync({
           name: O,
-          slug: ve,
+          slug: be,
           description: v.trim() || void 0
         });
-        const be = Is, _t = localStorage.getItem(be) || "[]", y = JSON.parse(_t);
-        y.push({ pageName: O, url: Ue }), localStorage.setItem(be, JSON.stringify(y)), A.invalidateQueries({ queryKey: it }), A.invalidateQueries({ queryKey: wt }), i("overviewTagged"), h(!1);
+        const we = Is, _t = localStorage.getItem(we) || "[]", y = JSON.parse(_t);
+        y.push({ pageName: O, url: Ue }), localStorage.setItem(we, JSON.stringify(y)), A.invalidateQueries({ queryKey: it }), A.invalidateQueries({ queryKey: wt }), i("overviewTagged"), h(!1);
       }
     } catch {
     }
@@ -4618,21 +4658,21 @@ function ks({ onMessage: t }) {
         await oe.mutateAsync(O), A.invalidateQueries({ queryKey: it }), A.invalidateQueries({ queryKey: wt });
       } catch {
       }
-  }, Ee = { display: "flex", flexDirection: "column", flex: 1, gap: "1rem" };
+  }, xe = { display: "flex", flexDirection: "column", flex: 1, gap: "1rem" };
   return U ? /* @__PURE__ */ s("div", { style: { ...f.panel, padding: "0.5rem" }, children: /* @__PURE__ */ s("div", { style: f.panelHeader, children: [
     /* @__PURE__ */ s("h2", { style: { ...f.headerTitle, fontSize: "1.125rem" }, children: "Tag Page" }),
-    /* @__PURE__ */ s("div", { style: { display: "flex", gap: "0.25rem" }, children: /* @__PURE__ */ s(R, { variant: "icon", title: "Expand", onClick: () => G(!1), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:plus", style: { fontSize: "1.25rem", color: "#64748b" } }) }) })
+    /* @__PURE__ */ s("div", { style: { display: "flex", gap: "0.25rem" }, children: /* @__PURE__ */ s(R, { variant: "icon", title: "Expand", onClick: () => $(!1), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:plus", style: { fontSize: "1.25rem", color: "#64748b" } }) }) })
   ] }) }) : /* @__PURE__ */ s("div", { style: f.panel, children: [
     /* @__PURE__ */ s("div", { style: f.panelHeader, children: [
       /* @__PURE__ */ s("h2", { style: { ...f.headerTitle, fontSize: "1.125rem" }, children: "Tag Page" }),
-      /* @__PURE__ */ s("div", { style: { display: "flex", gap: "0.25rem" }, children: /* @__PURE__ */ s(R, { variant: "icon", title: "Minimize", onClick: () => G(!0), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:window-minimize", style: { fontSize: "1.125rem" } }) }) })
+      /* @__PURE__ */ s("div", { style: { display: "flex", gap: "0.25rem" }, children: /* @__PURE__ */ s(R, { variant: "icon", title: "Minimize", onClick: () => $(!0), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:window-minimize", style: { fontSize: "1.125rem" } }) }) })
     ] }),
     /* @__PURE__ */ s("div", { style: f.panelBody, children: [
-      ne && (e === "overviewTagged" || e === "overviewUntagged") && /* @__PURE__ */ s("div", { style: { ...Ee, alignItems: "center", justifyContent: "center", padding: "2rem", color: "#64748b", fontSize: "0.875rem" }, children: [
+      ne && (e === "overviewTagged" || e === "overviewUntagged") && /* @__PURE__ */ s("div", { style: { ...xe, alignItems: "center", justifyContent: "center", padding: "2rem", color: "#64748b", fontSize: "0.875rem" }, children: [
         /* @__PURE__ */ s("iconify-icon", { icon: "mdi:loading", className: "editor-spinner", style: { fontSize: "1.5rem", marginBottom: "0.5rem" } }),
         /* @__PURE__ */ s("span", { children: "Checking page…" })
       ] }),
-      !ne && e === "overviewTagged" && /* @__PURE__ */ s("div", { style: Ee, children: [
+      !ne && e === "overviewTagged" && /* @__PURE__ */ s("div", { style: xe, children: [
         /* @__PURE__ */ s("div", { style: f.sectionLabel, children: "PAGES OVERVIEW" }),
         /* @__PURE__ */ s("div", { style: { ...f.card, marginBottom: "1rem", cursor: "pointer" }, onClick: D, children: /* @__PURE__ */ s("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1, minWidth: 0 }, children: [
           /* @__PURE__ */ s("div", { style: { display: "flex", gap: "1rem", flex: 1, minWidth: 0 }, children: [
@@ -4646,7 +4686,7 @@ function ks({ onMessage: t }) {
         ] }) }),
         /* @__PURE__ */ s(R, { variant: "primary", style: { width: "100%" }, onClick: Z, children: "Tag Page" })
       ] }),
-      e === "taggedPagesDetailView" && /* @__PURE__ */ s("div", { style: Ee, children: [
+      e === "taggedPagesDetailView" && /* @__PURE__ */ s("div", { style: xe, children: [
         /* @__PURE__ */ s(
           "a",
           {
@@ -4669,7 +4709,7 @@ function ks({ onMessage: t }) {
         /* @__PURE__ */ s("div", { style: f.searchWrap, children: [
           /* @__PURE__ */ s("iconify-icon", { icon: "mdi:magnify", style: f.searchIcon }),
           /* @__PURE__ */ s(
-            Ge,
+            $e,
             {
               type: "text",
               placeholder: "Search Pages",
@@ -4686,26 +4726,26 @@ function ks({ onMessage: t }) {
         ] }) : ce.map((O) => /* @__PURE__ */ s("div", { style: { ...f.pageItem, marginBottom: "0.5rem", alignItems: "center" }, children: [
           /* @__PURE__ */ s("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#1e293b", flex: 1 }, children: O.name || "Unnamed" }),
           /* @__PURE__ */ s("div", { style: { display: "flex", gap: "0.25rem" }, children: [
-            /* @__PURE__ */ s(R, { variant: "iconSm", title: "Edit", onClick: () => mt(O), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:pencil" }) }),
+            /* @__PURE__ */ s(R, { variant: "iconSm", title: "Edit", onClick: () => gt(O), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:pencil" }) }),
             /* @__PURE__ */ s(R, { variant: "iconSm", title: "Delete", onClick: () => fe(O.page_id), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:delete-outline" }) })
           ] })
         ] }, O.page_id)),
         /* @__PURE__ */ s(R, { variant: "primary", style: { width: "100%", marginTop: "1rem" }, onClick: Z, children: "Tag Page" })
       ] }),
-      !ne && e === "overviewUntagged" && /* @__PURE__ */ s("div", { style: { ...Ee, textAlign: "center", padding: "2.5rem 1.5rem" }, children: [
+      !ne && e === "overviewUntagged" && /* @__PURE__ */ s("div", { style: { ...xe, textAlign: "center", padding: "2.5rem 1.5rem" }, children: [
         /* @__PURE__ */ s("div", { style: { ...f.emptyStateIcon, width: "6rem", height: "6rem", marginBottom: "1.5rem", background: "linear-gradient(to bottom right, #dbeafe, #bfdbfe, #93c5fd)" }, children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:tag-plus", style: { fontSize: "3rem", color: "#3b82f6" } }) }),
         /* @__PURE__ */ s("h3", { style: { fontSize: "1.25rem", fontWeight: 700, color: "#1e293b", marginBottom: "0.5rem" }, children: "Let's start tagging!" }),
         /* @__PURE__ */ s("p", { style: { fontSize: "0.875rem", color: "#64748b", marginBottom: "2rem", lineHeight: 1.625, maxWidth: "20rem", margin: "0 auto 2rem" }, children: "Start by first tagging this page and then features to get going." }),
         /* @__PURE__ */ s(R, { variant: "primary", style: { width: "100%", maxWidth: "20rem", margin: "0 auto" }, onClick: Z, children: "Tag Page" })
       ] }),
-      e === "tagPageFormView" && /* @__PURE__ */ s("div", { style: { ...Ee, gap: "1.5rem" }, children: [
+      e === "tagPageFormView" && /* @__PURE__ */ s("div", { style: { ...xe, gap: "1.5rem" }, children: [
         /* @__PURE__ */ s(
           "a",
           {
             href: "#",
             style: f.link,
             onClick: (O) => {
-              O.preventDefault(), x(null), re(), h(!1);
+              O.preventDefault(), C(null), re(), h(!1);
             },
             children: [
               /* @__PURE__ */ s("iconify-icon", { icon: "mdi:arrow-left" }),
@@ -4732,11 +4772,11 @@ function ks({ onMessage: t }) {
                 /* @__PURE__ */ s("span", { style: { color: "#ef4444" }, children: "*" })
               ] }),
               /* @__PURE__ */ s(
-                Ge,
+                $e,
                 {
                   type: "text",
                   placeholder: "Enter page name",
-                  value: g,
+                  value: m,
                   onInput: (O) => _(O.target.value)
                 }
               ),
@@ -4752,7 +4792,7 @@ function ks({ onMessage: t }) {
                 {
                   placeholder: "Click to add description",
                   value: v,
-                  onInput: (O) => C(O.target.value),
+                  onInput: (O) => T(O.target.value),
                   minHeight: "5rem"
                 }
               )
@@ -4784,7 +4824,7 @@ function ks({ onMessage: t }) {
           ] }),
           /* @__PURE__ */ s("div", { children: [
             /* @__PURE__ */ s("label", { style: { display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }, children: "Selection URL" }),
-            /* @__PURE__ */ s(Ge, { type: "text", placeholder: "e.g. //*/path/to/page", value: M, onInput: (O) => N(O.target.value) })
+            /* @__PURE__ */ s($e, { type: "text", placeholder: "e.g. //*/path/to/page", value: M, onInput: (O) => N(O.target.value) })
           ] })
         ] })
       ] })
@@ -4795,7 +4835,7 @@ function ks({ onMessage: t }) {
         {
           variant: "secondary",
           onClick: () => {
-            x(null), re();
+            C(null), re();
           },
           disabled: le,
           children: "Cancel"
@@ -4847,23 +4887,23 @@ async function Us() {
   return Array.isArray(t) ? { data: t } : t;
 }
 function zs() {
-  return gt({
+  return mt({
     queryKey: He,
     queryFn: Us,
     retry: 0
   });
 }
-const $i = "designerHeatmapEnabled";
+const Gi = "designerHeatmapEnabled";
 function Bs({ onMessage: t, elementSelected: e }) {
-  const [i, n] = E("overview"), [r, o] = E(!1), [a, l] = E(""), [d, c] = E(null), [h, u] = E(""), [p, g] = E(!1), [_, v] = E(!1), [C, b] = E(!1), [w, M] = E(!1), [N, F] = E(!1), [B, P] = E("create"), [x, U] = E("suggested"), [G, A] = E(""), [$, S] = E(""), [oe, Q] = E(null), [J, ue] = E(null), [_e, he] = E(""), ne = Ye(), le = Ps(), k = Ls(), q = Ns(), { data: ce, isLoading: re } = zs(), D = le.isPending || k.isPending || q.isPending, Z = ce?.data ?? [], mt = Z.length, Xe = Z.filter((y) => (y.name || "").toLowerCase().includes(_e.toLowerCase().trim())).sort((y, ee) => (y.name || "").localeCompare(ee.name || "", void 0, { sensitivity: "base" })), fe = ae(() => {
-    n("overview"), o(!1), l(""), c(null), S(""), u(""), g(!1), Q(null), he(""), ne.invalidateQueries({ queryKey: He });
-  }, [ne]), Ee = ae(() => {
+  const [i, n] = E("overview"), [r, o] = E(!1), [a, l] = E(""), [d, c] = E(null), [h, u] = E(""), [p, m] = E(!1), [_, v] = E(!1), [T, b] = E(!1), [w, M] = E(!1), [N, F] = E(!1), [B, P] = E("create"), [C, U] = E("suggested"), [$, A] = E(""), [G, S] = E(""), [oe, Q] = E(null), [J, ue] = E(null), [ye, he] = E(""), ne = Ye(), le = Ps(), k = Ls(), q = Ns(), { data: ce, isLoading: re } = zs(), D = le.isPending || k.isPending || q.isPending, Z = ce?.data ?? [], gt = Z.length, Xe = Z.filter((y) => (y.name || "").toLowerCase().includes(ye.toLowerCase().trim())).sort((y, ee) => (y.name || "").localeCompare(ee.name || "", void 0, { sensitivity: "base" })), fe = ae(() => {
+    n("overview"), o(!1), l(""), c(null), S(""), u(""), m(!1), Q(null), he(""), ne.invalidateQueries({ queryKey: He });
+  }, [ne]), xe = ae(() => {
     n("taggedList"), he("");
   }, []), O = ae((y) => y.rules?.find(
-    (we) => we.selector_type === "xpath" && (we.selector_value ?? "").trim() !== ""
-  )?.selector_value ?? "", []), ye = ae(
+    (Se) => Se.selector_type === "xpath" && (Se.selector_value ?? "").trim() !== ""
+  )?.selector_value ?? "", []), ve = ae(
     (y) => {
-      n("form"), o(!0), y ? (Q(y.feature_id), u(y.name || ""), A(y.description || ""), S(O(y)), U("exact")) : (Q(null), u(""), A(""), S(e?.xpath || ""), l(e?.selector || ""), c(e?.elementInfo || null)), g(!1);
+      n("form"), o(!0), y ? (Q(y.feature_id), u(y.name || ""), A(y.description || ""), S(O(y)), U("exact")) : (Q(null), u(""), A(""), S(e?.xpath || ""), l(e?.selector || ""), c(e?.elementInfo || null)), m(!1);
     },
     [e, O]
   );
@@ -4872,33 +4912,33 @@ function Bs({ onMessage: t, elementSelected: e }) {
   }, []), V(() => {
     t({ type: "FEATURES_FOR_HEATMAP", features: ce?.data ?? [] });
   }, [ce, t]), V(() => {
-    const y = localStorage.getItem($i) === "true";
+    const y = localStorage.getItem(Gi) === "true";
     v(y);
   }, []), V(() => {
-    e ? (l(e.selector), c(e.elementInfo), S(e.xpath || ""), o(!0), n("form"), u(""), g(!1), P("create"), A(""), U("exact")) : fe();
+    e ? (l(e.selector), c(e.elementInfo), S(e.xpath || ""), o(!0), n("form"), u(""), m(!1), P("create"), A(""), U("exact")) : fe();
   }, [e]);
-  const ve = () => {
+  const be = () => {
     const y = !_;
     v(y);
     try {
-      localStorage.setItem($i, String(y));
+      localStorage.setItem(Gi, String(y));
     } catch {
     }
     t({ type: "HEATMAP_TOGGLE", enabled: y });
   }, Le = (y) => y.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""), Ue = async () => {
     const y = h.trim();
     if (!y) {
-      g(!0);
+      m(!0);
       return;
     }
-    g(!1);
-    const ee = $ || e?.xpath || "";
-    if (x === "exact") {
+    m(!1);
+    const ee = G || e?.xpath || "";
+    if (C === "exact") {
       if (!ee) return;
-      const we = {
+      const Se = {
         name: y,
         slug: Le(y),
-        description: G.trim() || "",
+        description: $.trim() || "",
         status: "active",
         rules: [
           {
@@ -4911,12 +4951,12 @@ function Bs({ onMessage: t, elementSelected: e }) {
         ]
       };
       try {
-        oe ? (await k.mutateAsync({ featureId: oe, payload: we }), ne.invalidateQueries({ queryKey: He }), fe()) : (await le.mutateAsync(we), ne.invalidateQueries({ queryKey: He }), fe());
+        oe ? (await k.mutateAsync({ featureId: oe, payload: Se }), ne.invalidateQueries({ queryKey: He }), fe()) : (await le.mutateAsync(Se), ne.invalidateQueries({ queryKey: He }), fe());
       } catch {
       }
       return;
     }
-  }, be = async (y) => {
+  }, we = async (y) => {
     if (window.confirm("Delete this feature?")) {
       ue(y);
       try {
@@ -4929,10 +4969,10 @@ function Bs({ onMessage: t, elementSelected: e }) {
   }, _t = (y) => {
     const ee = [];
     y.tagName && ee.push(`Tag: ${y.tagName}`), y.id && ee.push(`ID: ${y.id}`), y.className && ee.push(`Class: ${y.className}`);
-    const we = (y.textContent || "").slice(0, 80);
-    return we && ee.push(`Text: ${we}`), ee.join(" | ");
+    const Se = (y.textContent || "").slice(0, 80);
+    return Se && ee.push(`Text: ${Se}`), ee.join(" | ");
   };
-  return C ? /* @__PURE__ */ s("div", { style: { ...f.panel, padding: "0.5rem" }, children: /* @__PURE__ */ s("div", { style: f.panelHeader, children: [
+  return T ? /* @__PURE__ */ s("div", { style: { ...f.panel, padding: "0.5rem" }, children: /* @__PURE__ */ s("div", { style: f.panelHeader, children: [
     /* @__PURE__ */ s("h2", { style: { ...f.headerTitle, fontSize: "1.125rem" }, children: r ? "Tag Feature" : "Tag Features" }),
     /* @__PURE__ */ s("div", { style: { display: "flex", gap: "0.25rem" }, children: /* @__PURE__ */ s(R, { variant: "icon", title: "Expand", onClick: () => b(!1), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:plus", style: { fontSize: "1.25rem", color: "#64748b" } }) }) })
   ] }) }) : /* @__PURE__ */ s("div", { style: f.panel, children: [
@@ -4967,7 +5007,7 @@ function Bs({ onMessage: t, elementSelected: e }) {
                 /* @__PURE__ */ s("span", { style: { color: "#ef4444" }, children: "*" })
               ] }),
               /* @__PURE__ */ s(
-                Ge,
+                $e,
                 {
                   type: "text",
                   placeholder: "e.g. report-designer-data-table-grid Link",
@@ -4986,7 +5026,7 @@ function Bs({ onMessage: t, elementSelected: e }) {
                 Tn,
                 {
                   placeholder: "Describe your Feature",
-                  value: G,
+                  value: $,
                   onInput: (y) => A(y.target.value),
                   minHeight: "5rem"
                 }
@@ -5001,25 +5041,25 @@ function Bs({ onMessage: t, elementSelected: e }) {
           ] }),
           /* @__PURE__ */ s("div", { style: { display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.25rem" }, children: [
             /* @__PURE__ */ s("label", { style: f.radioLabel, children: [
-              /* @__PURE__ */ s("input", { type: "radio", name: "featureMatch", checked: x === "suggested", onChange: () => U("suggested"), style: { accentColor: "#3b82f6" } }),
+              /* @__PURE__ */ s("input", { type: "radio", name: "featureMatch", checked: C === "suggested", onChange: () => U("suggested"), style: { accentColor: "#3b82f6" } }),
               /* @__PURE__ */ s("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Suggested match" })
             ] }),
             /* @__PURE__ */ s("label", { style: f.radioLabel, children: [
-              /* @__PURE__ */ s("input", { type: "radio", name: "featureMatch", checked: x === "ruleBuilder", onChange: () => U("ruleBuilder"), style: { accentColor: "#3b82f6" } }),
+              /* @__PURE__ */ s("input", { type: "radio", name: "featureMatch", checked: C === "ruleBuilder", onChange: () => U("ruleBuilder"), style: { accentColor: "#3b82f6" } }),
               /* @__PURE__ */ s("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Rule builder" })
             ] }),
             /* @__PURE__ */ s("label", { style: f.radioLabel, children: [
-              /* @__PURE__ */ s("input", { type: "radio", name: "featureMatch", checked: x === "customCss", onChange: () => U("customCss"), style: { accentColor: "#3b82f6" } }),
+              /* @__PURE__ */ s("input", { type: "radio", name: "featureMatch", checked: C === "customCss", onChange: () => U("customCss"), style: { accentColor: "#3b82f6" } }),
               /* @__PURE__ */ s("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Custom CSS" })
             ] }),
             /* @__PURE__ */ s("label", { style: f.radioLabel, children: [
-              /* @__PURE__ */ s("input", { type: "radio", name: "featureMatch", checked: x === "exact", onChange: () => U("exact"), style: { accentColor: "#3b82f6" } }),
+              /* @__PURE__ */ s("input", { type: "radio", name: "featureMatch", checked: C === "exact", onChange: () => U("exact"), style: { accentColor: "#3b82f6" } }),
               /* @__PURE__ */ s("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#334155" }, children: "Exact match" })
             ] })
           ] }),
           /* @__PURE__ */ s("div", { children: [
-            /* @__PURE__ */ s("label", { style: { display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }, children: x === "exact" ? "XPath" : "Selection" }),
-            /* @__PURE__ */ s("div", { style: f.selectorBox, children: x === "exact" ? (e?.xpath ?? $) || "-" : (e?.selector ?? a) || "-" })
+            /* @__PURE__ */ s("label", { style: { display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#334155", marginBottom: "0.5rem" }, children: C === "exact" ? "XPath" : "Selection" }),
+            /* @__PURE__ */ s("div", { style: f.selectorBox, children: C === "exact" ? (e?.xpath ?? G) || "-" : (e?.selector ?? a) || "-" })
           ] }),
           d && /* @__PURE__ */ s("div", { style: { marginTop: "1rem" }, children: [
             /* @__PURE__ */ s(
@@ -5083,16 +5123,16 @@ function Bs({ onMessage: t, elementSelected: e }) {
       /* @__PURE__ */ s("div", { style: f.searchWrap, children: [
         /* @__PURE__ */ s("iconify-icon", { icon: "mdi:magnify", style: f.searchIcon }),
         /* @__PURE__ */ s(
-          Ge,
+          $e,
           {
             type: "text",
             placeholder: "Search features",
-            value: _e,
+            value: ye,
             onInput: (y) => he(y.target.value),
             style: f.searchInput
           }
         ),
-        _e && /* @__PURE__ */ s(R, { variant: "ghost", style: { position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)" }, onClick: () => he(""), children: "Clear" })
+        ye && /* @__PURE__ */ s(R, { variant: "ghost", style: { position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)" }, onClick: () => he(""), children: "Clear" })
       ] }),
       re ? /* @__PURE__ */ s("div", { style: { display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem", color: "#64748b", fontSize: "0.875rem" }, children: [
         /* @__PURE__ */ s("iconify-icon", { icon: "mdi:loading", className: "editor-spinner", style: { fontSize: "1.25rem", marginRight: "0.5rem" } }),
@@ -5102,12 +5142,12 @@ function Bs({ onMessage: t, elementSelected: e }) {
         return /* @__PURE__ */ s("div", { style: { ...f.pageItem, marginBottom: "0.5rem", alignItems: "center" }, children: [
           /* @__PURE__ */ s("span", { style: { fontSize: "0.875rem", fontWeight: 500, color: "#1e293b", flex: 1 }, children: y.name || "Unnamed" }),
           /* @__PURE__ */ s("div", { style: { display: "flex", gap: "0.25rem", alignItems: "center" }, children: [
-            /* @__PURE__ */ s(R, { variant: "iconSm", title: "Edit", onClick: () => ye(y), disabled: ee, children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:pencil" }) }),
-            ee ? /* @__PURE__ */ s("span", { style: { width: "2rem", height: "2rem", display: "flex", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:loading", className: "editor-spinner", style: { fontSize: "1.25rem", color: "#64748b" } }) }) : /* @__PURE__ */ s(R, { variant: "iconSm", title: "Delete", onClick: () => be(y.feature_id), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:delete-outline" }) })
+            /* @__PURE__ */ s(R, { variant: "iconSm", title: "Edit", onClick: () => ve(y), disabled: ee, children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:pencil" }) }),
+            ee ? /* @__PURE__ */ s("span", { style: { width: "2rem", height: "2rem", display: "flex", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:loading", className: "editor-spinner", style: { fontSize: "1.25rem", color: "#64748b" } }) }) : /* @__PURE__ */ s(R, { variant: "iconSm", title: "Delete", onClick: () => we(y.feature_id), children: /* @__PURE__ */ s("iconify-icon", { icon: "mdi:delete-outline" }) })
           ] })
         ] }, y.feature_id);
       }),
-      /* @__PURE__ */ s(R, { variant: "primary", style: { width: "100%", marginTop: "1rem" }, onClick: () => ye(), children: "Tag Feature" })
+      /* @__PURE__ */ s(R, { variant: "primary", style: { width: "100%", marginTop: "1rem" }, onClick: () => ve(), children: "Tag Feature" })
     ] }) : re ? /* @__PURE__ */ s("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", color: "#64748b", fontSize: "0.875rem" }, children: [
       /* @__PURE__ */ s("iconify-icon", { icon: "mdi:loading", className: "editor-spinner", style: { fontSize: "1.5rem", marginBottom: "0.75rem" } }),
       /* @__PURE__ */ s("span", { children: "Loading features…" })
@@ -5123,9 +5163,9 @@ function Bs({ onMessage: t, elementSelected: e }) {
         ] }),
         /* @__PURE__ */ s("iconify-icon", { icon: "mdi:chevron-right", style: { color: "#94a3b8", fontSize: "1.25rem", flexShrink: 0 } })
       ] }) }),
-      /* @__PURE__ */ s("div", { style: { ...f.card, marginBottom: "0.75rem", cursor: "pointer" }, onClick: Ee, children: /* @__PURE__ */ s("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" }, children: [
+      /* @__PURE__ */ s("div", { style: { ...f.card, marginBottom: "0.75rem", cursor: "pointer" }, onClick: xe, children: /* @__PURE__ */ s("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" }, children: [
         /* @__PURE__ */ s("div", { style: { display: "flex", gap: "1rem", flex: 1, minWidth: 0 }, children: [
-          /* @__PURE__ */ s("span", { style: { ...f.badge, background: "#3b82f6", color: "#fff", minWidth: "1.75rem", height: "1.75rem" }, children: mt }),
+          /* @__PURE__ */ s("span", { style: { ...f.badge, background: "#3b82f6", color: "#fff", minWidth: "1.75rem", height: "1.75rem" }, children: gt }),
           /* @__PURE__ */ s("div", { style: { flex: 1, minWidth: 0 }, children: [
             /* @__PURE__ */ s("div", { style: { fontSize: "0.875rem", fontWeight: 600, color: "#1e293b", marginBottom: "0.125rem" }, children: "Tagged Features" }),
             /* @__PURE__ */ s("div", { style: { fontSize: "0.75rem", color: "#64748b", lineHeight: 1.375 }, children: "List of tagged Features on this page" })
@@ -5142,8 +5182,8 @@ function Bs({ onMessage: t, elementSelected: e }) {
               role: "switch",
               tabIndex: 0,
               style: f.toggle(_),
-              onClick: ve,
-              onKeyDown: (y) => y.key === "Enter" && ve(),
+              onClick: be,
+              onKeyDown: (y) => y.key === "Enter" && be(),
               children: /* @__PURE__ */ s("span", { style: f.toggleThumb(_) })
             }
           ),
@@ -5180,7 +5220,7 @@ function Bs({ onMessage: t, elementSelected: e }) {
 const Hs = new Ir({
   defaultOptions: { mutations: { retry: 0 } }
 });
-class Gs {
+class $s {
   iframe = null;
   dragHandle = null;
   gripButton = null;
@@ -5219,7 +5259,7 @@ class Gs {
       background: white;
       border: 1px solid rgba(0, 0, 0, 0.06);
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
-      z-index: 999999;
+      z-index: ${x.zIndex.editor};
       display: none;
       overflow: hidden;
     `, this.createDragHandle(), this.loadEditorHtml(), window.addEventListener("message", this.handleMessage);
@@ -5342,7 +5382,7 @@ class Gs {
       height: 70px;
       background: transparent;
       cursor: default;
-      z-index: 1000000;
+      z-index: ${x.zIndex.controls};
       display: none;
       pointer-events: none;
       user-select: none;
@@ -5422,10 +5462,10 @@ class Gs {
     !i || !i.type || (this.messageCallback && this.messageCallback(i), (i.type === "CANCEL" || i.type === "GUIDE_SAVED") && this.hide());
   };
 }
-const $s = "visual-designer-guides", Wi = "1.0.0";
+const Gs = "visual-designer-guides", Wi = "1.0.0";
 class Ws {
   storageKey;
-  constructor(e = $s) {
+  constructor(e = Gs) {
     this.storageKey = e;
   }
   getGuides() {
@@ -5470,16 +5510,16 @@ function Ks({ onExit: t }) {
     top: "20px",
     right: "20px",
     padding: "10px 20px",
-    background: T.bg,
-    border: `2px solid ${T.primary}`,
-    borderRadius: T.borderRadius,
-    color: T.primary,
+    background: x.bg,
+    border: `2px solid ${x.primary}`,
+    borderRadius: x.borderRadius,
+    color: x.primary,
     fontSize: "14px",
     fontWeight: "600",
-    fontFamily: T.fontFamily,
+    fontFamily: x.fontFamily,
     cursor: "pointer",
-    zIndex: String(T.zIndex.controls),
-    boxShadow: T.shadow,
+    zIndex: String(x.zIndex.controls),
+    boxShadow: x.shadow,
     transition: "all 0.2s ease",
     pointerEvents: "auto"
   };
@@ -5490,10 +5530,10 @@ function Ks({ onExit: t }) {
       style: e,
       onClick: t,
       onMouseEnter: (i) => {
-        i.currentTarget.style.background = T.primary, i.currentTarget.style.color = T.bg, i.currentTarget.style.transform = "translateY(-2px)", i.currentTarget.style.boxShadow = T.shadowHover;
+        i.currentTarget.style.background = x.primary, i.currentTarget.style.color = x.bg, i.currentTarget.style.transform = "translateY(-2px)", i.currentTarget.style.boxShadow = x.shadowHover;
       },
       onMouseLeave: (i) => {
-        i.currentTarget.style.background = T.bg, i.currentTarget.style.color = T.primary, i.currentTarget.style.transform = "translateY(0)", i.currentTarget.style.boxShadow = T.shadow;
+        i.currentTarget.style.background = x.bg, i.currentTarget.style.color = x.primary, i.currentTarget.style.transform = "translateY(0)", i.currentTarget.style.boxShadow = x.shadow;
       },
       children: [
         /* @__PURE__ */ s("iconify-icon", { icon: "mdi:exit-to-app", style: { verticalAlign: "-0.2em", marginRight: "6px" } }),
@@ -5513,9 +5553,9 @@ function Qs() {
         left: 0,
         right: 0,
         bottom: 0,
-        border: `5px solid ${T.primary}`,
+        border: `5px solid ${x.primary}`,
         pointerEvents: "none",
-        zIndex: T.zIndex.highlight - 1,
+        zIndex: x.zIndex.highlight - 1,
         boxSizing: "border-box"
       }
     }
@@ -5532,15 +5572,15 @@ function Vs() {
         left: "50%",
         transform: "translateX(-50%)",
         padding: "0px 10px 3px",
-        background: T.primary,
-        color: T.bg,
+        background: x.primary,
+        color: x.bg,
         fontSize: "14px",
         fontWeight: "600",
-        fontFamily: T.fontFamily,
+        fontFamily: x.fontFamily,
         borderRadius: "0 0 6px 6px",
-        border: `5px solid ${T.primary}`,
+        border: `5px solid ${x.primary}`,
         borderTop: "none",
-        zIndex: T.zIndex.badge,
+        zIndex: x.zIndex.badge,
         boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
         pointerEvents: "none",
         whiteSpace: "nowrap"
@@ -5563,12 +5603,13 @@ function qs() {
         background: "rgba(248, 250, 252, 0.97)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        zIndex: T.zIndex.loading,
+        zIndex: x.zIndex.loading,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: T.fontFamily
+        fontFamily: x.fontFamily,
+        pointerEvents: "auto"
       },
       children: [
         /* @__PURE__ */ s(
@@ -5593,7 +5634,7 @@ function qs() {
                     width: 56,
                     height: 56,
                     border: "3px solid #e2e8f0",
-                    borderTopColor: T.primary,
+                    borderTopColor: x.primary,
                     borderRadius: "50%",
                     animation: "vd-spin 0.8s linear infinite",
                     marginBottom: "1.5rem"
@@ -5686,8 +5727,9 @@ class In {
   fetchedGuides = [];
   /** Current URL to detect page changes */
   currentUrl = typeof window < "u" ? window.location.href : "";
+  styleInjected = !1;
   constructor(e = {}) {
-    this.config = e, this.guideId = e.guideId ?? null, this.templateId = e.templateId ?? null, this.storage = new Ws(e.storageKey), this.editorMode = new Nn(), this.guideRenderer = new tr(), this.featureHeatmapRenderer = new nr(), this.editorFrame = new Gs();
+    this.config = e, this.guideId = e.guideId ?? null, this.templateId = e.templateId ?? null, this.storage = new Ws(e.storageKey), this.editorMode = new Nn(), this.guideRenderer = new tr(), this.featureHeatmapRenderer = new nr(), this.editorFrame = new $s();
   }
   init() {
     if (this.isInitialized) return;
@@ -5715,7 +5757,7 @@ class In {
           });
         }
       }
-    }), this.shouldEnableEditorMode() ? (this.showLoading = !0, this.renderOverlays(), this.enableEditor()) : this.loadGuides(), this.heatmapEnabled = localStorage.getItem("designerHeatmapEnabled") === "true", this.renderFeatureHeatmap(), this.setupEventListeners(), this.fetchGuides();
+    }), this.shouldEnableEditorMode() ? (this.showLoading = !0, this.renderOverlays(), this.enableEditor()) : this.loadGuides(), this.heatmapEnabled = localStorage.getItem("designerHeatmapEnabled") === "true", this.renderFeatureHeatmap(), this.setupEventListeners(), this.fetchGuides(), this.injectGlobalProtectionStyles();
   }
   enableEditor() {
     if (this.isEditorMode) return;
@@ -5878,7 +5920,7 @@ class In {
     console.log("[Visual Designer] Click Event:", e);
     const i = e.target;
     if (!i) return;
-    const n = ke.getXPath(i);
+    const n = pe.getXPath(i);
     console.log("[Visual Designer] Clicked Element XPath:", n);
     for (const r of this.fetchedGuides)
       console.log("Guide:", r), r.target_segment && r.target_segment === n && (this.trackEvent("triggered", {
@@ -6002,6 +6044,23 @@ class In {
       this.sdkRoot = document.createElement("div"), this.sdkRoot.id = "designer-sdk-root", document.body.appendChild(this.sdkRoot);
     }
   }
+  injectGlobalProtectionStyles() {
+    if (this.styleInjected || typeof document > "u") return;
+    const e = document.createElement("style");
+    e.id = "designer-protection-styles", e.textContent = `
+    #designer-editor-frame {
+      pointer-events: auto !important;
+      position: fixed !important;
+      z-index: 2147483647 !important;
+    }
+
+    #designer-editor-drag-handle {
+      pointer-events: auto !important;
+      position: fixed !important;
+      z-index: 2147483647 !important;
+    }
+  `, document.head.appendChild(e), this.styleInjected = !0;
+  }
   renderOverlays() {
     this.ensureSDKRoot(), this.sdkRoot && Ys(this.sdkRoot, {
       showExitButton: this.isEditorMode,
@@ -6066,17 +6125,17 @@ const ni = "1.0.0", kn = "rg-web-sdk", Xs = "web", Js = 1, L = {
   },
   doNotProcess: [],
   requireConsent: !1
-}, xe = {
+}, Ce = {
   PAGE_VIEW: "page_view",
   CLICK: "click",
   INPUT: "input",
   SCROLL: "scroll",
   ERROR: "error"
-}, Ce = {
+}, Te = {
   NAVIGATION: "navigation",
   ENGAGEMENT: "engagement",
   DIAGNOSTIC: "diagnostic"
-}, $e = {
+}, Ge = {
   NORMAL: "normal",
   RAGE_CLICK: "rage_click",
   ERROR_CLICK: "error_click",
@@ -6144,7 +6203,7 @@ function lo(t) {
     return {};
   }
 }
-function $t(t, e = 200) {
+function Gt(t, e = 200) {
   return t ? t.length > e ? t.substring(0, e) : t : null;
 }
 function Wt(t, ...e) {
@@ -6173,7 +6232,7 @@ function xt(t, e = null) {
     return e;
   }
 }
-function m(t, ...e) {
+function g(t, ...e) {
   typeof console < "u" && console[t] && console[t]("[RG SDK]", ...e);
 }
 function uo(t) {
@@ -6216,19 +6275,19 @@ function ho(t) {
 function fo(t) {
   if (!t) return null;
   const e = t.getAttribute("aria-label") || t.getAttribute("alt") || t.getAttribute("title") || (t.tagName === "INPUT" ? t.value : null) || t.textContent?.trim() || null;
-  return $t(e, 200);
+  return Gt(e, 200);
 }
 function po(t) {
   if (!t) return !1;
   const e = window.getComputedStyle(t);
   return e.display !== "none" && e.visibility !== "hidden" && e.opacity !== "0";
 }
-class go {
+class mo {
   constructor(e = "localStorage") {
     this.preferredStorage = e, this.storageType = this._detectAvailableStorage(), this.memoryStorage = {};
   }
   _detectAvailableStorage() {
-    return this.preferredStorage === "localStorage" && this._testStorage(window.localStorage) ? "localStorage" : this._testStorage(window.sessionStorage) ? "sessionStorage" : (m("warn", "No persistent storage available, using in-memory storage"), "memory");
+    return this.preferredStorage === "localStorage" && this._testStorage(window.localStorage) ? "localStorage" : this._testStorage(window.sessionStorage) ? "sessionStorage" : (g("warn", "No persistent storage available, using in-memory storage"), "memory");
   }
   _testStorage(e) {
     try {
@@ -6244,18 +6303,18 @@ class go {
   setItem(e, i) {
     try {
       const n = this._getStorage(), r = xt(i);
-      return r ? (n ? n.setItem(e, r) : this.memoryStorage[e] = r, !0) : (m("warn", "Failed to serialize value for key:", e), !1);
+      return r ? (n ? n.setItem(e, r) : this.memoryStorage[e] = r, !0) : (g("warn", "Failed to serialize value for key:", e), !1);
     } catch (n) {
       if (n.name === "QuotaExceededError") {
-        m("warn", "Storage quota exceeded, attempting cleanup"), this._cleanup();
+        g("warn", "Storage quota exceeded, attempting cleanup"), this._cleanup();
         try {
           const r = this._getStorage();
           return r ? r.setItem(e, xt(i)) : this.memoryStorage[e] = xt(i), !0;
         } catch (r) {
-          return m("error", "Failed to set item after cleanup:", e, r), !1;
+          return g("error", "Failed to set item after cleanup:", e, r), !1;
         }
       }
-      return m("error", "Failed to set item:", e, n), !1;
+      return g("error", "Failed to set item:", e, n), !1;
     }
   }
   getItem(e) {
@@ -6264,7 +6323,7 @@ class go {
       let n;
       return i ? n = i.getItem(e) : n = this.memoryStorage[e], n == null ? null : co(n, null);
     } catch (i) {
-      return m("error", "Failed to get item:", e, i), null;
+      return g("error", "Failed to get item:", e, i), null;
     }
   }
   removeItem(e) {
@@ -6272,7 +6331,7 @@ class go {
       const i = this._getStorage();
       return i ? i.removeItem(e) : delete this.memoryStorage[e], !0;
     } catch (i) {
-      return m("error", "Failed to remove item:", e, i), !1;
+      return g("error", "Failed to remove item:", e, i), !1;
     }
   }
   hasItem(e) {
@@ -6286,7 +6345,7 @@ class go {
         n.startsWith("__rg_") && e.removeItem(n);
       }) : this.memoryStorage = {}, !0;
     } catch (e) {
-      return m("error", "Failed to clear storage:", e), !1;
+      return g("error", "Failed to clear storage:", e), !1;
     }
   }
   _cleanup() {
@@ -6297,7 +6356,7 @@ class go {
           e.removeItem(n);
         });
       } catch (i) {
-        m("error", "Cleanup failed:", i);
+        g("error", "Cleanup failed:", i);
       }
   }
   getStorageType() {
@@ -6307,12 +6366,12 @@ class go {
     return this.storageType !== "memory";
   }
 }
-class mo {
+class go {
   constructor(e, i) {
     this.storage = e, this.config = i, this.visitorId = null, this.visitorTraits = {}, this.accountId = null, this.accountTraits = {}, this.sessionId = null, this.sessionStartTime = null, this.sessionLastActivity = null, this.sessionEventCount = 0, this.sessionProperties = {}, this.pendingIdentity = null;
   }
   initialize() {
-    this._loadVisitor(), this._loadAccount(), this._loadOrCreateSession(), this.pendingIdentity && (this.identify(this.pendingIdentity.visitor, this.pendingIdentity.account), this.pendingIdentity = null), m("info", "Identity initialized:", {
+    this._loadVisitor(), this._loadAccount(), this._loadOrCreateSession(), this.pendingIdentity && (this.identify(this.pendingIdentity.visitor, this.pendingIdentity.account), this.pendingIdentity = null), g("info", "Identity initialized:", {
       visitorId: this.visitorId,
       accountId: this.accountId,
       sessionId: this.sessionId
@@ -6335,7 +6394,7 @@ class mo {
     this._createNewSession();
   }
   _createNewSession() {
-    this.sessionId = "sess_" + We(), this.sessionStartTime = Ke(), this.sessionLastActivity = Ke(), this.sessionEventCount = 0, this._captureSessionProperties(), this._persistSession(), m("info", "New session created:", this.sessionId);
+    this.sessionId = "sess_" + We(), this.sessionStartTime = Ke(), this.sessionLastActivity = Ke(), this.sessionEventCount = 0, this._captureSessionProperties(), this._persistSession(), g("info", "New session created:", this.sessionId);
   }
   _captureSessionProperties() {
     const e = window.location.href, i = lo(e);
@@ -6364,16 +6423,16 @@ class mo {
   }
   identify(e, i = null) {
     if (e && e.id) {
-      this.visitorId && this.visitorId !== e.id && !this.visitorId.startsWith("anon_") && m("warn", `Visitor ID changed from ${this.visitorId} to ${e.id}`), this.visitorId = e.id;
+      this.visitorId && this.visitorId !== e.id && !this.visitorId.startsWith("anon_") && g("warn", `Visitor ID changed from ${this.visitorId} to ${e.id}`), this.visitorId = e.id;
       const { id: n, ...r } = e;
       this.visitorTraits = Wt(this.visitorTraits, r), this._persistVisitor();
     }
     if (i && i.id) {
-      this.accountId && this.accountId !== i.id && m("info", `Account changed from ${this.accountId} to ${i.id}`), this.accountId = i.id;
+      this.accountId && this.accountId !== i.id && g("info", `Account changed from ${this.accountId} to ${i.id}`), this.accountId = i.id;
       const { id: n, ...r } = i;
       this.accountTraits = Wt(this.accountTraits, r), this._persistAccount();
     }
-    m("info", "Identity updated:", {
+    g("info", "Identity updated:", {
       visitorId: this.visitorId,
       accountId: this.accountId
     });
@@ -6432,7 +6491,7 @@ class mo {
     return this.sessionId;
   }
   reset() {
-    this.storage.removeItem(L.VISITOR_ID), this.storage.removeItem(L.VISITOR_TRAITS), this.storage.removeItem(L.ACCOUNT_ID), this.storage.removeItem(L.ACCOUNT_TRAITS), this.storage.removeItem(L.SESSION_ID), this.storage.removeItem(L.SESSION_START), this.storage.removeItem(L.SESSION_LAST_ACTIVITY), this.visitorId = "anon_" + We(), this.visitorTraits = {}, this.accountId = null, this.accountTraits = {}, this._createNewSession(), this._persistVisitor(), m("info", "Identity reset");
+    this.storage.removeItem(L.VISITOR_ID), this.storage.removeItem(L.VISITOR_TRAITS), this.storage.removeItem(L.ACCOUNT_ID), this.storage.removeItem(L.ACCOUNT_TRAITS), this.storage.removeItem(L.SESSION_ID), this.storage.removeItem(L.SESSION_START), this.storage.removeItem(L.SESSION_LAST_ACTIVITY), this.visitorId = "anon_" + We(), this.visitorTraits = {}, this.accountId = null, this.accountTraits = {}, this._createNewSession(), this._persistVisitor(), g("info", "Identity reset");
   }
 }
 class _o {
@@ -6556,7 +6615,7 @@ class yo {
         if (e.matches(n) || e.closest(n))
           return !0;
       } catch {
-        m("warn", "Invalid sensitive selector:", n);
+        g("warn", "Invalid sensitive selector:", n);
       }
     return !1;
   }
@@ -6575,7 +6634,7 @@ class yo {
       try {
         i = i.replace(r, "[REDACTED]");
       } catch {
-        m("warn", "Invalid custom PII pattern:", r);
+        g("warn", "Invalid custom PII pattern:", r);
       }
     return i;
   }
@@ -6607,23 +6666,23 @@ class yo {
     return this.config.privacyConfig?.maskTextContent === !0;
   }
   grantConsent() {
-    this.consentGranted = !0, m("info", "User consent granted");
+    this.consentGranted = !0, g("info", "User consent granted");
   }
   revokeConsent() {
-    this.consentGranted = !1, m("info", "User consent revoked");
+    this.consentGranted = !1, g("info", "User consent revoked");
   }
   optOut() {
-    this.storage.setItem(L.OPT_OUT, !0), m("info", "User opted out");
+    this.storage.setItem(L.OPT_OUT, !0), g("info", "User opted out");
   }
   optIn() {
-    this.storage.removeItem(L.OPT_OUT), m("info", "User opted in");
+    this.storage.removeItem(L.OPT_OUT), g("info", "User opted in");
   }
   validateEventSize(e) {
     const i = JSON.stringify(e).length, n = 10 * 1024;
-    return i > n ? (m("warn", "Event exceeds max size, truncating:", i), this.truncateEvent(e)) : e;
+    return i > n ? (g("warn", "Event exceeds max size, truncating:", i), this.truncateEvent(e)) : e;
   }
   truncateEvent(e) {
-    return e.element_text && (e.element_text = $t(e.element_text, 100)), e.error_stack && (e.error_stack = $t(e.error_stack, 500)), e.console_logs && (e.console_logs = e.console_logs.slice(0, 5)), e.custom_properties && JSON.stringify(e.custom_properties).length > 5e3 && (e.custom_properties = { _truncated: !0 }), e;
+    return e.element_text && (e.element_text = Gt(e.element_text, 100)), e.error_stack && (e.error_stack = Gt(e.error_stack, 500)), e.console_logs && (e.console_logs = e.console_logs.slice(0, 5)), e.custom_properties && JSON.stringify(e.custom_properties).length > 5e3 && (e.custom_properties = { _truncated: !0 }), e;
   }
   sanitizeURL(e) {
     try {
@@ -6642,7 +6701,7 @@ class vo {
   }
   detectClickInteraction(e, i) {
     const n = this._getElementKey(e), r = Date.now();
-    return this._detectRageClick(n, r) ? $e.RAGE_CLICK : this._detectErrorClick(n, r) ? $e.ERROR_CLICK : (this._scheduleDeadClickCheck(e, n, r), $e.NORMAL);
+    return this._detectRageClick(n, r) ? Ge.RAGE_CLICK : this._detectErrorClick(n, r) ? Ge.ERROR_CLICK : (this._scheduleDeadClickCheck(e, n, r), Ge.NORMAL);
   }
   detectUTurn() {
     const e = Date.now(), i = this.navigationHistory;
@@ -6665,7 +6724,7 @@ class vo {
   _scheduleDeadClickCheck(e, i, n) {
     this.deadClickTimers.has(i) && clearTimeout(this.deadClickTimers.get(i));
     const r = setTimeout(() => {
-      this._isDeadClick(e, n) && m("debug", "Dead click detected:", i), this.deadClickTimers.delete(i);
+      this._isDeadClick(e, n) && g("debug", "Dead click detected:", i), this.deadClickTimers.delete(i);
     }, ze.deadClickDelay);
     this.deadClickTimers.set(i, r);
   }
@@ -6731,15 +6790,15 @@ class bo {
   }
   start(e) {
     if (this.isRunning) {
-      m("warn", "Auto-capture already running");
+      g("warn", "Auto-capture already running");
       return;
     }
-    this.onEventCapture = e, this.isRunning = !0, this.config.autoPageViews && this._startPageViewTracking(), this.config.autoCapture && (this._startClickTracking(), this._startInputTracking(), this._startScrollTracking(), this._startErrorTracking()), m("info", "Auto-capture started");
+    this.onEventCapture = e, this.isRunning = !0, this.config.autoPageViews && this._startPageViewTracking(), this.config.autoCapture && (this._startClickTracking(), this._startInputTracking(), this._startScrollTracking(), this._startErrorTracking()), g("info", "Auto-capture started");
   }
   stop() {
     this.isRunning && (this.listeners.forEach(({ target: e, event: i, handler: n, options: r }) => {
       e.removeEventListener(i, n, r);
-    }), this.listeners = [], this.behavioralDetector && this.behavioralDetector.destroy(), this.isRunning = !1, m("info", "Auto-capture stopped"));
+    }), this.listeners = [], this.behavioralDetector && this.behavioralDetector.destroy(), this.isRunning = !1, g("info", "Auto-capture stopped"));
   }
   _addListener(e, i, n, r = !1) {
     e.addEventListener(i, n, r), this.listeners.push({ target: e, event: i, handler: n, options: r });
@@ -6776,9 +6835,9 @@ class bo {
     this.lastPageViewTime = e, this.lastPageViewUrl = i, this.scrollMilestones = { 25: !1, 50: !1, 75: !1, 100: !1 };
     const n = this.behavioralDetector.detectUTurn();
     this._emit({
-      event_name: xe.PAGE_VIEW,
-      event_type: Ce.NAVIGATION,
-      interaction_type: n ? $e.U_TURN : $e.NORMAL
+      event_name: Ce.PAGE_VIEW,
+      event_type: Te.NAVIGATION,
+      interaction_type: n ? Ge.U_TURN : Ge.NORMAL
     });
   }
   _startClickTracking() {
@@ -6796,8 +6855,8 @@ class bo {
     if (!po(i))
       return;
     const n = this.behavioralDetector.detectClickInteraction(i, e), r = {
-      event_name: xe.CLICK,
-      event_type: Ce.ENGAGEMENT,
+      event_name: Ce.CLICK,
+      event_type: Te.ENGAGEMENT,
       element_id: i.id || null,
       element_class: i.classList ? Array.from(i.classList) : [],
       element_tag: i.tagName?.toLowerCase() || null,
@@ -6840,8 +6899,8 @@ class bo {
     if (!this._isFormElement(n) || !this._checkRateLimit("input"))
       return;
     const r = {
-      event_name: xe.INPUT,
-      event_type: Ce.ENGAGEMENT,
+      event_name: Ce.INPUT,
+      event_type: Te.ENGAGEMENT,
       element_id: n.id || null,
       element_tag: n.tagName?.toLowerCase() || null,
       element_type: n.type || null,
@@ -6869,8 +6928,8 @@ class bo {
     let a = !1;
     const l = { 25: !1, 50: !1, 75: !1, 100: !1 };
     o >= 25 && !this.scrollMilestones[25] && (l[25] = !0, this.scrollMilestones[25] = !0, a = !0), o >= 50 && !this.scrollMilestones[50] && (l[50] = !0, this.scrollMilestones[50] = !0, a = !0), o >= 75 && !this.scrollMilestones[75] && (l[75] = !0, this.scrollMilestones[75] = !0, a = !0), o >= 100 && !this.scrollMilestones[100] && (l[100] = !0, this.scrollMilestones[100] = !0, a = !0), a && this._emit({
-      event_name: xe.SCROLL,
-      event_type: Ce.ENGAGEMENT,
+      event_name: Ce.SCROLL,
+      event_type: Te.ENGAGEMENT,
       scroll_depth_percent: o,
       scroll_y: i,
       milestone_25: l[25],
@@ -6888,8 +6947,8 @@ class bo {
   }
   _handleError(e) {
     this._emit({
-      event_name: xe.ERROR,
-      event_type: Ce.DIAGNOSTIC,
+      event_name: Ce.ERROR,
+      event_type: Te.DIAGNOSTIC,
       error_message: e.message,
       error_type: e.error?.name || "Error",
       error_stack: e.error?.stack || null,
@@ -6901,8 +6960,8 @@ class bo {
   _handlePromiseRejection(e) {
     const i = e.reason;
     this._emit({
-      event_name: xe.ERROR,
-      event_type: Ce.DIAGNOSTIC,
+      event_name: Ce.ERROR,
+      event_type: Te.DIAGNOSTIC,
       error_message: i?.message || String(i),
       error_type: i?.name || "UnhandledRejection",
       error_stack: i?.stack || null
@@ -6910,8 +6969,8 @@ class bo {
   }
   capturePage(e, i = {}) {
     this._emit({
-      event_name: xe.PAGE_VIEW,
-      event_type: Ce.NAVIGATION,
+      event_name: Ce.PAGE_VIEW,
+      event_type: Te.NAVIGATION,
       custom_properties: { page_name: e, ...i }
     });
   }
@@ -6923,9 +6982,9 @@ class wo {
   _restore() {
     try {
       const e = this.storage.getItem(L.EVENT_QUEUE);
-      e && Array.isArray(e) && (this.queue = e, m("info", `Restored ${this.queue.length} events from storage`));
+      e && Array.isArray(e) && (this.queue = e, g("info", `Restored ${this.queue.length} events from storage`));
     } catch (e) {
-      m("error", "Failed to restore events from storage:", e);
+      g("error", "Failed to restore events from storage:", e);
     }
   }
   _persist() {
@@ -6933,13 +6992,13 @@ class wo {
       const e = this.queue.slice(-this.maxPersistedSize);
       this.storage.setItem(L.EVENT_QUEUE, e);
     } catch (e) {
-      m("error", "Failed to persist events to storage:", e);
+      g("error", "Failed to persist events to storage:", e);
     }
   }
   enqueue(e) {
     if (this.queue.length >= this.maxSize) {
       const i = this.queue.shift();
-      m("warn", "Event queue full, dropping oldest event:", i.event_id);
+      g("warn", "Event queue full, dropping oldest event:", i.event_id);
     }
     return this.queue.push(e), this._persist(), !0;
   }
@@ -6961,7 +7020,7 @@ class wo {
     return this.queue.length === 0;
   }
   clear() {
-    this.queue = [], this.storage.removeItem(L.EVENT_QUEUE), m("info", "Event queue cleared");
+    this.queue = [], this.storage.removeItem(L.EVENT_QUEUE), g("info", "Event queue cleared");
   }
   getStats() {
     return {
@@ -6984,10 +7043,10 @@ class So {
     const e = this.config.batchInterval * 1e3;
     this.batchTimer = setInterval(() => {
       this._processBatch(!0);
-    }, e), this._setupUnloadHandler(), m("info", "Transport layer started");
+    }, e), this._setupUnloadHandler(), g("info", "Transport layer started");
   }
   stop() {
-    this.batchTimer && (clearInterval(this.batchTimer), this.batchTimer = null), m("info", "Transport layer stopped");
+    this.batchTimer && (clearInterval(this.batchTimer), this.batchTimer = null), g("info", "Transport layer stopped");
   }
   _setupUnloadHandler() {
     window.addEventListener("beforeunload", () => {
@@ -7016,7 +7075,7 @@ class So {
       this.isSending = !0;
       try {
         const n = await this._makeRequest(e);
-        n.ok ? (this.eventQueue.dequeue(e.events.length), this.stats.sent += e.events.length, m("info", `Batch sent successfully: ${e.events.length} events`)) : await this._handleErrorResponse(n, e, i);
+        n.ok ? (this.eventQueue.dequeue(e.events.length), this.stats.sent += e.events.length, g("info", `Batch sent successfully: ${e.events.length} events`)) : await this._handleErrorResponse(n, e, i);
       } catch (n) {
         this._handleNetworkError(n, e, i);
       } finally {
@@ -7041,17 +7100,17 @@ class So {
   async _handleErrorResponse(e, i, n) {
     const r = e.status;
     if (r >= 400 && r < 500) {
-      r === 401 ? m("error", "Invalid API key. Please check your configuration.") : m("error", `Client error (${r}), dropping batch`), this.eventQueue.dequeue(i.events.length), this.stats.failed += i.events.length;
+      r === 401 ? g("error", "Invalid API key. Please check your configuration.") : g("error", `Client error (${r}), dropping batch`), this.eventQueue.dequeue(i.events.length), this.stats.failed += i.events.length;
       return;
     }
     (r === 429 || r >= 500) && this._scheduleRetry(i, n);
   }
   _handleNetworkError(e, i, n) {
-    m("error", "Network error:", e.message), this._scheduleRetry(i, n);
+    g("error", "Network error:", e.message), this._scheduleRetry(i, n);
   }
   _scheduleRetry(e, i) {
     if (i >= Ki) {
-      m("error", `Max retries exceeded for batch ${e.batch_id}, dropping events`), this.eventQueue.dequeue(e.events.length), this.stats.failed += e.events.length;
+      g("error", `Max retries exceeded for batch ${e.batch_id}, dropping events`), this.eventQueue.dequeue(e.events.length), this.stats.failed += e.events.length;
       return;
     }
     const n = St[i] || St[St.length - 1], r = Date.now() + n;
@@ -7059,7 +7118,7 @@ class So {
       batch: e,
       retryCount: i + 1,
       nextRetry: r
-    }), this.stats.retried++, m(
+    }), this.stats.retried++, g(
       "info",
       `Scheduling retry ${i + 1}/${Ki} for batch ${e.batch_id} in ${n}ms`
     ), setTimeout(() => {
@@ -7069,7 +7128,7 @@ class So {
   }
   async flush() {
     if (!this.eventQueue.isEmpty()) {
-      for (m("info", "Flushing event queue..."), this._isFlushRequested = !0; !this.eventQueue.isEmpty() && !this.isSending; )
+      for (g("info", "Flushing event queue..."), this._isFlushRequested = !0; !this.eventQueue.isEmpty() && !this.isSending; )
         await this._sendBatch();
       this._isFlushRequested = !1;
     }
@@ -7081,9 +7140,9 @@ class So {
     if (e)
       if (navigator.sendBeacon) {
         const i = `${this.config.apiHost}/raw-events`, n = JSON.stringify(e);
-        navigator.sendBeacon(i, n) ? (this.eventQueue.dequeue(e.events.length), m("info", `Sent ${e.events.length} events via sendBeacon`)) : m("warn", "sendBeacon failed, events may be lost");
+        navigator.sendBeacon(i, n) ? (this.eventQueue.dequeue(e.events.length), g("info", `Sent ${e.events.length} events via sendBeacon`)) : g("warn", "sendBeacon failed, events may be lost");
       } else
-        m("warn", "sendBeacon not available, events may be lost");
+        g("warn", "sendBeacon not available, events may be lost");
   }
   checkBatchSize() {
     this._shouldSendBatch() && this._processBatch();
@@ -7109,18 +7168,18 @@ class Eo {
   }
   initialize(e) {
     if (this.initialized) {
-      m("warn", "SDK already initialized");
+      g("warn", "SDK already initialized");
       return;
     }
     if (!e || !e.apiKey)
       throw new Error("API key is required");
-    this.config = Wt(Zs, e), m("info", "Initializing RG SDK...", {
+    this.config = Wt(Zs, e), g("info", "Initializing RG SDK...", {
       version: ni,
       config: this.config
-    }), this._initializeModules(), this.initialized = !0, this.pendingIdentify && (this.identify(this.pendingIdentify.visitor, this.pendingIdentify.account), this.pendingIdentify = null), m("info", "RG SDK initialized successfully");
+    }), this._initializeModules(), this.initialized = !0, this.pendingIdentify && (this.identify(this.pendingIdentify.visitor, this.pendingIdentify.account), this.pendingIdentify = null), g("info", "RG SDK initialized successfully");
   }
   _initializeModules() {
-    this.storage = new go(this.config.persistence), this.identityManager = new mo(this.storage, this.config), this.identityManager.initialize(), this.eventBuilder = new _o(this.identityManager), this.privacyEngine = new yo(this.storage, this.config), this.eventQueue = new wo(this.storage), this.transportLayer = new So(this.config, this.eventQueue), this.transportLayer.start(), this.autoCaptureEngine = new bo(
+    this.storage = new mo(this.config.persistence), this.identityManager = new go(this.storage, this.config), this.identityManager.initialize(), this.eventBuilder = new _o(this.identityManager), this.privacyEngine = new yo(this.storage, this.config), this.eventQueue = new wo(this.storage), this.transportLayer = new So(this.config, this.eventQueue), this.transportLayer.start(), this.autoCaptureEngine = new bo(
       this.eventBuilder,
       this.privacyEngine,
       this.config
@@ -7131,18 +7190,18 @@ class Eo {
   }
   identify(e, i = null) {
     if (!this.initialized) {
-      this.pendingIdentify = { visitor: e, account: i }, m("info", "Identity queued, will be applied after initialization");
+      this.pendingIdentify = { visitor: e, account: i }, g("info", "Identity queued, will be applied after initialization");
       return;
     }
     this.identityManager.identify(e, i);
   }
   track(e, i = {}) {
     if (!this.initialized) {
-      m("warn", "SDK not initialized, cannot track event");
+      g("warn", "SDK not initialized, cannot track event");
       return;
     }
     if (!e || typeof e != "string") {
-      m("warn", "Event name is required and must be a string");
+      g("warn", "Event name is required and must be a string");
       return;
     }
     const n = this.eventBuilder.buildCustomEvent(e, i), r = this.privacyEngine.processEvent(n);
@@ -7153,7 +7212,7 @@ class Eo {
   }
   page(e = null, i = {}) {
     if (!this.initialized) {
-      m("warn", "SDK not initialized, cannot track page view");
+      g("warn", "SDK not initialized, cannot track page view");
       return;
     }
     const n = { ...i };
@@ -7166,45 +7225,45 @@ class Eo {
   }
   async flush() {
     if (!this.initialized) {
-      m("warn", "SDK not initialized");
+      g("warn", "SDK not initialized");
       return;
     }
     await this.transportLayer.flush();
   }
   optOut() {
     if (!this.initialized) {
-      m("warn", "SDK not initialized");
+      g("warn", "SDK not initialized");
       return;
     }
-    this.autoCaptureEngine && this.autoCaptureEngine.stop(), this.eventQueue.clear(), this.privacyEngine.optOut(), m("info", "User opted out of tracking");
+    this.autoCaptureEngine && this.autoCaptureEngine.stop(), this.eventQueue.clear(), this.privacyEngine.optOut(), g("info", "User opted out of tracking");
   }
   optIn() {
     if (!this.initialized) {
-      m("warn", "SDK not initialized");
+      g("warn", "SDK not initialized");
       return;
     }
-    this.privacyEngine.optIn(), (this.config.autoCapture || this.config.autoPageViews) && this.autoCaptureEngine.start((e) => this._handleCapturedEvent(e)), m("info", "User opted in to tracking");
+    this.privacyEngine.optIn(), (this.config.autoCapture || this.config.autoPageViews) && this.autoCaptureEngine.start((e) => this._handleCapturedEvent(e)), g("info", "User opted in to tracking");
   }
   grantConsent() {
     if (!this.initialized) {
-      m("warn", "SDK not initialized");
+      g("warn", "SDK not initialized");
       return;
     }
     this.privacyEngine.grantConsent();
   }
   revokeConsent() {
     if (!this.initialized) {
-      m("warn", "SDK not initialized");
+      g("warn", "SDK not initialized");
       return;
     }
     this.privacyEngine.revokeConsent(), this.eventQueue.clear();
   }
   reset() {
     if (!this.initialized) {
-      m("warn", "SDK not initialized");
+      g("warn", "SDK not initialized");
       return;
     }
-    this.identityManager.reset(), m("info", "Identity reset");
+    this.identityManager.reset(), g("info", "Identity reset");
   }
   getVisitorId() {
     return this.initialized ? this.identityManager.getVisitorId() : null;
@@ -7226,7 +7285,7 @@ class Eo {
     } : null;
   }
   debug(e = !0) {
-    this.config.debug = e, m("info", `Debug mode ${e ? "enabled" : "disabled"}`);
+    this.config.debug = e, g("info", `Debug mode ${e ? "enabled" : "disabled"}`);
   }
 }
 const j = new Eo(), ie = {
@@ -7285,7 +7344,7 @@ function Co() {
     return null;
   }
 }
-function me(t) {
+function _e(t) {
   return t?.apiKey ? ie.initialize(t) : console.warn("[Revgain] No apiKey found in config. Analytics will not start."), K || (K = new In({
     ...t,
     guideId: An ?? t?.guideId ?? xo() ?? null,
@@ -7310,7 +7369,7 @@ function Ln(t) {
       switch (n) {
         case "initialize":
         case "init":
-          me(r[0]);
+          _e(r[0]);
           break;
         case "identify":
           ri(r[0], r[1]);
@@ -7319,7 +7378,7 @@ function Ln(t) {
           si(r[0], r[1]);
           break;
         case "enableEditor":
-          (K ?? me()).enableEditor();
+          (K ?? _e()).enableEditor();
           break;
         case "disableEditor":
           K?.disableEditor();
@@ -7339,7 +7398,7 @@ function Ln(t) {
 }
 if (typeof window < "u") {
   const t = window.revgain || window.visualDesigner;
-  t && Array.isArray(t._q) && (On = !0, t.init = me, t.initialize = me, t.identify = ri, t.track = si, t.enableEditor = () => (K ?? me()).enableEditor(), t.disableEditor = () => K?.disableEditor(), t.loadGuides = () => K?.loadGuides(), t.getGuides = () => K?.getGuides(), t.getInstance = at, t.page = (e, i) => ie.page(e, i), t.flush = () => ie.flush(), t.reset = () => ie.reset(), Ln(t._q));
+  t && Array.isArray(t._q) && (On = !0, t.init = _e, t.initialize = _e, t.identify = ri, t.track = si, t.enableEditor = () => (K ?? _e()).enableEditor(), t.disableEditor = () => K?.disableEditor(), t.loadGuides = () => K?.loadGuides(), t.getGuides = () => K?.getGuides(), t.getInstance = at, t.page = (e, i) => ie.page(e, i), t.flush = () => ie.flush(), t.reset = () => ie.reset(), Ln(t._q));
   try {
     const e = new URL(window.location.href), i = e.searchParams.get("designer"), n = e.searchParams.get("mode"), r = e.searchParams.get("iud"), o = e.searchParams.get("guide_id"), a = e.searchParams.get("template_id");
     (i === "true" || o != null || a != null) && console.log("[Revgain] URL params detected:", { designerParam: i, modeParam: n, guideIdParam: o }), i === "true" && (n && (window.__visualDesignerMode = n, localStorage.setItem("designerModeType", n)), localStorage.setItem("designerMode", "true"), r && localStorage.setItem(Sn, r), o != null && (An = o, localStorage.setItem(Rn, o)), a != null && (Dn = a, localStorage.setItem(Pn, a)), e.searchParams.delete("designer"), e.searchParams.delete("mode"), e.searchParams.delete("iud"), e.searchParams.delete("guide_id"), e.searchParams.delete("template_id"), window.history.replaceState({}, "", e.toString()), window.__visualDesignerWasLaunched = !0);
@@ -7348,14 +7407,14 @@ if (typeof window < "u") {
 }
 if (typeof window < "u" && !K && !On) {
   const t = localStorage.getItem("designerMode") === "true", e = () => {
-    !K && t && me();
+    !K && t && _e();
   };
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", e) : e();
 }
 if (typeof window < "u") {
   const t = {
-    init: me,
-    initialize: me,
+    init: _e,
+    initialize: _e,
     identify: ri,
     track: si,
     page: (e, i) => ie.page(e, i),
@@ -7367,7 +7426,7 @@ if (typeof window < "u") {
     _processQueue: Ln,
     getGuideId: () => at()?.getGuideId() ?? null,
     getTemplateId: () => at()?.getTemplateId() ?? null,
-    enableEditor: () => (K ?? me()).enableEditor(),
+    enableEditor: () => (K ?? _e()).enableEditor(),
     disableEditor: () => K?.disableEditor(),
     analytics: ie
   };
@@ -7379,7 +7438,7 @@ export {
   te as apiClient,
   at as getInstance,
   ri as identify,
-  me as init,
+  _e as init,
   ie as rg,
   si as track
 };

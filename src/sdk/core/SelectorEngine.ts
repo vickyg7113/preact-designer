@@ -159,6 +159,37 @@ export class SelectorEngine {
     }
   }
 
+  /**
+   * Waits for an element to appear in the DOM using MutationObserver.
+   * Leverages findElement for consistent behavior with XPaths/Selectors.
+   */
+  static waitForElement(selector: string, timeout = 5000): Promise<Element> {
+    return new Promise((resolve, reject) => {
+      // 1. Initial check
+      const element = this.findElement(selector);
+      if (element) return resolve(element);
+
+      // 2. Set up observer
+      const observer = new MutationObserver(() => {
+        const el = this.findElement(selector);
+        if (el) {
+          observer.disconnect();
+          resolve(el);
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+      });
+
+      // 3. Handle timeout
+      setTimeout(() => {
+        observer.disconnect();
+        reject(new Error(`Element not found: ${selector}`));
+      }, timeout);
+    });
+  }
+
   private static getSemanticDataAttributes(element: Element): string[] {
     const semantic = ['data-id', 'data-name', 'data-role', 'data-component', 'data-element'];
     const found: string[] = [];
