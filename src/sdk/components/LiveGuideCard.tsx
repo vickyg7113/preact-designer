@@ -1,29 +1,16 @@
 import { useMemo } from 'preact/hooks';
-import type { GuideTemplateMapItem } from '../types';
+import type { GuideTemplateMapItem, GuideTemplateContent, GuideBlock } from '../types';
 import { SDK_STYLES } from '../styles/constants';
 
 const DEFAULT_TITLE = 'Template';
 const DEFAULT_DESCRIPTION = 'Description';
 const DEFAULT_BUTTON_CONTENT = 'Next';
 
-export function parseTemplateContent(content: string): {
-    title: string;
-    description: string;
-    buttonContent: string;
-} {
+export function parseTemplateContent(content: string): GuideTemplateContent {
     try {
-        const parsed = JSON.parse(content || '{}') as Record<string, string>;
-        return {
-            title: parsed.title ?? DEFAULT_TITLE,
-            description: parsed.description ?? DEFAULT_DESCRIPTION,
-            buttonContent: parsed.buttonContent ?? DEFAULT_BUTTON_CONTENT,
-        };
+        return JSON.parse(content || '{}') as GuideTemplateContent;
     } catch {
-        return {
-            title: DEFAULT_TITLE,
-            description: DEFAULT_DESCRIPTION,
-            buttonContent: DEFAULT_BUTTON_CONTENT,
-        };
+        return { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION };
     }
 }
 
@@ -44,6 +31,8 @@ interface TourStyleCardContentProps {
     description?: string;
     buttonContent?: string;
     onNext?: () => void;
+    onBack?: () => void;
+    isFirstStep?: boolean;
 }
 
 function TourStyleCardContent({
@@ -51,6 +40,8 @@ function TourStyleCardContent({
     description = DEFAULT_DESCRIPTION,
     buttonContent = DEFAULT_BUTTON_CONTENT,
     onNext,
+    onBack,
+    isFirstStep = false
 }: TourStyleCardContentProps) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 4, position: 'relative' }}>
@@ -58,7 +49,27 @@ function TourStyleCardContent({
                 {title}
             </h3>
             <p style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.4, margin: 0 }}>{description}</p>
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4 }}>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', paddingTop: 4 }}>
+                {!isFirstStep && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onBack?.();
+                        }}
+                        style={{
+                            background: 'transparent',
+                            color: '#007AFF',
+                            padding: '6px 16px',
+                            border: '1px solid #007AFF',
+                            borderRadius: 9999,
+                            fontWeight: 600,
+                            fontSize: 10,
+                            cursor: 'pointer',
+                        }}
+                    >
+                        Back
+                    </button>
+                )}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -92,9 +103,12 @@ interface LiveGuideCardProps {
     left: number;
     onDismiss: () => void;
     onNext: () => void;
+    onBack: () => void;
+    isFirstStep: boolean;
+    isLastStep: boolean;
 }
 
-export function LiveGuideCard({ template, top, left, onDismiss, onNext }: LiveGuideCardProps) {
+export function LiveGuideCard({ template, top, left, onDismiss, onNext, onBack, isFirstStep, isLastStep }: LiveGuideCardProps) {
     const content = useMemo(() => parseTemplateContent(template.template.content), [template.template.content]);
     const templateKey = template.template.template_key;
 
@@ -150,6 +164,8 @@ export function LiveGuideCard({ template, top, left, onDismiss, onNext }: LiveGu
                         description={content.description}
                         buttonContent={content.buttonContent}
                         onNext={onNext}
+                        onBack={onBack}
+                        isFirstStep={isFirstStep}
                     />
                 </div>
             </div>

@@ -93,11 +93,12 @@ export class DesignerSDK {
       const currentTemplate = sortedTemplates[stepIndex];
 
       if (currentTemplate) {
+        const isLastStep = stepIndex === totalSteps - 1;
         let guideStepMarker = 'middle';
         if (stepIndex === 0) guideStepMarker = 'first';
-        else if (stepIndex === totalSteps - 1) guideStepMarker = 'last';
+        else if (isLastStep) guideStepMarker = 'last';
 
-        return this.trackEvent('viewed', {
+        const properties = {
           guide_id: guide.guide_id,
           template_id: currentTemplate.template_id,
           map_id: currentTemplate.map_id,
@@ -105,7 +106,14 @@ export class DesignerSDK {
           template_key: currentTemplate.template.template_key,
           guide_step: guideStepMarker,
           xpath: currentTemplate.x_path
-        });
+        };
+
+        // If it's the last step and we are completing it, track 'completed'
+        if (isLastStep) {
+          this.trackEvent('completed', properties);
+        }
+        
+        return this.trackEvent('viewed', properties);
       }
     });
 
@@ -243,6 +251,21 @@ export class DesignerSDK {
       if (response && response.data) {
         this.fetchedGuides = Array.isArray(response.data) ? response.data : [response.data as any];
         console.log('[Visual Designer] Fetched guides for page:', currentPage, this.fetchedGuides);
+
+        // Auto-trigger guides where trigger_type is 'page_load' or target_segment is null (Automatic)
+        for (const guide of this.fetchedGuides) {
+          // Trigger logic: If target_segment is null, it's an automatic guide (Page Load)
+          const isAutomatic = guide.target_segment === null;
+          if (isAutomatic) {
+            const sessionKey = `rg_guide_auto_${guide.guide_id}`;
+            if (!sessionStorage.getItem(sessionKey)) {
+              console.log('[Visual Designer] Auto-triggering guide:', guide.guide_name);
+              this.guideRenderer.renderTriggeredGuide(guide);
+              sessionStorage.setItem(sessionKey, 'true');
+              break; // Trigger only the first automatic guide found
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('[Visual Designer] Error fetching guides:', error);
@@ -416,7 +439,9 @@ export class DesignerSDK {
     // Compare with target_segment of fetched guides
     for (const guide of this.fetchedGuides) {
       console.log('Guide:', guide);
-      if (guide.target_segment && guide.target_segment === xpath) {
+      // Trigger logic: If target_segment exists, it's a manual trigger (Feature Click)
+      const isClickTrigger = guide.target_segment !== null;
+      if (isClickTrigger && guide.target_segment === xpath) {
         // Step 1: Only track triggered on click
         this.trackEvent('triggered', {
           guide_id: guide.guide_id,

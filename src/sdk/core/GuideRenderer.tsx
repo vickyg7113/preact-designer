@@ -107,29 +107,35 @@ export class GuideRenderer {
     if (this.triggeredGuide && !this.dismissedThisSession.has(this.triggeredGuide.guide_id)) {
       const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
       const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
-
       const template = sortedTemplates[this.currentStepIndex];
 
-      if (template && template.x_path) {
-        const target = SelectorEngine.findElement(template.x_path);
-        if (target) {
-          scrollIntoViewIfNeeded(target);
-          const pos = computeTooltipPosition(target, 'bottom', 300, 160);
+      if (template) {
+        if (template.x_path) {
+          const target = SelectorEngine.findElement(template.x_path);
+          if (target) {
+            scrollIntoViewIfNeeded(target);
+            const pos = computeTooltipPosition(target, 'bottom', 300, 160);
 
-          const targetRect = target.getBoundingClientRect();
-          const targetCenter = targetRect.left + targetRect.width / 2;
-          pos.left = targetCenter - 16 - 16;
+            const targetRect = target.getBoundingClientRect();
+            const targetCenter = targetRect.left + targetRect.width / 2;
+            pos.left = targetCenter - 16 - 16;
 
-          const vw = window.innerWidth;
-          if (pos.left < 10) pos.left = 10;
-          else if (pos.left + 300 > vw - 10) pos.left = vw - 300 - 10;
+            const vw = window.innerWidth;
+            if (pos.left < 10) pos.left = 10;
+            else if (pos.left + 300 > vw - 10) pos.left = vw - 300 - 10;
 
-          triggeredTooltips.push({ template, target, pos, targetRect });
-        } else {
-          console.warn(`[Visual Designer] Target element not found for template "${template.template_id}" using selector: ${template.x_path}`);
+            triggeredTooltips.push({ template, target, pos, targetRect });
+          } else {
+            console.warn(`[Visual Designer] Target element not found for template "${template.template_id}" using selector: ${template.x_path}`);
+          }
         }
       }
     }
+
+    const activeTemplates = (this.triggeredGuide?.templates || []).filter(t => t.is_active);
+    const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+    const currentTemplate = sortedTemplates[this.currentStepIndex];
+    const isFloating = !currentTemplate?.x_path;
 
     if (tooltips.length === 0 && triggeredTooltips.length === 0) {
       render(null, this.container);
@@ -171,6 +177,9 @@ export class GuideRenderer {
             left={pos.left}
             onDismiss={() => this.dismissTriggeredGuide()}
             onNext={() => this.handleNext()}
+            onBack={() => this.handleBack()}
+            isFirstStep={this.currentStepIndex === 0}
+            isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
           />
         ))}
       </div>,
@@ -194,6 +203,23 @@ export class GuideRenderer {
       } catch (err) {
         console.warn(`[Visual Designer] Timeout waiting for first step element: ${firstTemplate.x_path}`, err);
       }
+    }
+
+    this.renderGuides(this.lastGuides);
+  }
+
+  handleBack(): void {
+    if (!this.triggeredGuide || this.currentStepIndex === 0) return;
+
+    this.currentStepIndex--;
+
+    const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
+    const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+    const prevStep = sortedTemplates[this.currentStepIndex];
+
+    if (prevStep?.x_path) {
+      const el = SelectorEngine.findElement(prevStep.x_path);
+      if (el) scrollIntoViewIfNeeded(el);
     }
 
     this.renderGuides(this.lastGuides);
