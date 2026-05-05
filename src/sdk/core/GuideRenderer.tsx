@@ -3,6 +3,7 @@ import { SelectorEngine } from './SelectorEngine';
 import { getCurrentPage, scrollIntoViewIfNeeded } from '../utils/dom';
 import { GuideTooltip } from '../components/GuideTooltip';
 import { LiveGuideCard } from '../components/LiveGuideCard';
+import { GuideModal } from '../components/GuideModal';
 import { SpotlightOverlay } from '../components/SpotlightOverlay';
 import { SDK_STYLES } from '../styles/constants';
 import type { Guide, GuideByIdData, GuideTemplateMapItem } from '../types';
@@ -137,7 +138,12 @@ export class GuideRenderer {
     const currentTemplate = sortedTemplates[this.currentStepIndex];
     const isFloating = !currentTemplate?.x_path;
 
-    if (tooltips.length === 0 && triggeredTooltips.length === 0) {
+    console.log('tooltips', tooltips);
+    console.log('triggeredTooltips', triggeredTooltips);
+    console.log('currentTemplate', currentTemplate);
+    console.log('isFloating', isFloating);
+
+    if (tooltips.length === 0 && triggeredTooltips.length === 0 && !currentTemplate) {
       render(null, this.container);
       return;
     }
@@ -182,6 +188,19 @@ export class GuideRenderer {
             isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
           />
         ))}
+
+        {isFloating && currentTemplate && (
+          <GuideModal
+            key={`${this.triggeredGuide!.guide_id}-${this.currentStepIndex}`}
+            content={currentTemplate.template.content}
+            onDismiss={() => this.dismissTriggeredGuide()}
+            onNext={() => this.handleNext()}
+            onBack={() => this.handleBack()}
+            onAction={(url) => window.location.href = url}
+            isFirstStep={this.currentStepIndex === 0}
+            isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
+          />
+        )}
       </div>,
       this.container
     );

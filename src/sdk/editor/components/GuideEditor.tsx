@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'preact/hooks';
-import type { ElementInfo, EditorMessage } from '../../types';
+import { useState, useEffect, useMemo } from 'preact/hooks';
+import type { ElementInfo, EditorMessage, GuideUpdatePayload } from '../../types';
 import { getCurrentPage } from '../../utils/dom';
 import { editorStyles } from '../editorStyles';
 import { EditorButton } from './EditorButton';
@@ -25,10 +25,8 @@ export function GuideEditor({
   const [selector, setSelector] = useState('');
   const [xpath, setXpath] = useState<string | undefined>(undefined);
   const [elementInfo, setElementInfo] = useState<ElementInfo | null>(null);
-  const [content, setContent] = useState('');
-  const [placement] = useState<(typeof PLACEMENTS)[number]>('right');
   const [error, setError] = useState('');
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(templateId ?? null);
+  const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
 
   /** When true, show trigger config step (Action + Element) after Next */
   const [showTriggerStep, setShowTriggerStep] = useState(false);
@@ -40,35 +38,68 @@ export function GuideEditor({
     xpath?: string;
     elementInfo?: ElementInfo;
   } | null>(null);
-  /** True only when selector is actually active (user clicked Select element and is waiting to pick). Cleared when selection received or parent clears. */
   const [selectionModeActive, setSelectionModeActive] = useState(false);
   const [autoClickTarget, setAutoClickTarget] = useState(false);
 
+  // Orchestration state
+  const [layoutMode, setLayoutMode] = useState<'anchored' | 'floating'>('anchored');
+  const [modalPosition, setModalPosition] = useState<'center' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'>('center');
+
   const { data: guideData, isLoading: guideLoading } = useGuideById(guideId);
   const guide = guideData?.data;
-  const templates = guide?.templates ?? [];
+  const activeSteps = useMemo(() => {
+    if (!guide) return [];
+    return (guide.templates && guide.templates.length > 0) ? guide.templates : (guide.steps || []);
+  }, [guide]);
   const updateGuideMutation = useUpdateGuideMutation();
 
-  /** Selected template’s step (first match by template_id) – for showing its xpath */
-  const selectedStep = selectedTemplateId
-    ? templates.find((t) => t.template_id === selectedTemplateId)
-    : null;
+  /** Selected template’s step – per map_id */
+  const selectedStep = useMemo(() => {
+    if (!selectedMapId) return null;
+    return activeSteps.find((t) => t.map_id === selectedMapId);
+  }, [selectedMapId, activeSteps]);
 
-  // Preselect template from URL when guide has loaded
+  // Preselect step from URL when guide has loaded
   useEffect(() => {
-    if (guide && templateId && templates.some((t) => t.template_id === templateId)) {
-      setSelectedTemplateId(templateId);
+    if (activeSteps.length > 0) {
+      if (templateId) {
+        const step = activeSteps.find((t) => t.template_id === templateId);
+        if (step) setSelectedMapId(step.map_id);
+      } else if (!selectedMapId) {
+        setSelectedMapId(activeSteps[0].map_id);
+      }
     }
-  }, [guide, templateId, templates]);
+  }, [activeSteps, templateId]);
 
-  // Sync autoClickTarget with selected step
+  // Sync trigger action with guide
+  useEffect(() => {
+    if (guide) {
+      setTriggerAction(guide.target_segment ? 'on_click' : 'automatic');
+    }
+  }, [guide]);
+
+  // Sync autoClickTarget, modal position, and layoutMode with selected step
   useEffect(() => {
     if (selectedStep) {
       setAutoClickTarget(selectedStep.auto_click_target ?? false);
+      setLayoutMode(selectedStep.x_path ? 'anchored' : 'floating');
+      
+      try {
+        const parsed = JSON.parse(selectedStep.template.content || '{}');
+        if (parsed.layout?.position) {
+          setModalPosition(parsed.layout.position);
+        } else {
+          setModalPosition('center');
+        }
+      } catch (e) {
+        setModalPosition('center');
+      }
     } else {
       setAutoClickTarget(false);
+      setModalPosition('center');
+      setLayoutMode('floating');
     }
-  }, [selectedStep]);
+  }, [selectedStep, guideId]);
 
   useEffect(() => {
     onMessage({ type: 'EDITOR_READY' });
@@ -88,7 +119,6 @@ export function GuideEditor({
         setSelector(elementSelected.selector);
         setXpath(elementSelected.xpath);
         setElementInfo(elementSelected.elementInfo);
-        setContent('');
         setError('');
       }
     } else {
@@ -101,35 +131,12 @@ export function GuideEditor({
     }
   }, [elementSelected, showTriggerStep]);
 
-  const handleSave = () => {
-    const trimmed = content.trim();
-    if (!trimmed) {
-      setError('Please enter guide content');
-      return;
-    }
-    if (!selector) {
-      setError('No element selected');
-      return;
-    }
-    setError('');
-    onMessage({
-      type: 'SAVE_GUIDE',
-      guide: {
-        page: getCurrentPage(),
-        selector,
-        content: trimmed,
-        placement,
-        status: 'active',
-      },
-    });
-  };
 
   const handleClearSelection = () => {
     setSelectionModeActive(false);
     setSelector('');
     setXpath(undefined);
     setElementInfo(null);
-    setContent('');
     setError('');
     onMessage({ type: 'CLEAR_SELECTION_CLICKED' });
   };
@@ -140,39 +147,67 @@ export function GuideEditor({
     setSelector('');
     setXpath(undefined);
     setElementInfo(null);
-    setContent('');
     setError('');
     onMessage({ type: 'CLEAR_SELECTION_CLICKED' });
+  };
+
+  /** Helper to update position in content JSON while preserving everything else */
+  const getUpdatedContent = (existingContent: string, isFloating: boolean) => {
+    try {
+      const parsed = JSON.parse(existingContent || '{}');
+      if (isFloating) {
+        if (!parsed.layout) parsed.layout = {};
+        parsed.layout.position = modalPosition;
+      }
+      return JSON.stringify(parsed);
+    } catch (e) {
+      // If content is not valid JSON, we just return it or wrap it if it's a modal
+      if (isFloating) {
+        return JSON.stringify({ body: existingContent, layout: { position: modalPosition } });
+      }
+      return existingContent;
+    }
   };
 
   /** Build guide update payload and call PUT /guides/:guide_id */
   const handleUpdate = async () => {
     if (!guide || !guideId) return;
     const currentUrl = getCurrentPage();
-    const selectedXpath =
-      xpath ??
-      (selector && (selector.startsWith('/') || selector.startsWith('//')) ? selector : null) ??
-      selectedStep?.x_path ??
-      null;
+    
+    // Determine active layout for the selected step
+    const currentXpath = xpath ?? (selector && (selector.startsWith('/') || selector.startsWith('//')) ? selector : null);
 
-    const templatesPayload = (guide.steps ?? guide.templates ?? [])
+    const templatesPayload = activeSteps
       .slice()
       .sort((a, b) => a.step_order - b.step_order)
-      .map((step) => ({
-        template_id: step.template_id,
-        step_order: step.step_order,
-        url: step.template_id === selectedTemplateId ? currentUrl : (step.url ?? currentUrl),
-        x_path: step.template_id === selectedTemplateId ? selectedXpath : step.x_path,
-        auto_click_target: step.template_id === selectedTemplateId ? autoClickTarget : (step.auto_click_target ?? false),
-      }));
+      .map((step) => {
+        const isSelected = step.map_id === selectedMapId;
+        
+        let finalXpath = step.x_path;
+        if (isSelected) {
+          finalXpath = layoutMode === 'floating' ? null : (xpath || selector || step.x_path);
+        }
+        
+        const stepIsFloating = !finalXpath;
+        
+        return {
+          template_id: step.template_id,
+          step_order: step.step_order,
+          url: isSelected ? currentUrl : (step.url ?? currentUrl),
+          x_path: finalXpath,
+          auto_click_target: isSelected ? autoClickTarget : (step.auto_click_target ?? false),
+          content: isSelected ? getUpdatedContent(step.template?.content || '', stepIsFloating) : (step.template?.content || ''),
+        };
+      });
 
-    const payload = {
+    const payload: GuideUpdatePayload = {
       guide_name: guide.guide_name ?? '',
       description: guide.description ?? '',
       target_segment: guide.target_segment ?? null,
       guide_category: guide.guide_category ?? null,
       target_page: guide.target_page ?? currentUrl,
       type: guide.type ?? 'modal',
+      trigger_type: triggerAction === 'automatic' ? 'page_load' : 'click',
       status: guide.status ?? 'draft',
       priority: guide.priority ?? 0,
       templates: templatesPayload,
@@ -192,26 +227,39 @@ export function GuideEditor({
   const handleUpdateAction = async () => {
     if (!guide || !guideId) return;
     const currentUrl = getCurrentPage();
-    const triggerXpath = triggerElement?.xpath ?? (triggerElement?.selector?.startsWith('/') || triggerElement?.selector?.startsWith('//') ? triggerElement?.selector : null) ?? null;
+    const triggerXpath = triggerAction === 'automatic' ? null : (triggerElement?.xpath ?? (triggerElement?.selector?.startsWith('/') || triggerElement?.selector?.startsWith('//') ? triggerElement?.selector : null) ?? null);
 
-    const templatesPayload = (guide.steps ?? guide.templates ?? [])
+    const templatesPayload = activeSteps
       .slice()
       .sort((a, b) => a.step_order - b.step_order)
-      .map((step) => ({
-        template_id: step.template_id,
-        step_order: step.step_order,
-        url: step.url ?? currentUrl,
-        x_path: step.x_path,
-        auto_click_target: step.auto_click_target ?? false,
-      }));
+      .map((step) => {
+        const isSelected = step.map_id === selectedMapId;
+        
+        let finalXpath = step.x_path;
+        if (isSelected) {
+          finalXpath = layoutMode === 'floating' ? null : (xpath || selector || step.x_path);
+        }
+        
+        const stepIsFloating = !finalXpath;
 
-    const payload = {
+        return {
+          template_id: step.template_id,
+          step_order: step.step_order,
+          url: isSelected ? currentUrl : (step.url ?? currentUrl),
+          x_path: finalXpath,
+          auto_click_target: isSelected ? autoClickTarget : (step.auto_click_target ?? false),
+          content: isSelected ? getUpdatedContent(step.template?.content || '', stepIsFloating) : (step.template?.content || ''),
+        };
+      });
+
+    const payload: GuideUpdatePayload = {
       guide_name: guide.guide_name ?? '',
       description: guide.description ?? '',
       target_segment: triggerXpath,
       guide_category: guide.guide_category ?? null,
       target_page: currentUrl,
       type: guide.type ?? 'modal',
+      trigger_type: triggerAction === 'automatic' ? 'page_load' : 'click',
       status: guide.status ?? 'draft',
       priority: guide.priority ?? 0,
       templates: templatesPayload,
@@ -295,8 +343,9 @@ export function GuideEditor({
               <option value="on_click">On click</option>
             </select>
           </div>
-          <div style={editorStyles.section}>
-            <label style={editorStyles.label}>Trigger Element</label>
+          {triggerAction === 'on_click' && (
+            <div style={editorStyles.section}>
+              <label style={editorStyles.label}>Trigger Element</label>
             {triggerElement ? (
               <>
                 <div style={{ ...editorStyles.selectorBox, marginTop: '0.5rem' }} title={triggerElement.xpath ?? triggerElement.selector}>
@@ -361,8 +410,9 @@ export function GuideEditor({
                 <iconify-icon icon="mdi:selection-marker" />
                 Select element
               </EditorButton>
-            )}
-          </div>
+              )}
+            </div>
+          )}
           <div style={{ ...editorStyles.actionRow, marginTop: '0.5rem' }}>
             <EditorButton
               variant="primary"
@@ -392,10 +442,12 @@ export function GuideEditor({
               <iconify-icon icon="mdi:alert-circle" style={{ fontSize: '2rem', color: '#94a3b8' }} />
               <p style={editorStyles.emptyStateText}>Guide not found.</p>
             </div>
-          ) : showTemplatesView && templates.length > 0 ? (
+          ) : showTemplatesView && activeSteps.length > 0 ? (
             <>
               <div style={editorStyles.section}>
-                <label style={editorStyles.label}>Templates</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label style={editorStyles.label}>Templates</label>
+                </div>
                 <div
                   style={{
                     display: 'grid',
@@ -403,156 +455,149 @@ export function GuideEditor({
                     gap: '1rem',
                   }}
                 >
-                  {templates
+                  {activeSteps
+                    .slice()
                     .sort((a, b) => a.step_order - b.step_order)
                     .map((item) => (
                       <LayoutTemplateCard
-                        key={`${item.template_id}-${item.step_order}`}
+                        key={item.map_id}
                         item={item}
-                        selected={selectedTemplateId === item.template_id}
-                        onClick={() => setSelectedTemplateId(item.template_id)}
+                        selected={selectedMapId === item.map_id}
+                        onClick={() => setSelectedMapId(item.map_id)}
                       />
                     ))}
                 </div>
               </div>
               <div style={editorStyles.section}>
-                <label style={editorStyles.label}>Element for selected template</label>
-                {selector ? (
-                  <>
-                    <div style={editorStyles.selectorBox} title={xpath ?? selector}>
-                      {((xpath ?? selector).length > 60 ? (xpath ?? selector).slice(0, 60) + '…' : (xpath ?? selector))}
-                    </div>
-                    {elementInfo && (
-                      <div style={{ ...editorStyles.elementInfo, marginTop: '0.5rem' }}>
-                        <strong style={editorStyles.elementInfoTitle}>Element Info</strong>
-                        <div style={editorStyles.elementInfoText}>{formatElementInfo(elementInfo)}</div>
-                      </div>
-                    )}
-                    <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <input
-                        type="checkbox"
-                        id="autoClickTargetNew"
-                        checked={autoClickTarget}
-                        onChange={(e) => setAutoClickTarget((e.target as HTMLInputElement).checked)}
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <label htmlFor="autoClickTargetNew" style={{ ...editorStyles.label, marginTop: 0, cursor: 'pointer' }}>
-                        Auto-click element on Next
-                      </label>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-                      <EditorButton
-                        variant={selectionModeActive ? 'primary' : 'secondary'}
-                        style={{ flex: 1 }}
-                        onClick={() => {
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div>
+                    <label style={editorStyles.label}>Layout Style</label>
+                    <select 
+                      value={layoutMode}
+                      onChange={(e) => {
+                        const val = (e.target as HTMLSelectElement).value as 'anchored' | 'floating';
+                        setLayoutMode(val);
+                        if (val === 'floating') {
+                          handleClearSelection();
+                        } else if (!xpath && !selector && !selectedStep?.x_path) {
+                          // If switching to anchored and no existing xpath, auto-activate selector
                           setSelectionModeActive(true);
                           onMessage({ type: 'ACTIVATE_SELECTOR' });
-                        }}
-                      >
-                        Re-Select
-                      </EditorButton>
-                      <EditorButton
-                        variant="secondary"
-                        style={
-                          !selectionModeActive
-                            ? { borderWidth: '2px', borderColor: '#3b82f6', background: 'rgba(59, 130, 246, 0.08)', color: '#1d4ed8' }
-                            : undefined
                         }
-                        onClick={() => {
-                          setSelectionModeActive(false);
-                          onMessage({ type: 'CLEAR_SELECTION_CLICKED' });
-                        }}
-                      >
-                        Hide Selector
-                      </EditorButton>
-                      {selectedStep?.x_path && (
+                      }}
+                      style={{
+                        width: '100%',
+                        marginTop: '0.5rem',
+                        padding: '0.625rem 1rem',
+                        fontFamily: editorStyles.root.fontFamily,
+                        fontSize: '0.875rem',
+                        borderRadius: '0.75rem',
+                        border: '1px solid #e2e8f0',
+                        background: '#fff'
+                      }}
+                    >
+                      <option value="anchored">Anchored to Element (Tooltip)</option>
+                      <option value="floating">Floating on Page (Modal)</option>
+                    </select>
+                  </div>
+
+                  {layoutMode === 'anchored' ? (
+                    /* Anchored UI */
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <label style={editorStyles.label}>Target Element</label>
+                      <div style={editorStyles.selectorBox} title={xpath || selector || selectedStep?.x_path || ''}>
+                        {((xpath || selector || selectedStep?.x_path || '').length > 60 ? (xpath || selector || selectedStep?.x_path || '').slice(0, 60) + '…' : (xpath || selector || selectedStep?.x_path || ''))}
+                      </div>
+                      
+                      {elementInfo && (
+                        <div style={{ ...editorStyles.elementInfo, marginTop: '0.5rem' }}>
+                          <strong style={editorStyles.elementInfoTitle}>Element Info</strong>
+                          <div style={editorStyles.elementInfoText}>{formatElementInfo(elementInfo)}</div>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <input
+                          type="checkbox"
+                          id="autoClickTargetStep"
+                          checked={autoClickTarget}
+                          onChange={(e) => setAutoClickTarget((e.target as HTMLInputElement).checked)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                        <label htmlFor="autoClickTargetStep" style={{ ...editorStyles.label, marginTop: 0, cursor: 'pointer', fontSize: '0.8rem' }}>
+                          Auto-click element on Next
+                        </label>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                        <EditorButton
+                          variant={selectionModeActive ? 'primary' : 'secondary'}
+                          style={{ flex: 1 }}
+                          onClick={() => {
+                            setSelectionModeActive(true);
+                            onMessage({ type: 'ACTIVATE_SELECTOR' });
+                          }}
+                        >
+                          Re-Select
+                        </EditorButton>
                         <EditorButton
                           variant="secondary"
-                          style={{ flex: 1, borderColor: '#ef4444', color: '#dc2626' }}
-                          onClick={handleRevertToExisting}
+                          style={
+                            !selectionModeActive
+                              ? { borderWidth: '2px', borderColor: '#3b82f6', background: 'rgba(59, 130, 246, 0.08)', color: '#1d4ed8' }
+                              : undefined
+                          }
+                          onClick={() => {
+                            setSelectionModeActive(false);
+                            onMessage({ type: 'CLEAR_SELECTION_CLICKED' });
+                          }}
                         >
-                          <iconify-icon icon="mdi:undo" style={{ marginRight: '0.25rem' }} />
-                          Clear Selection
+                          Hide
                         </EditorButton>
-                      )}
+                      </div>
                     </div>
-                    <div style={{ ...editorStyles.actionRow, marginTop: '1rem', borderTop: 'none', paddingTop: 0 }}>
-                      <EditorButton
-                        variant="primary"
-                        style={{ flex: 1 }}
-                        onClick={handleUpdate}
-                        disabled={updateGuideMutation.isPending}
-                      >
-                        {updateGuideMutation.isPending ? 'Updating…' : 'Update'}
-                      </EditorButton>
-                    </div>
-                  </>
-                ) : selectedStep?.x_path ? (
-                  <>
-                    <div style={editorStyles.selectorBox} title={selectedStep.x_path}>
-                      {selectedStep.x_path.length > 60 ? selectedStep.x_path.slice(0, 60) + '…' : selectedStep.x_path}
-                    </div>
-                    <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <input
-                        type="checkbox"
-                        id="autoClickTargetExisting"
-                        checked={autoClickTarget}
-                        onChange={(e) => setAutoClickTarget((e.target as HTMLInputElement).checked)}
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <label htmlFor="autoClickTargetExisting" style={{ ...editorStyles.label, marginTop: 0, cursor: 'pointer' }}>
-                        Auto-click element on Next
-                      </label>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-                      <EditorButton
-                        variant={selectionModeActive ? 'primary' : 'secondary'}
-                        style={{ flex: 1 }}
-                        onClick={() => {
-                          setSelectionModeActive(true);
-                          onMessage({ type: 'ACTIVATE_SELECTOR' });
+                  ) : (
+                    /* Floating UI */
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <label style={editorStyles.label}>Modal Position</label>
+                      <select 
+                        value={modalPosition}
+                        onChange={(e) => setModalPosition((e.target as HTMLSelectElement).value as any)}
+                        style={{
+                          width: '100%',
+                          padding: '0.625rem 1rem',
+                          fontFamily: editorStyles.root.fontFamily,
+                          fontSize: '0.875rem',
+                          borderRadius: '0.75rem',
+                          border: '1px solid #e2e8f0',
+                          background: '#fff'
                         }}
                       >
-                        Re-Select
-                      </EditorButton>
-                      <EditorButton
-                        variant="secondary"
-                        style={
-                          !selectionModeActive
-                            ? { borderWidth: '2px', borderColor: '#3b82f6', background: 'rgba(59, 130, 246, 0.08)', color: '#1d4ed8' }
-                            : undefined
-                        }
-                        onClick={() => {
-                          setSelectionModeActive(false);
-                          onMessage({ type: 'CLEAR_SELECTION_CLICKED' });
-                        }}
-                      >
-                        Hide Selector
-                      </EditorButton>
+                        <option value="center">Center (Default)</option>
+                        <option value="top">Top Center</option>
+                        <option value="bottom">Bottom Center</option>
+                        <option value="top-left">Top Left</option>
+                        <option value="top-right">Top Right</option>
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="bottom-right">Bottom Right</option>
+                      </select>
+                      <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+                        Choose where the modal should appear on the screen.
+                      </p>
                     </div>
-                    <div style={{ ...editorStyles.actionRow, marginTop: '1rem', borderTop: 'none', paddingTop: 0 }}>
-                      <EditorButton
-                        variant="primary"
-                        style={{ flex: 1 }}
-                        onClick={handleUpdate}
-                        disabled={updateGuideMutation.isPending}
-                      >
-                        {updateGuideMutation.isPending ? 'Updating…' : 'Update'}
-                      </EditorButton>
-                    </div>
-                  </>
-                ) : (
-                  <EditorButton
-                    variant={selectionModeActive ? 'primary' : 'secondary'}
-                    onClick={() => {
-                      setSelectionModeActive(true);
-                      onMessage({ type: 'ACTIVATE_SELECTOR' });
-                    }}
-                  >
-                    <iconify-icon icon="mdi:selection-marker" />
-                    Select element
-                  </EditorButton>
-                )}
+                  )}
+
+                  <div style={{ ...editorStyles.actionRow, marginTop: '0.5rem', borderTop: 'none', paddingTop: 0 }}>
+                    <EditorButton
+                      variant="primary"
+                      style={{ flex: 1, height: '44px' }}
+                      onClick={handleUpdate}
+                      disabled={updateGuideMutation.isPending}
+                    >
+                      {updateGuideMutation.isPending ? 'Saving…' : 'Update Step'}
+                    </EditorButton>
+                  </div>
+                </div>
               </div>
               <div style={{ ...editorStyles.actionRow, marginTop: '0.5rem' }}>
                 <EditorButton variant="primary" onClick={() => setShowTriggerStep(true)}>

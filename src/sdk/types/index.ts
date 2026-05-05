@@ -6,11 +6,61 @@ export interface Guide {
   page: string;
   selector: string;
   content: string;
+  type?: 'tooltip' | 'modal';
   placement: 'top' | 'bottom' | 'left' | 'right';
   targeting?: GuideTargeting;
   status: 'active' | 'inactive' | 'draft';
   createdAt?: string;
   updatedAt?: string;
+}
+
+/**
+ * Block types supported in dynamic templates
+ */
+export type BlockType =
+  | 'text'
+  | 'image'
+  | 'button'
+  | 'horizontal-line'
+  | 'video'
+  | 'poll-text'
+  | 'poll-yes-no'
+  | 'poll-scale';
+
+/**
+ * Individual block structure
+ */
+export interface GuideBlock {
+  id: string;
+  type: BlockType;
+  settings: Record<string, any>;
+}
+
+/**
+ * Detailed content structure for a guide step (serialized JSON in content field)
+ */
+export interface GuideTemplateContent {
+  title?: string;
+  description?: string;
+  buttonContent?: string;
+  blocks?: GuideBlock[];
+  // Original fields kept for backward compatibility and migration
+  body?: string;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video' | 'none';
+  cta1Text?: string;
+  cta1Action?: 'next' | 'dismiss' | 'url';
+  cta1Url?: string;
+  cta2Text?: string;
+  cta2Action?: 'dismiss' | 'url';
+  cta2Url?: string;
+  backdropDismiss?: boolean;
+  backdropColor?: string;
+  layout?: {
+    position?: 'center' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    verticalAlignment?: 'top' | 'center' | 'bottom';
+    horizontalAlignment?: 'left' | 'center' | 'right';
+  };
 }
 
 /**
@@ -63,6 +113,7 @@ export interface GuideByIdData {
   guide_category: string | null;
   target_page: string | null;
   type: string;
+  trigger_type: 'page_load' | 'click' | null;
   status: string;
   priority: number;
   created_at: string;
@@ -86,6 +137,7 @@ export interface GuideUpdatePayload {
   guide_category: string | null;
   target_page: string | null;
   type: string;
+  trigger_type: 'page_load' | 'click' | null;
   status: string;
   priority: number;
   templates: Array<{
@@ -94,6 +146,7 @@ export interface GuideUpdatePayload {
     url: string | null;
     x_path: string | null;
     auto_click_target: boolean;
+    content?: string;
   }>;
 }
 
