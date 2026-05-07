@@ -9,7 +9,7 @@ export interface Guide {
   type?: 'tooltip' | 'modal';
   placement: 'top' | 'bottom' | 'left' | 'right';
   targeting?: GuideTargeting;
-  status: 'active' | 'inactive' | 'draft';
+  status: 'active' | 'inactive' | 'draft' | 'archived';
   createdAt?: string;
   updatedAt?: string;
 }
@@ -57,6 +57,7 @@ export interface GuideTemplateContent {
   backdropDismiss?: boolean;
   backdropColor?: string;
   layout?: {
+    renderAs?: 'modal' | 'banner';
     position?: 'center' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
     verticalAlignment?: 'top' | 'center' | 'bottom';
     horizontalAlignment?: 'left' | 'center' | 'right';
@@ -95,6 +96,8 @@ export interface GuideTemplateMapItem {
   map_id: string;
   template_id: string;
   template: GuideTemplateNested;
+  /** Guide-specific content override. When non-null, takes priority over template.content. */
+  content: string | null;
   step_order: number;
   url: string | null;
   x_path: string | null;
@@ -279,7 +282,11 @@ export type EditorMessageType =
   | 'GUIDE_SAVED'
   | 'EXIT_EDITOR_MODE'
   | 'HEATMAP_TOGGLE'
-  | 'FEATURES_FOR_HEATMAP';
+  | 'FEATURES_FOR_HEATMAP'
+  | 'EXPAND_TO_FULLSCREEN'
+  | 'COLLAPSE_FROM_FULLSCREEN'
+  | 'PREVIEW_CONTENT'
+  | 'CLOSE_PREVIEW';
 
 /**
  * Messages sent from SDK to Editor iframe
@@ -351,6 +358,26 @@ export interface EditTagPageMessage {
   payload: { pageName: string };
 }
 
+export interface ExpandToFullscreenMessage {
+  type: 'EXPAND_TO_FULLSCREEN';
+}
+
+export interface CollapseFromFullscreenMessage {
+  type: 'COLLAPSE_FROM_FULLSCREEN';
+}
+
+export interface PreviewContentMessage {
+  type: 'PREVIEW_CONTENT';
+  content: string;
+  xpath: string | null;
+  layoutMode: 'anchored' | 'floating';
+  position: string;
+}
+
+export interface ClosePreviewMessage {
+  type: 'CLOSE_PREVIEW';
+}
+
 /**
  * Union type for all editor messages
  */
@@ -368,7 +395,11 @@ export type EditorMessage =
   | CancelMessage
   | EditorReadyMessage
   | GuideSavedMessage
-  | ExitEditorModeMessage;
+  | ExitEditorModeMessage
+  | ExpandToFullscreenMessage
+  | CollapseFromFullscreenMessage
+  | PreviewContentMessage
+  | ClosePreviewMessage;
 
 /** Payload for create page API (POST /pages) - used by React Query mutation */
 export interface CreatePagePayload {

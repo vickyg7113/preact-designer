@@ -1,6 +1,8 @@
 import { useMemo } from 'preact/hooks';
-import type { GuideTemplateMapItem, GuideTemplateContent, GuideBlock } from '../types';
+import type { GuideTemplateMapItem, GuideTemplateContent } from '../types';
+import { resolveStepContent } from '../utils/dom';
 import { SDK_STYLES } from '../styles/constants';
+import { BlockRenderer } from './GuideModal';
 
 const DEFAULT_TITLE = 'Template';
 const DEFAULT_DESCRIPTION = 'Description';
@@ -106,10 +108,11 @@ interface LiveGuideCardProps {
     onBack: () => void;
     isFirstStep: boolean;
     isLastStep: boolean;
+    onPollChange?: (blockId: string, pollType: string, question: string, value: string) => void;
 }
 
-export function LiveGuideCard({ template, top, left, onDismiss, onNext, onBack, isFirstStep, isLastStep }: LiveGuideCardProps) {
-    const content = useMemo(() => parseTemplateContent(template.template.content), [template.template.content]);
+export function LiveGuideCard({ template, top, left, onDismiss, onNext, onBack, isFirstStep, isLastStep, onPollChange }: LiveGuideCardProps) {
+    const content = useMemo(() => parseTemplateContent(resolveStepContent(template)), [template]);
     const templateKey = template.template.template_key;
 
     const isTooltip = templateKey === 'tooltip-scratch';
@@ -159,14 +162,36 @@ export function LiveGuideCard({ template, top, left, onDismiss, onNext, onBack, 
                     >
                         <iconify-icon icon="mdi:close" style={{ fontSize: 14 }} />
                     </div>
-                    <TourStyleCardContent
-                        title={content.title}
-                        description={content.description}
-                        buttonContent={content.buttonContent}
-                        onNext={onNext}
-                        onBack={onBack}
-                        isFirstStep={isFirstStep}
-                    />
+                    {content.blocks && content.blocks.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            {(() => {
+                                const pollCount = content.blocks!.filter(b => b.type.startsWith('poll-')).length;
+                                return content.blocks!.map(block => (
+                                    <BlockRenderer
+                                        key={block.id}
+                                        block={block}
+                                        onNext={onNext}
+                                        onBack={onBack}
+                                        onDismiss={onDismiss}
+                                        onAction={(url) => window.open(url, '_blank')}
+                                        isFirstStep={isFirstStep}
+                                        isLastStep={isLastStep}
+                                        onPollChange={onPollChange}
+                                        totalPollsInStep={pollCount}
+                                    />
+                                ));
+                            })()}
+                        </div>
+                    ) : (
+                        <TourStyleCardContent
+                            title={content.title}
+                            description={content.description}
+                            buttonContent={content.buttonContent}
+                            onNext={onNext}
+                            onBack={onBack}
+                            isFirstStep={isFirstStep}
+                        />
+                    )}
                 </div>
             </div>
         </div>

@@ -16,9 +16,11 @@ import type {
   HeatmapToggleMessage,
   GuideByIdData,
   GuideByIdResponse,
+  PreviewContentMessage,
 } from '../types';
 import { apiClient } from '../api/client';
 import { SelectorEngine } from './SelectorEngine';
+import { SDK_STYLES } from '../styles/constants';
 
 /**
  * Visual Designer SDK - Main SDK class (Preact-based)
@@ -47,6 +49,7 @@ export class DesignerSDK {
   /** Current URL to detect page changes */
   private currentUrl: string = typeof window !== 'undefined' ? window.location.href : '';
   private styleInjected: boolean = false;
+  private previewBackButton: HTMLElement | null = null;
 
   constructor(config: SDKConfig = {}) {
     this.config = config;
@@ -85,6 +88,18 @@ export class DesignerSDK {
 
       this.config.onGuideDismissed?.(guide.guide_id);
       return this.trackEvent('dismissed', properties);
+    });
+
+    this.guideRenderer.setOnPollResponse((guide, templateId, blockId, pollType, question, value, stepIndex) => {
+      this.trackEvent('poll_responses', {
+        guide_id: guide.guide_id,
+        template_id: templateId,
+        block_id: blockId,
+        step_index: stepIndex,
+        survey_question: question,
+        survey_response: value,
+        survey_type: pollType,
+      });
     });
 
     this.guideRenderer.setOnNext((guide, stepIndex, totalSteps) => {
@@ -425,20 +440,12 @@ export class DesignerSDK {
   private handleGlobalClick(event: MouseEvent): void {
     if (this.isEditorMode) return;
 
-    // Log the click event
-    console.log('[Visual Designer] Click Event:', event);
-
     const target = event.target as Element;
     if (!target) return;
 
-    // Generate XPath of clicked element
     const xpath = SelectorEngine.getXPath(target);
 
-    console.log('[Visual Designer] Clicked Element XPath:', xpath);
-
-    // Compare with target_segment of fetched guides
     for (const guide of this.fetchedGuides) {
-      console.log('Guide:', guide);
       // Trigger logic: If target_segment exists, it's a manual trigger (Feature Click)
       const isClickTrigger = guide.target_segment !== null;
       if (isClickTrigger && guide.target_segment === xpath) {
@@ -484,6 +491,12 @@ export class DesignerSDK {
         break;
       case 'FEATURES_FOR_HEATMAP':
         this.handleFeaturesForHeatmap((message as { type: 'FEATURES_FOR_HEATMAP'; features: FeatureItem[] }).features);
+        break;
+      case 'PREVIEW_CONTENT':
+        this.handlePreviewContent(message as PreviewContentMessage);
+        break;
+      case 'CLOSE_PREVIEW':
+        this.closePreview();
         break;
       case 'CANCEL':
         this.editorFrame.hide();
@@ -542,6 +555,94 @@ export class DesignerSDK {
       };
     });
     this.renderFeatureHeatmap();
+  }
+
+  private handlePreviewContent(message: PreviewContentMessage): void {
+    const tempGuide: GuideByIdData = {
+      guide_id: '__preview__',
+      guide_name: 'Preview',
+      description: null,
+      target_segment: null,
+      guide_category: null,
+      target_page: null,
+      type: message.layoutMode === 'anchored' ? 'tooltip' : 'modal',
+      trigger_type: null,
+      status: 'active',
+      priority: 0,
+      created_at: '',
+      updated_at: '',
+      updated_by: null,
+      templates: [
+        {
+          map_id: '__preview_map__',
+          template_id: '__preview_template__',
+          template: {
+            template_id: '__preview_template__',
+            title: 'Preview',
+            subtitle: '',
+            content: message.content,
+            template_key: '__preview__',
+          },
+          content: message.content,
+          step_order: 1,
+          url: null,
+          x_path: message.xpath,
+          is_active: true,
+          auto_click_target: false,
+        },
+      ],
+      steps: [],
+    };
+
+    // Inject position into content if floating
+    if (message.layoutMode === 'floating') {
+      try {
+        const parsed = JSON.parse(message.content || '{}');
+        if (!parsed.layout) parsed.layout = {};
+        parsed.layout.position = message.position;
+        tempGuide.templates[0].content = JSON.stringify(parsed);
+        tempGuide.templates[0].template.content = JSON.stringify(parsed);
+      } catch { /* keep as-is */ }
+    }
+
+    this.guideRenderer.renderTriggeredGuide(tempGuide);
+    this.showPreviewBackButton();
+  }
+
+  private showPreviewBackButton(): void {
+    if (this.previewBackButton) return;
+    const btn = document.createElement('button');
+    btn.id = 'designer-preview-back-btn';
+    btn.textContent = '← Back to Editor';
+    btn.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: ${SDK_STYLES.zIndex.controls};
+      padding: 0.625rem 1.5rem;
+      background: #1855BC;
+      color: #fff;
+      border: none;
+      border-radius: 9999px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(24,85,188,0.35);
+    `;
+    btn.onclick = () => this.closePreview();
+    document.body.appendChild(btn);
+    this.previewBackButton = btn;
+  }
+
+  private closePreview(): void {
+    this.guideRenderer.clearTriggeredGuide();
+    if (this.previewBackButton) {
+      this.previewBackButton.remove();
+      this.previewBackButton = null;
+    }
+    this.editorFrame.restoreAfterPreview();
   }
 
   private getTaggedFeatures(): TaggedFeature[] {

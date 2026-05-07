@@ -3,26 +3,33 @@ import { SDK_STYLES } from '../styles/constants';
 import type { GuideTemplateContent, GuideBlock } from '../types';
 
 interface GuideModalProps {
-  content: string; // JSON string
+  content: string;
   onDismiss: () => void;
   onNext: () => void;
   onBack: () => void;
   onAction: (url: string) => void;
   isFirstStep: boolean;
   isLastStep: boolean;
+  onPollChange?: (blockId: string, pollType: string, question: string, value: string) => void;
 }
 
-function BlockRenderer({ block, onNext, onBack, onDismiss, onAction, isFirstStep, isLastStep }: { 
-  block: GuideBlock, 
-  onNext: () => void, 
-  onBack: () => void,
-  onDismiss: () => void,
-  onAction: (url: string) => void,
-  isFirstStep: boolean, 
-  isLastStep: boolean 
+export function BlockRenderer({ block, onNext, onBack, onDismiss, onAction, isFirstStep, isLastStep, onPollChange, totalPollsInStep }: {
+  block: GuideBlock;
+  onNext: () => void;
+  onBack: () => void;
+  onDismiss: () => void;
+  onAction: (url: string) => void;
+  isFirstStep: boolean;
+  isLastStep: boolean;
+  onPollChange?: (blockId: string, pollType: string, question: string, value: string) => void;
+  totalPollsInStep?: number;
 }) {
   const { type, settings } = block;
+  const isMultiPoll = (totalPollsInStep ?? 1) > 1;
   const [selectedValue, setSelectedValue] = useState<number | null>(null);
+  const [textValue, setTextValue] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedAnswer, setSubmittedAnswer] = useState<'yes' | 'no' | null>(null);
 
   const fontStyle = { fontFamily: SDK_STYLES.fontFamily };
 
@@ -88,20 +95,26 @@ function BlockRenderer({ block, onNext, onBack, onDismiss, onAction, isFirstStep
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <button
-              onClick={onNext}
+              disabled={selectedValue === null || submitted}
+              onClick={() => {
+                onPollChange?.(block.id, block.type, settings.question || '', String(selectedValue));
+                setSubmitted(true);
+                if (!isMultiPoll) setTimeout(() => onNext(), 600);
+              }}
               style={{
-                backgroundColor: '#222',
+                backgroundColor: submitted ? '#16a34a' : selectedValue === null ? '#94a3b8' : '#222',
                 color: '#fff',
                 padding: '12px 40px',
                 borderRadius: '12px',
                 border: 'none',
                 fontWeight: 700,
                 fontSize: '14px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                cursor: selectedValue === null || submitted ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                transition: 'background-color 0.2s',
               }}
             >
-              {settings.submitLabel || 'Submit'}
+              {submitted ? '✓ Submitted' : (settings.submitLabel || 'Submit')}
             </button>
           </div>
         </div>
@@ -111,22 +124,23 @@ function BlockRenderer({ block, onNext, onBack, onDismiss, onAction, isFirstStep
       return (
         <div style={{ ...fontStyle, display: 'flex', flexDirection: 'column', gap: '20px', padding: '12px 0' }}>
           {settings.question && (
-            <div
-              style={{
-                ...fontStyle,
-                fontSize: settings.themeStyle === 'title' ? '20px' : (settings.themeStyle === 'sub-title' ? '16px' : '14px'),
-                fontWeight: (settings.themeStyle === 'title' || settings.themeStyle === 'sub-title') ? 700 : 500,
-                color: settings.themeStyle === 'title' ? '#1855BC' : (settings.themeStyle === 'sub-title' ? '#222222' : '#475569'),
-                textAlign: 'center',
-                lineHeight: 1.6
-              }}
-              dangerouslySetInnerHTML={{ __html: settings.question }}
-            />
+            <h3 style={{
+              fontSize: settings.themeStyle === 'title' ? '20px' : settings.themeStyle === 'sub-title' ? '16px' : '14px',
+              fontWeight: settings.themeStyle === 'body' ? 500 : 700,
+              textAlign: 'center',
+              margin: 0,
+              color: '#222222',
+              lineHeight: 1.2,
+            }}>
+              {settings.question}
+            </h3>
           )}
 
           <div style={{ width: '100%' }}>
             <textarea
-              placeholder={settings.placeholder || "Enter text here..."}
+              value={textValue}
+              placeholder={settings.placeholder || 'Enter text here...'}
+              onInput={(e) => setTextValue((e.target as HTMLTextAreaElement).value)}
               style={{
                 ...fontStyle,
                 width: '100%',
@@ -141,27 +155,33 @@ function BlockRenderer({ block, onNext, onBack, onDismiss, onAction, isFirstStep
                 outline: 'none',
                 resize: 'none',
                 boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
               }}
             />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <button
-              onClick={onNext}
+              disabled={!textValue.trim() || submitted}
+              onClick={() => {
+                onPollChange?.(block.id, block.type, settings.question || '', textValue.trim());
+                setSubmitted(true);
+                if (!isMultiPoll) setTimeout(() => onNext(), 600);
+              }}
               style={{
-                backgroundColor: '#222222',
+                backgroundColor: submitted ? '#16a34a' : !textValue.trim() ? '#94a3b8' : '#222222',
                 color: '#fff',
                 padding: '12px 40px',
                 borderRadius: '12px',
                 border: 'none',
                 fontWeight: 700,
                 fontSize: '14px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                cursor: !textValue.trim() || submitted ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                transition: 'background-color 0.2s',
               }}
             >
-              {settings.submitLabel || "Submit"}
+              {submitted ? '✓ Submitted' : (settings.submitLabel || 'Submit')}
             </button>
           </div>
         </div>
@@ -177,42 +197,41 @@ function BlockRenderer({ block, onNext, onBack, onDismiss, onAction, isFirstStep
           )}
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
-            <button
-              onClick={onNext}
-              style={{
-                flex: 1,
-                maxWidth: '120px',
-                backgroundColor: '#222222',
-                color: '#fff',
-                padding: '10px',
-                borderRadius: '8px',
-                border: 'none',
-                fontWeight: 700,
-                fontSize: '14px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-              }}
-            >
-              {settings.yesLabel || "Yes"}
-            </button>
-            <button
-              onClick={onNext}
-              style={{
-                flex: 1,
-                maxWidth: '120px',
-                backgroundColor: '#222222',
-                color: '#fff',
-                padding: '10px',
-                borderRadius: '8px',
-                border: 'none',
-                fontWeight: 700,
-                fontSize: '14px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-              }}
-            >
-              {settings.noLabel || "No"}
-            </button>
+            {(['yes', 'no'] as const).map((answer) => {
+              const isChosen = submittedAnswer === answer;
+              const isOther = submittedAnswer !== null && submittedAnswer !== answer;
+              return (
+                <button
+                  key={answer}
+                  disabled={submittedAnswer !== null}
+                  onClick={() => {
+                    onPollChange?.(block.id, block.type, settings.question || '', answer);
+                    setSubmittedAnswer(answer);
+                    if (!isMultiPoll) setTimeout(() => onNext(), 400);
+                  }}
+                  style={{
+                    flex: 1,
+                    maxWidth: '120px',
+                    backgroundColor: isChosen ? '#16a34a' : '#222222',
+                    color: '#fff',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    cursor: submittedAnswer !== null ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    opacity: isOther ? 0.4 : 1,
+                    transition: 'background-color 0.2s, opacity 0.2s',
+                  }}
+                >
+                  {isChosen
+                    ? `✓ ${answer === 'yes' ? (settings.yesLabel || 'Yes') : (settings.noLabel || 'No')}`
+                    : answer === 'yes' ? (settings.yesLabel || 'Yes') : (settings.noLabel || 'No')
+                  }
+                </button>
+              );
+            })}
           </div>
         </div>
       );
@@ -291,14 +310,15 @@ function BlockRenderer({ block, onNext, onBack, onDismiss, onAction, isFirstStep
   }
 }
 
-export function GuideModal({ 
-  content: contentStr, 
-  onDismiss, 
-  onNext, 
+export function GuideModal({
+  content: contentStr,
+  onDismiss,
+  onNext,
   onBack,
   onAction,
   isFirstStep,
-  isLastStep 
+  isLastStep,
+  onPollChange,
 }: GuideModalProps) {
   const content = useMemo(() => {
     try {
@@ -405,18 +425,23 @@ export function GuideModal({
         <div style={{ padding: '24px' }}>
           {content.blocks && content.blocks.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-               {content.blocks.map(block => (
-                 <BlockRenderer 
-                   key={block.id} 
-                   block={block} 
-                   onNext={onNext} 
-                   onBack={onBack}
-                   onDismiss={onDismiss}
-                   onAction={onAction}
-                   isFirstStep={isFirstStep}
-                   isLastStep={isLastStep}
-                 />
-               ))}
+               {(() => {
+                 const pollCount = content.blocks!.filter(b => b.type.startsWith('poll-')).length;
+                 return content.blocks!.map(block => (
+                   <BlockRenderer
+                     key={block.id}
+                     block={block}
+                     onNext={onNext}
+                     onBack={onBack}
+                     onDismiss={onDismiss}
+                     onAction={onAction}
+                     isFirstStep={isFirstStep}
+                     isLastStep={isLastStep}
+                     onPollChange={onPollChange}
+                     totalPollsInStep={pollCount}
+                   />
+                 ));
+               })()}
             </div>
           ) : (
             /* Fallback Legacy Rendering */

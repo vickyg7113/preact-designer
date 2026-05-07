@@ -28,6 +28,9 @@ export class EditorFrame {
   private templateId: string | null = null;
   private elementSelectedState: { selector: string; elementInfo: ElementInfo; xpath?: string } | null = null;
   private tagPageSavedAckCounter = 0;
+  private isFullscreen: boolean = false;
+  private previewWasFullscreen: boolean = false;
+  private savedIframeStyles: { top: string; left: string; width: string; height: string; maxHeight: string; borderRadius: string } | null = null;
   private isDragging: boolean = false;
   private dragStartX: number = 0;
   private dragStartY: number = 0;
@@ -166,6 +169,53 @@ export class EditorFrame {
     this.renderEditorContent();
   }
 
+  expandToFullscreen(): void {
+    if (!this.iframe || this.isFullscreen) return;
+    this.savedIframeStyles = {
+      top: this.iframe.style.top,
+      left: this.iframe.style.left,
+      width: this.iframe.style.width,
+      height: this.iframe.style.height,
+      maxHeight: this.iframe.style.maxHeight,
+      borderRadius: this.iframe.style.borderRadius,
+    };
+    this.iframe.style.top = '0';
+    this.iframe.style.left = '0';
+    this.iframe.style.width = '100vw';
+    this.iframe.style.height = '100vh';
+    this.iframe.style.maxHeight = '100vh';
+    this.iframe.style.borderRadius = '0';
+    if (this.dragHandle) this.dragHandle.style.display = 'none';
+    this.isFullscreen = true;
+  }
+
+  showAndExpandToFullscreen(): void {
+    this.show();
+    this.expandToFullscreen();
+  }
+
+  restoreAfterPreview(): void {
+    this.show();
+    if (this.previewWasFullscreen) {
+      this.expandToFullscreen();
+    }
+    this.previewWasFullscreen = false;
+  }
+
+  collapseFromFullscreen(): void {
+    if (!this.iframe || !this.isFullscreen || !this.savedIframeStyles) return;
+    const s = this.savedIframeStyles;
+    this.iframe.style.top = s.top;
+    this.iframe.style.left = s.left;
+    this.iframe.style.width = s.width;
+    this.iframe.style.height = s.height;
+    this.iframe.style.maxHeight = s.maxHeight;
+    this.iframe.style.borderRadius = s.borderRadius;
+    if (this.dragHandle) this.dragHandle.style.display = 'block';
+    this.isFullscreen = false;
+    this.savedIframeStyles = null;
+  }
+
   /**
    * Destroy editor frame
    */
@@ -235,7 +285,23 @@ export class EditorFrame {
     const root = doc?.getElementById('designer-editor-root');
     if (!doc || !root) return;
 
-    const onMessage = (msg: EditorMessage) => this.messageCallback?.(msg);
+    const onMessage = (msg: EditorMessage) => {
+      if (msg.type === 'EXPAND_TO_FULLSCREEN') { this.expandToFullscreen(); return; }
+      if (msg.type === 'COLLAPSE_FROM_FULLSCREEN') { this.collapseFromFullscreen(); return; }
+      if (msg.type === 'PREVIEW_CONTENT') {
+        this.previewWasFullscreen = this.isFullscreen;
+        this.collapseFromFullscreen();
+        this.hide();
+        this.messageCallback?.(msg);
+        return;
+      }
+      if (msg.type === 'CLOSE_PREVIEW') {
+        this.restoreAfterPreview();
+        this.messageCallback?.(msg);
+        return;
+      }
+      this.messageCallback?.(msg);
+    };
 
     const editorContent =
       this.mode === 'tag-page' ? (

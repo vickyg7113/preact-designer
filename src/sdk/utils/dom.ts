@@ -1,4 +1,4 @@
-import type { ElementInfo } from '../types';
+import type { ElementInfo, GuideTemplateMapItem } from '../types';
 
 /**
  * Get element information for editor display
@@ -70,4 +70,12 @@ export function scrollIntoViewIfNeeded(element: Element): void {
   if (!isInViewport(element)) {
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
+}
+
+/**
+ * Returns the effective content for a guide step.
+ * Prefers the map-level guide-specific override; falls back to the shared template content.
+ */
+export function resolveStepContent(step: GuideTemplateMapItem): string {
+  return (step.content && step.content.trim() !== '') ? step.content : (step.template?.content || '');
 }

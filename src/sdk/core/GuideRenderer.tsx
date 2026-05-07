@@ -1,9 +1,10 @@
 import { render } from 'preact';
 import { SelectorEngine } from './SelectorEngine';
-import { getCurrentPage, scrollIntoViewIfNeeded } from '../utils/dom';
+import { getCurrentPage, scrollIntoViewIfNeeded, resolveStepContent } from '../utils/dom';
 import { GuideTooltip } from '../components/GuideTooltip';
 import { LiveGuideCard } from '../components/LiveGuideCard';
 import { GuideModal } from '../components/GuideModal';
+import { GuideBanner } from '../components/GuideBanner';
 import { SpotlightOverlay } from '../components/SpotlightOverlay';
 import { SDK_STYLES } from '../styles/constants';
 import type { Guide, GuideByIdData, GuideTemplateMapItem } from '../types';
@@ -71,6 +72,7 @@ export class GuideRenderer {
   private container: HTMLElement | null = null;
   private onDismiss: (guide: GuideByIdData, stepIndex: number) => void | Promise<void> = () => { };
   private onNext: (guide: GuideByIdData, currentStepIndex: number, totalSteps: number) => void | Promise<void> = () => { };
+  private onPollResponse: (guide: GuideByIdData, templateId: string, blockId: string, pollType: string, question: string, value: string, stepIndex: number) => void = () => { };
   private lastGuides: Guide[] = [];
   private triggeredGuide: GuideByIdData | null = null;
   private currentStepIndex: number = 0;
@@ -82,6 +84,20 @@ export class GuideRenderer {
 
   setOnNext(cb: (guide: GuideByIdData, currentStepIndex: number, totalSteps: number) => void | Promise<void>) {
     this.onNext = cb;
+  }
+
+  setOnPollResponse(cb: (guide: GuideByIdData, templateId: string, blockId: string, pollType: string, question: string, value: string, stepIndex: number) => void) {
+    this.onPollResponse = cb;
+  }
+
+  private firePollResponse(blockId: string, pollType: string, question: string, value: string): void {
+    if (!this.triggeredGuide) return;
+    const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
+    const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+    const currentTemplate = sortedTemplates[this.currentStepIndex];
+    if (currentTemplate) {
+      this.onPollResponse(this.triggeredGuide, currentTemplate.template_id, blockId, pollType, question, value, this.currentStepIndex);
+    }
   }
 
   renderGuides(guides: Guide[]): void {
@@ -136,12 +152,10 @@ export class GuideRenderer {
     const activeTemplates = (this.triggeredGuide?.templates || []).filter(t => t.is_active);
     const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
     const currentTemplate = sortedTemplates[this.currentStepIndex];
-    const isFloating = !currentTemplate?.x_path;
-
-    console.log('tooltips', tooltips);
-    console.log('triggeredTooltips', triggeredTooltips);
-    console.log('currentTemplate', currentTemplate);
-    console.log('isFloating', isFloating);
+    const isBanner = !!currentTemplate && !currentTemplate.x_path && (() => {
+      try { return JSON.parse(resolveStepContent(currentTemplate)).layout?.renderAs === 'banner'; } catch { return false; }
+    })();
+    const isFloating = !isBanner && !currentTemplate?.x_path;
 
     if (tooltips.length === 0 && triggeredTooltips.length === 0 && !currentTemplate) {
       render(null, this.container);
@@ -186,19 +200,35 @@ export class GuideRenderer {
             onBack={() => this.handleBack()}
             isFirstStep={this.currentStepIndex === 0}
             isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
+            onPollChange={(blockId, pollType, question, value) => this.firePollResponse(blockId, pollType, question, value)}
           />
         ))}
 
-        {isFloating && currentTemplate && (
-          <GuideModal
+        {isBanner && currentTemplate && (
+          <GuideBanner
             key={`${this.triggeredGuide!.guide_id}-${this.currentStepIndex}`}
-            content={currentTemplate.template.content}
+            content={resolveStepContent(currentTemplate)}
             onDismiss={() => this.dismissTriggeredGuide()}
             onNext={() => this.handleNext()}
             onBack={() => this.handleBack()}
             onAction={(url) => window.location.href = url}
             isFirstStep={this.currentStepIndex === 0}
             isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
+            onPollChange={(blockId, pollType, question, value) => this.firePollResponse(blockId, pollType, question, value)}
+          />
+        )}
+
+        {isFloating && currentTemplate && (
+          <GuideModal
+            key={`${this.triggeredGuide!.guide_id}-${this.currentStepIndex}`}
+            content={resolveStepContent(currentTemplate)}
+            onDismiss={() => this.dismissTriggeredGuide()}
+            onNext={() => this.handleNext()}
+            onBack={() => this.handleBack()}
+            onAction={(url) => window.location.href = url}
+            isFirstStep={this.currentStepIndex === 0}
+            isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
+            onPollChange={(blockId, pollType, question, value) => this.firePollResponse(blockId, pollType, question, value)}
           />
         )}
       </div>,
@@ -317,6 +347,14 @@ export class GuideRenderer {
 
   clear(): void {
     this.dismissedThisSession.clear();
+    if (this.container) {
+      render(null, this.container);
+    }
+  }
+
+  clearTriggeredGuide(): void {
+    this.triggeredGuide = null;
+    this.currentStepIndex = 0;
     if (this.container) {
       render(null, this.container);
     }
