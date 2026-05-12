@@ -11,17 +11,26 @@ const DEFAULT_SETTINGS: Record<BlockType, Record<string, any>> = {
   button: { label: 'Next', action: 'next' },
   'horizontal-line': {},
   video: { url: '' },
-  'poll-text': { question: 'How can we improve?', placeholder: 'Enter text here...', submitLabel: 'Submit', themeStyle: 'body' },
-  'poll-yes-no': { question: 'Was this helpful?', yesLabel: 'Yes', noLabel: 'No' },
-  'poll-scale': { question: 'How would you rate this?', minValue: 1, maxValue: 5, showLabels: true, labels: { 1: 'Low', 5: 'High' }, submitLabel: 'Submit' },
+  'poll-text':            { question: 'How can we improve?', placeholder: 'Enter text here...', submitLabel: 'Submit', themeStyle: 'body' },
+  'poll-yes-no':          { question: 'Was this helpful?', yesLabel: 'Yes', noLabel: 'No' },
+  'poll-scale':           { question: 'How would you rate this?', minValue: 1, maxValue: 5, showLabels: true, labels: { 1: 'Low', 5: 'High' }, submitLabel: 'Submit' },
+  'poll-nps':             { question: 'How likely are you to recommend us to a friend or colleague?', lowLabel: 'Not at all likely', highLabel: 'Extremely likely' },
+  'poll-multiple-choice': { question: 'Select an option', choices: ['Option 1', 'Option 2', 'Option 3'], allowOther: false, randomize: false },
+  'poll-checkboxes':      { question: 'Select all that apply', choices: ['Option 1', 'Option 2', 'Option 3'], allowOther: false, randomize: false },
+  'poll-star-rating':     { question: 'How would you rate your experience?', maxStars: 5 },
+  'poll-dropdown':        { question: 'Select an option', choices: ['Option 1', 'Option 2', 'Option 3'] },
+  'poll-slider':          { question: 'How satisfied are you?', min: 0, max: 10, step: 1, minLabel: 'Not satisfied', maxLabel: 'Very satisfied' },
+  'poll-ranking':         { question: 'Rank the following in order of importance', choices: ['Item 1', 'Item 2', 'Item 3'] },
+  'poll-matrix':          { question: 'Please rate the following', rows: ['Item 1', 'Item 2', 'Item 3'], columns: ['Poor', 'Fair', 'Good', 'Excellent'] },
 };
 
 interface InlineTemplateEditorProps {
   initialContent: string;
   onSave: (updatedContent: string) => void;
   onClose: () => void;
-  onPreview?: (content: string) => void;
+  onPreview?: (content: string, guideType?: string) => void;
   stepLabel?: string;
+  surveyMode?: boolean;
 }
 
 function controlBtn(disabled: boolean, danger = false): Record<string, any> {
@@ -65,7 +74,7 @@ function migrateToBlocks(parsed: GuideTemplateContent): GuideBlock[] {
   return migrated;
 }
 
-export function InlineTemplateEditor({ initialContent, onSave, onClose, onPreview, stepLabel }: InlineTemplateEditorProps) {
+export function InlineTemplateEditor({ initialContent, onSave, onClose, onPreview, stepLabel, surveyMode }: InlineTemplateEditorProps) {
   const parsed: GuideTemplateContent = (() => {
     try { return JSON.parse(initialContent || '{}'); } catch { return {}; }
   })();
@@ -116,7 +125,7 @@ export function InlineTemplateEditor({ initialContent, onSave, onClose, onPrevie
 
   const handlePreview = () => {
     if (!onPreview) return;
-    onPreview(buildContent());
+    onPreview(buildContent(), surveyMode ? 'survey' : undefined);
   };
 
   return (
@@ -236,6 +245,7 @@ export function InlineTemplateEditor({ initialContent, onSave, onClose, onPrevie
                         block={block}
                         onNext={noop} onBack={noop} onDismiss={noop} onAction={noop}
                         isFirstStep={true} isLastStep={true}
+                        surveyMode={surveyMode}
                       />
                     </div>
                   </div>

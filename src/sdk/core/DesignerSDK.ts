@@ -565,7 +565,7 @@ export class DesignerSDK {
       target_segment: null,
       guide_category: null,
       target_page: null,
-      type: message.layoutMode === 'anchored' ? 'tooltip' : 'modal',
+      type: message.guideType || (message.layoutMode === 'anchored' ? 'tooltip' : 'modal'),
       trigger_type: null,
       status: 'active',
       priority: 0,

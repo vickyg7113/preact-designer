@@ -432,6 +432,7 @@ export function GuideEditor({
         <InlineTemplateEditor
           initialContent={editedContentOverride ?? resolveStepContent(selectedStep)}
           stepLabel={getStepTitle(selectedStep) || `Step ${selectedStepIndex + 1}`}
+          surveyMode={guide?.type === 'survey'}
           onSave={(content) => {
             setEditedContentOverride(content);
             setShowContentEditor(false);
@@ -441,13 +442,14 @@ export function GuideEditor({
             setShowContentEditor(false);
             onMessage({ type: 'COLLAPSE_FROM_FULLSCREEN' });
           }}
-          onPreview={(content) => {
+          onPreview={(content, gType) => {
             onMessage({
               type: 'PREVIEW_CONTENT',
               content: getUpdatedContent(content, layoutMode === 'floating'),
               xpath: floatingStyle === 'banner' ? null : (xpath || selectedStep.x_path || null),
               layoutMode: floatingStyle === 'banner' ? 'floating' : layoutMode,
               position: floatingStyle === 'banner' ? bannerPosition : modalPosition,
+              guideType: gType || guide?.type,
             });
           }}
         />
@@ -795,6 +797,7 @@ export function GuideEditor({
                         xpath: floatingStyle === 'banner' ? null : (xpath || selectedStep.x_path || null),
                         layoutMode: floatingStyle === 'banner' ? 'floating' : layoutMode,
                         position: floatingStyle === 'banner' ? bannerPosition : modalPosition,
+                        guideType: guide?.type,
                       });
                     }}
                     title="Preview on page"

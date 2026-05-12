@@ -77,6 +77,7 @@ export class GuideRenderer {
   private triggeredGuide: GuideByIdData | null = null;
   private currentStepIndex: number = 0;
   private dismissedThisSession = new Set<string>();
+  private surveyPendingAnswers = new Map<string, { pollType: string; question: string; value: string }>();
 
   setOnDismiss(cb: (guide: GuideByIdData, stepIndex: number) => void | Promise<void>) {
     this.onDismiss = cb;
@@ -90,14 +91,34 @@ export class GuideRenderer {
     this.onPollResponse = cb;
   }
 
+  private isSurveyMode(): boolean {
+    return this.triggeredGuide?.type === 'survey';
+  }
+
   private firePollResponse(blockId: string, pollType: string, question: string, value: string): void {
     if (!this.triggeredGuide) return;
+    if (this.isSurveyMode()) {
+      this.surveyPendingAnswers.set(blockId, { pollType, question, value });
+      return;
+    }
     const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
     const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
     const currentTemplate = sortedTemplates[this.currentStepIndex];
     if (currentTemplate) {
       this.onPollResponse(this.triggeredGuide, currentTemplate.template_id, blockId, pollType, question, value, this.currentStepIndex);
     }
+  }
+
+  private flushSurveyAnswers(): void {
+    if (!this.triggeredGuide || this.surveyPendingAnswers.size === 0) return;
+    const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
+    const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+    const currentTemplate = sortedTemplates[this.currentStepIndex];
+    if (!currentTemplate) return;
+    for (const [blockId, { pollType, question, value }] of this.surveyPendingAnswers) {
+      this.onPollResponse(this.triggeredGuide, currentTemplate.template_id, blockId, pollType, question, value, this.currentStepIndex);
+    }
+    this.surveyPendingAnswers.clear();
   }
 
   renderGuides(guides: Guide[]): void {
@@ -201,6 +222,7 @@ export class GuideRenderer {
             isFirstStep={this.currentStepIndex === 0}
             isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
             onPollChange={(blockId, pollType, question, value) => this.firePollResponse(blockId, pollType, question, value)}
+            surveyMode={this.isSurveyMode()}
           />
         ))}
 
@@ -215,6 +237,7 @@ export class GuideRenderer {
             isFirstStep={this.currentStepIndex === 0}
             isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
             onPollChange={(blockId, pollType, question, value) => this.firePollResponse(blockId, pollType, question, value)}
+            surveyMode={this.isSurveyMode()}
           />
         )}
 
@@ -229,6 +252,7 @@ export class GuideRenderer {
             isFirstStep={this.currentStepIndex === 0}
             isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
             onPollChange={(blockId, pollType, question, value) => this.firePollResponse(blockId, pollType, question, value)}
+            surveyMode={this.isSurveyMode()}
           />
         )}
       </div>,
@@ -260,6 +284,7 @@ export class GuideRenderer {
   handleBack(): void {
     if (!this.triggeredGuide || this.currentStepIndex === 0) return;
 
+    this.surveyPendingAnswers.clear();
     this.currentStepIndex--;
 
     const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
@@ -276,6 +301,8 @@ export class GuideRenderer {
 
   async handleNext(): Promise<void> {
     if (!this.triggeredGuide) return;
+
+    if (this.isSurveyMode()) this.flushSurveyAnswers();
 
     const activeTemplates = (this.triggeredGuide.templates || []).filter(t => t.is_active);
     const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);

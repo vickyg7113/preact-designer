@@ -25,7 +25,15 @@ export type BlockType =
   | 'video'
   | 'poll-text'
   | 'poll-yes-no'
-  | 'poll-scale';
+  | 'poll-scale'
+  | 'poll-nps'
+  | 'poll-multiple-choice'
+  | 'poll-checkboxes'
+  | 'poll-star-rating'
+  | 'poll-dropdown'
+  | 'poll-slider'
+  | 'poll-ranking'
+  | 'poll-matrix';
 
 /**
  * Individual block structure
@@ -372,6 +380,7 @@ export interface PreviewContentMessage {
   xpath: string | null;
   layoutMode: 'anchored' | 'floating';
   position: string;
+  guideType?: string;
 }
 
 export interface ClosePreviewMessage {

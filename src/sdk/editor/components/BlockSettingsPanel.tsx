@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import type { GuideBlock } from '../../types';
 import { EDITOR_FONT_FAMILY, editorStyles } from '../editorStyles';
+import { AnswerChoicesEditor } from './AnswerChoicesEditor';
 
 const BLOCK_NAMES: Record<string, string> = {
   text: 'Text',
@@ -11,6 +12,14 @@ const BLOCK_NAMES: Record<string, string> = {
   'poll-text': 'Open Text Poll',
   'poll-yes-no': 'Yes/No Poll',
   'poll-scale': 'Number Scale Poll',
+  'poll-nps': 'NPS Score',
+  'poll-multiple-choice': 'Multiple Choice',
+  'poll-checkboxes': 'Checkboxes',
+  'poll-star-rating': 'Star Rating',
+  'poll-dropdown': 'Dropdown',
+  'poll-slider': 'Slider',
+  'poll-ranking': 'Ranking',
+  'poll-matrix': 'Matrix',
 };
 
 interface BlockSettingsPanelProps {
@@ -219,6 +228,173 @@ export function BlockSettingsPanel({ block, onUpdate, onCancel, onDone }: BlockS
             </Field>
           </>
         );
+
+      case 'poll-nps':
+        return (
+          <>
+            <Field label="Question">
+              <textarea value={s.question || ''} onInput={(e) => set('question', (e.target as HTMLTextAreaElement).value)} placeholder="How likely are you to recommend us?" rows={3} style={textareaStyle} />
+            </Field>
+            <Field label="Low End Label">
+              <input type="text" value={s.lowLabel || ''} onInput={(e) => set('lowLabel', (e.target as HTMLInputElement).value)} placeholder="Not at all likely" style={inputStyle} />
+            </Field>
+            <Field label="High End Label">
+              <input type="text" value={s.highLabel || ''} onInput={(e) => set('highLabel', (e.target as HTMLInputElement).value)} placeholder="Extremely likely" style={inputStyle} />
+            </Field>
+          </>
+        );
+
+      case 'poll-multiple-choice':
+        return (
+          <>
+            <Field label="Question">
+              <textarea value={s.question || ''} onInput={(e) => set('question', (e.target as HTMLTextAreaElement).value)} placeholder="Select an option" rows={3} style={textareaStyle} />
+            </Field>
+            <Field label="Choices">
+              <AnswerChoicesEditor
+                choices={s.choices || ['Option 1', 'Option 2', 'Option 3']}
+                onChange={(v) => set('choices', v)}
+                inputType="radio"
+                allowOther={!!s.allowOther}
+                onAllowOtherChange={(v) => set('allowOther', v)}
+                showRandomize
+                randomize={!!s.randomize}
+                onRandomizeChange={(v) => set('randomize', v)}
+              />
+            </Field>
+          </>
+        );
+
+      case 'poll-checkboxes':
+        return (
+          <>
+            <Field label="Question">
+              <textarea value={s.question || ''} onInput={(e) => set('question', (e.target as HTMLTextAreaElement).value)} placeholder="Select all that apply" rows={3} style={textareaStyle} />
+            </Field>
+            <Field label="Choices">
+              <AnswerChoicesEditor
+                choices={s.choices || ['Option 1', 'Option 2', 'Option 3']}
+                onChange={(v) => set('choices', v)}
+                inputType="checkbox"
+                allowOther={!!s.allowOther}
+                onAllowOtherChange={(v) => set('allowOther', v)}
+                showRandomize
+                randomize={!!s.randomize}
+                onRandomizeChange={(v) => set('randomize', v)}
+              />
+            </Field>
+          </>
+        );
+
+      case 'poll-star-rating':
+        return (
+          <>
+            <Field label="Question">
+              <textarea value={s.question || ''} onInput={(e) => set('question', (e.target as HTMLTextAreaElement).value)} placeholder="How would you rate your experience?" rows={3} style={textareaStyle} />
+            </Field>
+            <Field label="Number of Stars">
+              <select value={s.maxStars ?? 5} onChange={(e) => set('maxStars', Number((e.target as HTMLSelectElement).value))} style={selectStyle}>
+                {[3, 4, 5, 6, 7, 8, 9, 10].map((n) => <option key={n} value={n}>{n} stars</option>)}
+              </select>
+            </Field>
+          </>
+        );
+
+      case 'poll-dropdown':
+        return (
+          <>
+            <Field label="Question">
+              <textarea value={s.question || ''} onInput={(e) => set('question', (e.target as HTMLTextAreaElement).value)} placeholder="Select an option" rows={3} style={textareaStyle} />
+            </Field>
+            <Field label="Options">
+              <AnswerChoicesEditor
+                choices={s.choices || ['Option 1', 'Option 2', 'Option 3']}
+                onChange={(v) => set('choices', v)}
+              />
+            </Field>
+          </>
+        );
+
+      case 'poll-slider':
+        return (
+          <>
+            <Field label="Question">
+              <textarea value={s.question || ''} onInput={(e) => set('question', (e.target as HTMLTextAreaElement).value)} placeholder="How satisfied are you?" rows={3} style={textareaStyle} />
+            </Field>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+              <Field label="Min">
+                <input type="number" value={s.min ?? 0} onInput={(e) => set('min', Number((e.target as HTMLInputElement).value))} style={inputStyle} />
+              </Field>
+              <Field label="Max">
+                <input type="number" value={s.max ?? 10} onInput={(e) => set('max', Number((e.target as HTMLInputElement).value))} style={inputStyle} />
+              </Field>
+              <Field label="Step">
+                <input type="number" value={s.step ?? 1} onInput={(e) => set('step', Number((e.target as HTMLInputElement).value))} style={inputStyle} />
+              </Field>
+            </div>
+            <Field label="Min Label">
+              <input type="text" value={s.minLabel || ''} onInput={(e) => set('minLabel', (e.target as HTMLInputElement).value)} placeholder="Not satisfied" style={inputStyle} />
+            </Field>
+            <Field label="Max Label">
+              <input type="text" value={s.maxLabel || ''} onInput={(e) => set('maxLabel', (e.target as HTMLInputElement).value)} placeholder="Very satisfied" style={inputStyle} />
+            </Field>
+          </>
+        );
+
+      case 'poll-ranking':
+        return (
+          <>
+            <Field label="Question">
+              <textarea value={s.question || ''} onInput={(e) => set('question', (e.target as HTMLTextAreaElement).value)} placeholder="Rank in order of importance" rows={3} style={textareaStyle} />
+            </Field>
+            <Field label="Items to Rank">
+              <AnswerChoicesEditor
+                choices={s.choices || ['Item 1', 'Item 2', 'Item 3']}
+                onChange={(v) => set('choices', v)}
+              />
+            </Field>
+          </>
+        );
+
+      case 'poll-matrix': {
+        const rows: string[] = s.rows || ['Item 1', 'Item 2', 'Item 3'];
+        const cols: string[] = s.columns || ['Poor', 'Fair', 'Good', 'Excellent'];
+        return (
+          <>
+            <Field label="Question">
+              <textarea value={s.question || ''} onInput={(e) => set('question', (e.target as HTMLTextAreaElement).value)} placeholder="Please rate the following" rows={3} style={textareaStyle} />
+            </Field>
+            <Field label="Rows">
+              {rows.map((r, i) => (
+                <div key={i} style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                  <input
+                    type="text" value={r}
+                    onInput={(e) => { const next = [...rows]; next[i] = (e.target as HTMLInputElement).value; set('rows', next); }}
+                    style={{ ...inputStyle, flex: 1 }}
+                    placeholder={`Row ${i + 1}`}
+                  />
+                  <button onClick={() => set('rows', rows.filter((_, idx) => idx !== i))} style={{ padding: '0 8px', border: '1px solid #fca5a5', borderRadius: '6px', background: '#fff1f2', color: '#dc2626', cursor: 'pointer', fontSize: '0.75rem' }}>✕</button>
+                </div>
+              ))}
+              <button onClick={() => set('rows', [...rows, ''])} style={{ fontSize: '0.72rem', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', fontFamily: EDITOR_FONT_FAMILY, fontWeight: 600, padding: 0 }}>⊕ Add row</button>
+            </Field>
+            <Field label="Columns">
+              {cols.map((c, i) => (
+                <div key={i} style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                  <input
+                    type="text" value={c}
+                    onInput={(e) => { const next = [...cols]; next[i] = (e.target as HTMLInputElement).value; set('columns', next); }}
+                    style={{ ...inputStyle, flex: 1 }}
+                    placeholder={`Column ${i + 1}`}
+                  />
+                  <button onClick={() => set('columns', cols.filter((_, idx) => idx !== i))} style={{ padding: '0 8px', border: '1px solid #fca5a5', borderRadius: '6px', background: '#fff1f2', color: '#dc2626', cursor: 'pointer', fontSize: '0.75rem' }}>✕</button>
+                </div>
+              ))}
+              <button onClick={() => set('columns', [...cols, ''])} style={{ fontSize: '0.72rem', color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', fontFamily: EDITOR_FONT_FAMILY, fontWeight: 600, padding: 0 }}>⊕ Add column</button>
+            </Field>
+          </>
+        );
+      }
 
       case 'horizontal-line':
         return (

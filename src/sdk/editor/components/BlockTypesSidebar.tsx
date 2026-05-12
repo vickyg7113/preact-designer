@@ -20,9 +20,17 @@ const BLOCK_GROUPS: { label: string; blocks: { type: BlockType; icon: string; la
   {
     label: 'POLLS',
     blocks: [
-      { type: 'poll-text', icon: 'mdi:comment-text-outline', label: 'Open Text Poll' },
-      { type: 'poll-yes-no', icon: 'mdi:check-circle-outline', label: 'Yes/No Poll' },
-      { type: 'poll-scale', icon: 'mdi:pound', label: 'Number Scale Poll' },
+      { type: 'poll-text',            icon: 'mdi:comment-text-outline',        label: 'Open Text' },
+      { type: 'poll-yes-no',          icon: 'mdi:check-circle-outline',        label: 'Yes / No' },
+      { type: 'poll-scale',           icon: 'mdi:pound',                       label: 'Number Scale' },
+      { type: 'poll-nps',             icon: 'mdi:numeric-10-box-outline',      label: 'NPS (0–10)' },
+      { type: 'poll-multiple-choice', icon: 'mdi:radiobox-marked',             label: 'Multiple Choice' },
+      { type: 'poll-checkboxes',      icon: 'mdi:checkbox-marked-outline',     label: 'Checkboxes' },
+      { type: 'poll-star-rating',     icon: 'mdi:star-outline',                label: 'Star Rating' },
+      { type: 'poll-dropdown',        icon: 'mdi:chevron-down-box-outline',    label: 'Dropdown' },
+      { type: 'poll-slider',          icon: 'mdi:tune-variant',                label: 'Slider' },
+      { type: 'poll-ranking',         icon: 'mdi:sort-variant',                label: 'Ranking' },
+      { type: 'poll-matrix',          icon: 'mdi:grid',                        label: 'Matrix' },
     ],
   },
 ];

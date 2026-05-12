@@ -12,6 +12,7 @@ interface GuideBannerProps {
   isFirstStep: boolean;
   isLastStep: boolean;
   onPollChange?: (blockId: string, pollType: string, question: string, value: string) => void;
+  surveyMode?: boolean;
 }
 
 export function GuideBanner({
@@ -23,6 +24,7 @@ export function GuideBanner({
   isFirstStep,
   isLastStep,
   onPollChange,
+  surveyMode,
 }: GuideBannerProps) {
   const content = useMemo<GuideTemplateContent>(() => {
     try { return JSON.parse(contentStr); } catch { return {}; }
@@ -86,6 +88,7 @@ export function GuideBanner({
                   isLastStep={isLastStep}
                   onPollChange={onPollChange}
                   totalPollsInStep={pollCount}
+                  surveyMode={surveyMode}
                 />
               </div>
             ))

@@ -109,9 +109,10 @@ interface LiveGuideCardProps {
     isFirstStep: boolean;
     isLastStep: boolean;
     onPollChange?: (blockId: string, pollType: string, question: string, value: string) => void;
+    surveyMode?: boolean;
 }
 
-export function LiveGuideCard({ template, top, left, onDismiss, onNext, onBack, isFirstStep, isLastStep, onPollChange }: LiveGuideCardProps) {
+export function LiveGuideCard({ template, top, left, onDismiss, onNext, onBack, isFirstStep, isLastStep, onPollChange, surveyMode }: LiveGuideCardProps) {
     const content = useMemo(() => parseTemplateContent(resolveStepContent(template)), [template]);
     const templateKey = template.template.template_key;
 
@@ -178,6 +179,7 @@ export function LiveGuideCard({ template, top, left, onDismiss, onNext, onBack, 
                                         isLastStep={isLastStep}
                                         onPollChange={onPollChange}
                                         totalPollsInStep={pollCount}
+                                        surveyMode={surveyMode}
                                     />
                                 ));
                             })()}
