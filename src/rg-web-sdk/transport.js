@@ -122,14 +122,65 @@ class TransportLayer {
     }
   }
 
+  _resolveRequestContext() {
+    try {
+      const customerDetails = localStorage.getItem('customerDetails')
+        ? JSON.parse(localStorage.getItem('customerDetails'))
+        : null;
+
+      const rgAuth = localStorage.getItem('RGAuth')
+        ? JSON.parse(localStorage.getItem('RGAuth'))
+        : null;
+
+      const selectedViewUser = localStorage.getItem('selectedViewUser')
+        ? JSON.parse(localStorage.getItem('selectedViewUser'))
+        : null;
+
+      const host = customerDetails?.BASE_API_URL_MAIN
+        ? `${customerDetails.BASE_API_URL_MAIN}/rg-pex`
+        : this.config.apiHost;
+
+      const accessToken = localStorage.getItem('access_token') || this.config.apiKey;
+
+      const iud = selectedViewUser?.id || rgAuth?.email || '';
+      const rcid = customerDetails?.RG_CUSTOMER_ID || '';
+      const schema = customerDetails?.CUSTOMER_SCHEMA || '';
+
+      const selectedRoleFromViewUser = selectedViewUser?.role || selectedViewUser?.manager_role;
+      const selectedRoleFromSession = sessionStorage.getItem('RGSelectedRole');
+      let rolesToUse;
+
+      if (selectedRoleFromViewUser) {
+        rolesToUse = [selectedRoleFromViewUser];
+      } else if (selectedRoleFromSession) {
+        rolesToUse = [selectedRoleFromSession];
+      } else {
+        rolesToUse = rgAuth?.realm_access?.roles || [];
+      }
+
+      const role = rolesToUse.map(r => r.replace(/\s+/g, '_')).join(',');
+
+      return { host, accessToken, iud, rcid, schema, role };
+    } catch (e) {
+      log('warn', 'Failed to resolve request context from localStorage:', e.message);
+      return { host: this.config.apiHost, accessToken: this.config.apiKey, iud: '', rcid: '', schema: '', role: '' };
+    }
+  }
+
   async _makeRequest(batch) {
-    const url = `${this.config.apiHost}/raw-events`;
+    const { host, accessToken, iud, rcid, schema, role } = this._resolveRequestContext();
+
+    const url = `${host}/raw-events`;
 
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${this.config.apiKey}`,
+      Authorization: `Bearer ${accessToken}`,
       'X-RG-SDK-Version': SDK_VERSION,
       'X-RG-SDK-Name': SDK_NAME,
+      role,
+      iud,
+      rcid,
+      schema,
     };
 
     return fetch(url, {
@@ -222,7 +273,8 @@ class TransportLayer {
     if (!batch) return;
 
     if (navigator.sendBeacon) {
-      const url = `${this.config.apiHost}/raw-events`;
+      const { host } = this._resolveRequestContext();
+      const url = `${host}/raw-events`;
       const data = JSON.stringify(batch);
 
       const success = navigator.sendBeacon(url, data);
