@@ -81,7 +81,7 @@ export class DesignerSDK {
 
       if (currentTemplate) {
         properties.template_id = currentTemplate.template_id;
-        properties.template_key = currentTemplate.template.template_key;
+        properties.template_key = currentTemplate.template?.template_key;
         properties.step_order = currentTemplate.step_order;
         properties.xpath = currentTemplate.x_path;
       }
@@ -118,7 +118,7 @@ export class DesignerSDK {
           template_id: currentTemplate.template_id,
           map_id: currentTemplate.map_id,
           step_order: currentTemplate.step_order,
-          template_key: currentTemplate.template.template_key,
+          template_key: currentTemplate.template?.template_key,
           guide_step: guideStepMarker,
           xpath: currentTemplate.x_path
         };
@@ -263,6 +263,20 @@ export class DesignerSDK {
     try {
       const currentPage = getCurrentPage();
       const response = await apiClient.get<GuideByIdResponse>(`/guides?target_page=${encodeURIComponent(currentPage)}`);
+      if (response) {
+        console.log('[Visual Designer] Response:', response);
+
+        // Write core context to sessionStorage for rg-web-sdk event builder
+        // Done at response level — core_pages/core_features are independent of whether guides exist
+        const coreFeatureXpaths = (response.core_features || [])
+          .flatMap(f => f.rules.filter(r => r.selector_type === 'xpath' && r.is_active).map(r => r.selector_value));
+        sessionStorage.setItem('__rg_core_context', JSON.stringify({
+          page_path: currentPage,
+          is_core_page: (response.core_pages || []).length > 0,
+          core_feature_xpaths: coreFeatureXpaths,
+        }));
+      }
+
       if (response && response.data) {
         this.fetchedGuides = Array.isArray(response.data) ? response.data : [response.data as any];
         console.log('[Visual Designer] Fetched guides for page:', currentPage, this.fetchedGuides);
@@ -601,7 +615,7 @@ export class DesignerSDK {
         if (!parsed.layout) parsed.layout = {};
         parsed.layout.position = message.position;
         tempGuide.templates[0].content = JSON.stringify(parsed);
-        tempGuide.templates[0].template.content = JSON.stringify(parsed);
+        if (tempGuide.templates[0].template) tempGuide.templates[0].template.content = JSON.stringify(parsed);
       } catch { /* keep as-is */ }
     }
 

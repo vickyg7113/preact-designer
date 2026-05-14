@@ -27,7 +27,7 @@ export function parseTemplateContent(content: string): {
   }
 }
 
-export function getTemplateKeyFromTemplate(template: GuideTemplateNested): string {
+export function getTemplateKeyFromTemplate(template: GuideTemplateNested | null | undefined): string {
   return template?.template_key ?? '';
 }
 
@@ -153,9 +153,9 @@ export function LayoutTemplateCard({
   onClick,
   disabled = false,
 }: LayoutTemplateCardProps) {
-  const template = item.template;
+  const template = item.template ?? null;
   const templateKey = useMemo(() => getTemplateKeyFromTemplate(template), [template]);
-  const content = useMemo(() => parseTemplateContent(template.content), [template.content]);
+  const content = useMemo(() => parseTemplateContent(template?.content ?? ''), [template?.content]);
   const PreviewComponent = templateKey === 'tooltip-scratch' ? TooltipPreview : LightboxPreview;
 
   return (
@@ -181,7 +181,7 @@ export function LayoutTemplateCard({
         description={content.description}
         buttonContent={content.buttonContent}
       />
-      {template.title && (
+      {template?.title && (
         <div
           style={{
             padding: '8px 12px',

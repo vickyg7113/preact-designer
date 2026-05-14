@@ -103,7 +103,7 @@ export interface GuideTemplateNested {
 export interface GuideTemplateMapItem {
   map_id: string;
   template_id: string;
-  template: GuideTemplateNested;
+  template: GuideTemplateNested | null;
   /** Guide-specific content override. When non-null, takes priority over template.content. */
   content: string | null;
   step_order: number;
@@ -134,10 +134,55 @@ export interface GuideByIdData {
   steps: GuideTemplateMapItem[];
 }
 
+export interface CorePage {
+  page_id: string;
+  product_id: string | null;
+  area_id: string | null;
+  name: string;
+  slug: string;
+  description: string;
+  status: string;
+  created_at: string;
+  created_by: string;
+  updated_at: string;
+  updated_by: string;
+}
+
+export interface CoreFeatureRule {
+  rule_id: string;
+  feature_id: string;
+  selector_type: string;
+  selector_value: string;
+  match_mode: string;
+  priority: number;
+  is_active: boolean;
+  created_at: string | null;
+  created_by: string | null;
+  updated_at: string | null;
+  updated_by: string | null;
+}
+
+export interface CoreFeature {
+  feature_id: string;
+  product_id: string | null;
+  area_id: string | null;
+  name: string;
+  slug: string;
+  description: string;
+  status: string;
+  created_at: string;
+  created_by: string;
+  updated_at: string;
+  updated_by: string;
+  rules: CoreFeatureRule[];
+}
+
 export interface GuideByIdResponse {
   status: string;
-  message: string;
-  data: GuideByIdData;
+  total: number;
+  data: GuideByIdData[];
+  core_pages: CorePage[];
+  core_features: CoreFeature[];
 }
 
 /** Payload for PUT /guides/:guide_id (update guide) */

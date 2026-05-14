@@ -121,11 +121,11 @@ export function GuideEditor({
       return (
         parsed.title ||
         parsed.blocks?.[0]?.settings?.content?.slice(0, 24) ||
-        item.template.title ||
+        item.template?.title ||
         ''
       );
     } catch {
-      return item.template.title || '';
+      return item.template?.title || '';
     }
   };
 

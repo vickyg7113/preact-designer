@@ -40,6 +40,15 @@ class EventBuilder {
     };
   }
 
+  _readCoreContext() {
+    try {
+      const raw = sessionStorage.getItem('__rg_core_context');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
   buildEvent(eventData) {
     const timestamp = getTimestamp();
     const identityContext = this.identityManager.getIdentityContext();
@@ -114,7 +123,24 @@ class EventBuilder {
       error_message: eventData.error_message || null,
       error_stack: eventData.error_stack || null,
       console_logs: eventData.console_logs || null,
+
+      is_core_event: false,
     };
+
+    const coreCtx = this._readCoreContext();
+    if (coreCtx && coreCtx.page_path === window.location.pathname) {
+      if (coreCtx.is_core_page) {
+        event.is_core_event = true;
+      } else if (
+        coreCtx.core_feature_xpaths &&
+        coreCtx.core_feature_xpaths.length > 0 &&
+        eventData.event_name === 'click' &&
+        eventData.element_xpath &&
+        coreCtx.core_feature_xpaths.includes(eventData.element_xpath)
+      ) {
+        event.is_core_event = true;
+      }
+    }
 
     if (eventData.event_name === 'click') {
       event.element_position_x = eventData.click_x || null;

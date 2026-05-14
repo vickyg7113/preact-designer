@@ -140,11 +140,16 @@ export function TagFeatureEditor({ onMessage, elementSelected }: TagFeatureEdito
     onMessage({ type: 'HEATMAP_TOGGLE', enabled: next });
   };
 
-  const slugFromName = (name: string) =>
-    name
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
+  const getCurrentPageSlug = (): string => {
+    try {
+      const w = typeof window !== 'undefined' && window.parent !== window ? window.parent : window;
+      const p = w.location;
+      const path = (p.pathname || '/').replace(/^\//, '');
+      return '//*/' + path + (p.search || '') + (p.hash || '');
+    } catch {
+      return '//*/';
+    }
+  };
 
   const handleSave = async () => {
     const trimmed = featureName.trim();
@@ -160,7 +165,7 @@ export function TagFeatureEditor({ onMessage, elementSelected }: TagFeatureEdito
       if (!effectiveXpath) return;
       const payload: ExactMatchFeaturePayload = {
         name: trimmed,
-        slug: slugFromName(trimmed),
+        slug: getCurrentPageSlug(),
         description: description.trim() || '',
         status: 'active',
         rules: [
