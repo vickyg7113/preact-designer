@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useRef } from 'preact/hooks';
-import type { ElementInfo, EditorMessage, GuideUpdatePayload, GuideTemplateMapItem } from '../../types';
-import { getCurrentPage, resolveStepContent } from '../../utils/dom';
+import type { ElementInfo, EditorMessage, GuideUpdatePayload, GuideTemplateMapItem, RepeatUnit, ExpirationType, DayOfWeek } from '../../types';
+import { getCurrentPage, resolveStepContent, parseRepeatDays } from '../../utils/dom';
 import { editorStyles } from '../editorStyles';
 import { EditorButton } from './EditorButton';
 import { InlineTemplateEditor } from './InlineTemplateEditor';
+import { ActivationSettings } from './ActivationSettings';
 import { useGuideById } from '../../hooks/useGuideById';
 import { useUpdateGuideMutation } from '../../hooks/useUpdateGuideMutation';
 
@@ -62,6 +63,7 @@ export function GuideEditor({
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
 
   const [showTriggerStep, setShowTriggerStep] = useState(false);
+  const [showActivationSettings, setShowActivationSettings] = useState(false);
   const [triggerAction, setTriggerAction] = useState<'automatic' | 'on_click'>('on_click');
   const [triggerElement, setTriggerElement] = useState<{
     selector: string;
@@ -155,7 +157,8 @@ export function GuideEditor({
 
   useEffect(() => {
     if (guide) {
-      setTriggerAction(guide.target_segment ? 'on_click' : 'automatic');
+      const hasClickTrigger = !!guide.target_segment && guide.target_segment !== 'None';
+      setTriggerAction(guide.is_auto || !hasClickTrigger ? 'automatic' : 'on_click');
       const s = guide.status as 'draft' | 'active' | 'inactive' | 'archived';
       if (s === 'draft' || s === 'active' || s === 'inactive' || s === 'archived') setGuideStatus(s);
     }
@@ -303,6 +306,14 @@ export function GuideEditor({
       target_page: guide.target_page ?? currentUrl,
       type: guide.type ?? 'modal',
       trigger_type: triggerAction === 'automatic' ? 'page_load' : 'click',
+      is_auto: triggerAction === 'automatic',
+      ignore_throttling: guide.ignore_throttling ?? false,
+      repeat_on_dismiss: guide.repeat_on_dismiss ?? false,
+      repeat_interval: guide.repeat_interval ?? null,
+      repeat_unit: guide.repeat_unit ?? null,
+      expiration_type: guide.expiration_type ?? null,
+      expiration_value: guide.expiration_value ?? null,
+      repeat_days: parseRepeatDays(guide.repeat_days),
       status: guide.status ?? 'draft',
       priority: guide.priority ?? 0,
       templates: templatesPayload,
@@ -359,6 +370,14 @@ export function GuideEditor({
       target_page: currentUrl,
       type: guide.type ?? 'modal',
       trigger_type: triggerAction === 'automatic' ? 'page_load' : 'click',
+      is_auto: triggerAction === 'automatic',
+      ignore_throttling: guide.ignore_throttling ?? false,
+      repeat_on_dismiss: guide.repeat_on_dismiss ?? false,
+      repeat_interval: guide.repeat_interval ?? null,
+      repeat_unit: guide.repeat_unit ?? null,
+      expiration_type: guide.expiration_type ?? null,
+      expiration_value: guide.expiration_value ?? null,
+      repeat_days: parseRepeatDays(guide.repeat_days),
       status: guide.status ?? 'draft',
       priority: guide.priority ?? 0,
       templates: templatesPayload,
@@ -402,6 +421,14 @@ export function GuideEditor({
       target_page: guide.target_page ?? currentUrl,
       type: guide.type ?? 'modal',
       trigger_type: guide.trigger_type ?? null,
+      is_auto: guide.is_auto ?? (guide.trigger_type === 'page_load'),
+      ignore_throttling: guide.ignore_throttling ?? false,
+      repeat_on_dismiss: guide.repeat_on_dismiss ?? false,
+      repeat_interval: guide.repeat_interval ?? null,
+      repeat_unit: guide.repeat_unit ?? null,
+      expiration_type: guide.expiration_type ?? null,
+      expiration_value: guide.expiration_value ?? null,
+      repeat_days: parseRepeatDays(guide.repeat_days),
       status: newStatus,
       priority: guide.priority ?? 0,
       templates: templatesPayload,
@@ -419,6 +446,47 @@ export function GuideEditor({
       const message = err instanceof Error ? err.message : 'Failed to update status';
       setError(message);
     }
+  };
+
+  const handleActivationSave = async (config: {
+    ignore_throttling: boolean;
+    repeat_on_dismiss: boolean;
+    repeat_interval: number | null;
+    repeat_unit: RepeatUnit | null;
+    expiration_type: ExpirationType | null;
+    expiration_value: number | null;
+    repeat_days: DayOfWeek[] | null;
+  }) => {
+    if (!guide || !guideId) return;
+    const currentUrl = getCurrentPage();
+    const templatesPayload = activeSteps
+      .slice()
+      .sort((a, b) => a.step_order - b.step_order)
+      .map((step) => ({
+        template_id: step.template_id,
+        step_order: step.step_order,
+        url: step.url ?? currentUrl,
+        x_path: step.x_path,
+        auto_click_target: step.auto_click_target ?? false,
+        content: resolveStepContent(step),
+      }));
+    await updateGuideMutation.mutateAsync({
+      guideId,
+      payload: {
+        guide_name: guide.guide_name ?? '',
+        description: guide.description ?? '',
+        target_segment: guide.target_segment ?? null,
+        guide_category: guide.guide_category ?? null,
+        target_page: guide.target_page ?? currentUrl,
+        type: guide.type ?? 'modal',
+        trigger_type: guide.trigger_type ?? null,
+        is_auto: guide.is_auto ?? (guide.trigger_type === 'page_load'),
+        status: guide.status ?? 'draft',
+        priority: guide.priority ?? 0,
+        ...config,
+        templates: templatesPayload,
+      },
+    });
   };
 
   const showTemplatesView = !!guideId && !!guide;
@@ -461,9 +529,11 @@ export function GuideEditor({
           <h2 style={editorStyles.headerTitle}>
             {showTriggerStep
               ? 'Configure Trigger'
-              : showTemplatesView
-                ? (guide?.guide_name ?? 'Guide')
-                : 'Create Guide'}
+              : showActivationSettings
+                ? 'Activation Settings'
+                : showTemplatesView
+                  ? (guide?.guide_name ?? 'Guide')
+                  : 'Create Guide'}
           </h2>
           {showTriggerStep && guide?.guide_name && (
             <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
@@ -477,7 +547,20 @@ export function GuideEditor({
       </div>
 
       {/* ── Trigger Config Screen ── */}
-      {showTriggerStep ? (
+      {showActivationSettings ? (
+        <ActivationSettings
+          onBack={() => setShowActivationSettings(false)}
+          guideName={guide?.guide_name}
+          initialIgnoreThrottling={guide?.ignore_throttling ?? false}
+          initialRepeatOnDismiss={guide?.repeat_on_dismiss ?? false}
+          initialRepeatInterval={guide?.repeat_interval ?? 1}
+          initialRepeatUnit={guide?.repeat_unit ?? 'day'}
+          initialExpirationType={guide?.expiration_type ?? 'never'}
+          initialExpirationValue={guide?.expiration_value ?? 2}
+          initialRepeatDays={guide?.repeat_days ?? null}
+          onSave={handleActivationSave}
+        />
+      ) : showTriggerStep ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
           <EditorButton
@@ -495,7 +578,7 @@ export function GuideEditor({
           </EditorButton>
 
           {/* Currently triggers on */}
-          {guide?.target_segment && (
+          {guide?.target_segment && guide.target_segment !== 'None' && (
             <div style={editorStyles.section}>
               <label style={editorStyles.label}>Currently triggers on</label>
               <div style={{
@@ -611,7 +694,7 @@ export function GuideEditor({
                         Done
                       </EditorButton>
                     )}
-                    {guide?.target_segment && (
+                    {guide?.target_segment && guide.target_segment !== 'None' && (
                       <EditorButton
                         variant="secondary"
                         style={{ borderColor: '#fca5a5', color: '#dc2626' }}
@@ -1162,7 +1245,7 @@ export function GuideEditor({
                 </div>
               </div>
 
-              {/* ── Set Trigger button ── */}
+              {/* ── Set Trigger + Activation Settings buttons ── */}
               <div style={editorStyles.actionRow}>
                 <EditorButton
                   variant="secondary"
@@ -1171,6 +1254,14 @@ export function GuideEditor({
                 >
                   <iconify-icon icon="mdi:lightning-bolt" style={{ marginRight: '0.4rem', color: '#f59e0b' }} />
                   Set Trigger
+                </EditorButton>
+                <EditorButton
+                  variant="secondary"
+                  style={{ flex: 1 }}
+                  onClick={() => setShowActivationSettings(true)}
+                >
+                  <iconify-icon icon="mdi:clock-outline" style={{ marginRight: '0.4rem', color: '#3b82f6' }} />
+                  Activation
                 </EditorButton>
               </div>
 

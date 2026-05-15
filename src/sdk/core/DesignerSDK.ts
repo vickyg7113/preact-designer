@@ -15,7 +15,7 @@ import type {
   FeatureItem,
   HeatmapToggleMessage,
   GuideByIdData,
-  GuideByIdResponse,
+  GuidesListResponse,
   PreviewContentMessage,
 } from '../types';
 import { apiClient } from '../api/client';
@@ -262,7 +262,10 @@ export class DesignerSDK {
   async fetchGuides(): Promise<void> {
     try {
       const currentPage = getCurrentPage();
-      const response = await apiClient.get<GuideByIdResponse>(`/guides?target_page=${encodeURIComponent(currentPage)}`);
+      const visitorId = this._getStorageItem('__rg_visitor_id');
+      const guideParams = new URLSearchParams({ target_page: currentPage });
+      if (visitorId) guideParams.set('visitor_id', visitorId);
+      const response = await apiClient.get<GuidesListResponse>(`/guides?${guideParams.toString()}`);
       if (response) {
         console.log('[Visual Designer] Response:', response);
 
@@ -283,16 +286,19 @@ export class DesignerSDK {
 
         // Auto-trigger guides where trigger_type is 'page_load' or target_segment is null (Automatic)
         for (const guide of this.fetchedGuides) {
-          // Trigger logic: If target_segment is null, it's an automatic guide (Page Load)
-          const isAutomatic = guide.target_segment === null;
+          // Trigger logic: is_auto flag is authoritative; fall back to null/None target_segment check
+          const isAutomatic = guide.is_auto === true
+            || guide.target_segment === null
+            || guide.target_segment === 'None';
           if (isAutomatic) {
-            const sessionKey = `rg_guide_auto_${guide.guide_id}`;
-            if (!sessionStorage.getItem(sessionKey)) {
-              console.log('[Visual Designer] Auto-triggering guide:', guide.guide_name);
-              this.guideRenderer.renderTriggeredGuide(guide);
-              sessionStorage.setItem(sessionKey, 'true');
-              break; // Trigger only the first automatic guide found
-            }
+            // sessionStorage guard removed — throttling is now handled by the backend
+            // const sessionKey = `rg_guide_auto_${guide.guide_id}`;
+            // if (!sessionStorage.getItem(sessionKey)) {
+            console.log('[Visual Designer] Auto-triggering guide:', guide.guide_name);
+            this.guideRenderer.renderTriggeredGuide(guide);
+            //   sessionStorage.setItem(sessionKey, 'true');
+            break; // Trigger only the first automatic guide found
+            // }
           }
         }
       }
@@ -460,8 +466,8 @@ export class DesignerSDK {
     const xpath = SelectorEngine.getXPath(target);
 
     for (const guide of this.fetchedGuides) {
-      // Trigger logic: If target_segment exists, it's a manual trigger (Feature Click)
-      const isClickTrigger = guide.target_segment !== null;
+      // Trigger logic: If target_segment exists and is not the "None" sentinel, it's a click trigger
+      const isClickTrigger = !!guide.target_segment && guide.target_segment !== 'None';
       if (isClickTrigger && guide.target_segment === xpath) {
         // Step 1: Only track triggered on click
         this.trackEvent('triggered', {

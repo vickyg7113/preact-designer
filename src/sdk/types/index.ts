@@ -14,6 +14,10 @@ export interface Guide {
   updatedAt?: string;
 }
 
+export type RepeatUnit = 'hour' | 'day' | 'week' | 'month';
+export type ExpirationType = 'never' | 'dismissals';
+export type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
 /**
  * Block types supported in dynamic templates
  */
@@ -132,6 +136,14 @@ export interface GuideByIdData {
   updated_by: string | null;
   templates: GuideTemplateMapItem[];
   steps: GuideTemplateMapItem[];
+  is_auto?: boolean;
+  ignore_throttling?: boolean;
+  repeat_on_dismiss?: boolean;
+  repeat_interval?: number | null;
+  repeat_unit?: RepeatUnit | null;
+  expiration_type?: ExpirationType | null;
+  expiration_value?: number | null;
+  repeat_days?: DayOfWeek[] | string | null;
 }
 
 export interface CorePage {
@@ -179,6 +191,12 @@ export interface CoreFeature {
 
 export interface GuideByIdResponse {
   status: string;
+  message: string;
+  data: GuideByIdData;
+}
+
+export interface GuidesListResponse {
+  status: string;
   total: number;
   data: GuideByIdData[];
   core_pages: CorePage[];
@@ -194,6 +212,14 @@ export interface GuideUpdatePayload {
   target_page: string | null;
   type: string;
   trigger_type: 'page_load' | 'click' | null;
+  is_auto?: boolean;
+  ignore_throttling?: boolean;
+  repeat_on_dismiss?: boolean;
+  repeat_interval?: number | null;
+  repeat_unit?: RepeatUnit | null;
+  expiration_type?: ExpirationType | null;
+  expiration_value?: number | null;
+  repeat_days?: DayOfWeek[] | null;
   status: string;
   priority: number;
   templates: Array<{

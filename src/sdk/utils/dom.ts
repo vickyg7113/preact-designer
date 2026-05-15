@@ -1,4 +1,15 @@
-import type { ElementInfo, GuideTemplateMapItem } from '../types';
+import type { DayOfWeek, ElementInfo, GuideTemplateMapItem } from '../types';
+
+/** Normalizes repeat_days from the API — handles JS array and PostgreSQL string format e.g. "{mon,wed,fri}" */
+export function parseRepeatDays(days: DayOfWeek[] | string | null | undefined): DayOfWeek[] {
+  if (!days) return [];
+  if (Array.isArray(days)) return days;
+  return String(days)
+    .replace(/[{}]/g, '')
+    .split(',')
+    .map(d => d.trim().toLowerCase() as DayOfWeek)
+    .filter(Boolean);
+}
 
 /**
  * Get element information for editor display
