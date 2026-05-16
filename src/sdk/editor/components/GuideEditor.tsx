@@ -74,6 +74,7 @@ export function GuideEditor({
   const [autoClickTarget, setAutoClickTarget] = useState(false);
 
   const [layoutMode, setLayoutMode] = useState<'anchored' | 'floating'>('anchored');
+  const [tooltipPlacement, setTooltipPlacement] = useState<'top' | 'right' | 'bottom' | 'left'>('bottom');
   const [floatingStyle, setFloatingStyle] = useState<'modal' | 'banner'>('modal');
   const [modalPosition, setModalPosition] = useState<'center' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'>('center');
   const [bannerPosition, setBannerPosition] = useState<'top' | 'bottom'>('top');
@@ -173,12 +174,16 @@ export function GuideEditor({
         const parsed = JSON.parse(resolveStepContent(selectedStep) || '{}');
         const renderAs = parsed.layout?.renderAs;
         const pos = parsed.layout?.position;
+        const placement = parsed.layout?.placement;
         if (renderAs === 'banner') {
           setFloatingStyle('banner');
           setBannerPosition(pos === 'bottom' ? 'bottom' : 'top');
         } else {
           setFloatingStyle('modal');
           setModalPosition(pos ?? 'center');
+        }
+        if (['top', 'right', 'bottom', 'left'].includes(placement)) {
+          setTooltipPlacement(placement);
         }
       } catch {
         setFloatingStyle('modal');
@@ -248,8 +253,8 @@ export function GuideEditor({
   const getUpdatedContent = (existingContent: string, isFloating: boolean) => {
     try {
       const parsed = JSON.parse(existingContent || '{}');
+      if (!parsed.layout) parsed.layout = {};
       if (isFloating) {
-        if (!parsed.layout) parsed.layout = {};
         if (floatingStyle === 'banner') {
           parsed.layout.renderAs = 'banner';
           parsed.layout.position = bannerPosition;
@@ -257,6 +262,8 @@ export function GuideEditor({
           parsed.layout.renderAs = 'modal';
           parsed.layout.position = modalPosition;
         }
+      } else {
+        parsed.layout.placement = tooltipPlacement;
       }
       return JSON.stringify(parsed);
     } catch {
@@ -1119,6 +1126,43 @@ export function GuideEditor({
                       >
                         <div style={editorStyles.toggleThumb(autoClickTarget)} />
                       </button>
+                    </div>
+
+                    {/* Tooltip placement picker */}
+                    <div style={editorStyles.section}>
+                      <label style={editorStyles.label}>Tooltip Position</label>
+                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                        {PLACEMENTS.map((p) => {
+                          const icons = { top: '↑', right: '→', bottom: '↓', left: '←' };
+                          const isActive = tooltipPlacement === p;
+                          return (
+                            <button
+                              key={p}
+                              onClick={() => setTooltipPlacement(p)}
+                              style={{
+                                flex: 1,
+                                padding: '0.5rem 0.25rem',
+                                borderRadius: '0.625rem',
+                                border: `2px solid ${isActive ? '#3b82f6' : '#e2e8f0'}`,
+                                background: isActive ? 'rgba(59,130,246,0.08)' : '#f8fafc',
+                                color: isActive ? '#1d4ed8' : '#94a3b8',
+                                fontSize: '0.72rem',
+                                fontWeight: isActive ? 700 : 500,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '0.2rem',
+                                fontFamily: editorStyles.root.fontFamily as string,
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              <span style={{ fontSize: '1rem', lineHeight: 1 }}>{icons[p]}</span>
+                              <span style={{ textTransform: 'capitalize' }}>{p}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Select / Change / Done buttons */}

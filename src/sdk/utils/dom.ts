@@ -1,14 +1,16 @@
 import type { DayOfWeek, ElementInfo, GuideTemplateMapItem } from '../types';
 
-/** Normalizes repeat_days from the API — handles JS array and PostgreSQL string format e.g. "{mon,wed,fri}" */
-export function parseRepeatDays(days: DayOfWeek[] | string | null | undefined): DayOfWeek[] {
-  if (!days) return [];
-  if (Array.isArray(days)) return days;
-  return String(days)
-    .replace(/[{}]/g, '')
-    .split(',')
-    .map(d => d.trim().toLowerCase() as DayOfWeek)
-    .filter(Boolean);
+/** Normalizes repeat_days from the API — handles JS array and PostgreSQL string format e.g. "{mon,wed,fri}". Returns null when empty. */
+export function parseRepeatDays(days: DayOfWeek[] | string | null | undefined): DayOfWeek[] | null {
+  if (!days) return null;
+  const parsed = Array.isArray(days)
+    ? days
+    : String(days)
+        .replace(/[{}]/g, '')
+        .split(',')
+        .map(d => d.trim().toLowerCase() as DayOfWeek)
+        .filter(Boolean);
+  return parsed.length > 0 ? parsed : null;
 }
 
 /**

@@ -54,7 +54,7 @@ export function ActivationSettings({
   const [repeatUnit, setRepeatUnit] = useState<RepeatUnit>(initialRepeatUnit);
   const [expirationType, setExpirationType] = useState<ExpirationType>(initialExpirationType);
   const [expirationValue, setExpirationValue] = useState(initialExpirationValue);
-  const parsedRepeatDays = parseRepeatDays(initialRepeatDays);
+  const parsedRepeatDays = parseRepeatDays(initialRepeatDays) ?? [];
   const [scheduleDaysEnabled, setScheduleDaysEnabled] = useState(parsedRepeatDays.length > 0);
   const [selectedDays, setSelectedDays] = useState<DayOfWeek[]>(parsedRepeatDays);
   const [isSaving, setIsSaving] = useState(false);

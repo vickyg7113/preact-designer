@@ -132,7 +132,7 @@ export class GuideRenderer {
     if (!this.container) return;
 
     const tooltips: { guide: Guide; target: Element; pos: { top: number; left: number; arrowStyle: Record<string, string> } }[] = [];
-    const triggeredTooltips: { template: GuideTemplateMapItem; target: Element; pos: { top: number; left: number }; targetRect: DOMRect }[] = [];
+    const triggeredTooltips: { template: GuideTemplateMapItem; target: Element; pos: { top: number; left: number }; targetRect: DOMRect; placement: 'top' | 'right' | 'bottom' | 'left' }[] = [];
 
     for (const guide of pageGuides) {
       const target = SelectorEngine.findElement(guide.selector);
@@ -152,17 +152,15 @@ export class GuideRenderer {
           const target = SelectorEngine.findElement(template.x_path);
           if (target) {
             scrollIntoViewIfNeeded(target);
-            const pos = computeTooltipPosition(target, 'bottom', 300, 160);
-
+            let stepPlacement: 'top' | 'right' | 'bottom' | 'left' = 'bottom';
+            try {
+              const stepContent = JSON.parse(resolveStepContent(template) || '{}');
+              const p = stepContent.layout?.placement;
+              if (p === 'top' || p === 'right' || p === 'bottom' || p === 'left') stepPlacement = p;
+            } catch { /* keep default */ }
+            const pos = computeTooltipPosition(target, stepPlacement, 300, 160);
             const targetRect = target.getBoundingClientRect();
-            const targetCenter = targetRect.left + targetRect.width / 2;
-            pos.left = targetCenter - 16 - 16;
-
-            const vw = window.innerWidth;
-            if (pos.left < 10) pos.left = 10;
-            else if (pos.left + 300 > vw - 10) pos.left = vw - 300 - 10;
-
-            triggeredTooltips.push({ template, target, pos, targetRect });
+            triggeredTooltips.push({ template, target, pos, targetRect, placement: stepPlacement });
           } else {
             console.warn(`[Visual Designer] Target element not found for template "${template.template_id}" using selector: ${template.x_path}`);
           }
@@ -210,17 +208,21 @@ export class GuideRenderer {
             onDismiss={() => this.dismissGuide(guide.id)}
           />
         ))}
-        {triggeredTooltips.map(({ template, pos }) => (
+        {triggeredTooltips.map(({ template, pos, placement, targetRect }) => (
           <LiveGuideCard
             key={this.triggeredGuide!.guide_id}
             template={template}
             top={pos.top}
             left={pos.left}
+            placement={placement}
+            targetRect={targetRect}
             onDismiss={() => this.dismissTriggeredGuide()}
             onNext={() => this.handleNext()}
             onBack={() => this.handleBack()}
             isFirstStep={this.currentStepIndex === 0}
             isLastStep={this.currentStepIndex === sortedTemplates.length - 1}
+            stepIndex={this.currentStepIndex + 1}
+            totalSteps={sortedTemplates.length}
             onPollChange={(blockId, pollType, question, value) => this.firePollResponse(blockId, pollType, question, value)}
             surveyMode={this.isSurveyMode()}
           />
