@@ -288,6 +288,7 @@ export interface TagFeaturePayload {
 
 /** Rule for exact match (XPath) - used in create/update payload */
 export interface ExactMatchRule {
+  rule_id?: string;
   selector_type: 'xpath';
   selector_value: string;
   match_mode: 'exact';
