@@ -149,6 +149,9 @@ export function LiveGuideCard({ template, top, left, placement = 'bottom', onDis
                     // Extract description: from content.description or first non-title text block
                     const descBlock = content.blocks?.find(b => b.type === 'text' && b.settings?.themeStyle !== 'title');
                     const cardDescription = descBlock?.settings?.content || '';
+                    // Extract button label from button block
+                    const buttonBlock = content.blocks?.find(b => b.type === 'button');
+                    const buttonLabel = buttonBlock?.settings?.label || '';
 
                     return (
                         <div style={{ position: 'relative', ...previewBoxStyle }}>
@@ -181,7 +184,7 @@ export function LiveGuideCard({ template, top, left, placement = 'bottom', onDis
                                         fontFamily: 'inherit',
                                     }}
                                 >
-                                    {isLastStep ? 'Done' : (content.buttonContent || 'Next')}
+                                    {isLastStep ? 'Done' : (buttonLabel || content.buttonContent || 'Next')}
                                 </button>
                             </div>
 

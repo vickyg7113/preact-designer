@@ -180,6 +180,7 @@ export class SelectorEngine {
 
       observer.observe(document.body, {
         childList: true,
+        subtree: true,
       });
 
       // 3. Handle timeout

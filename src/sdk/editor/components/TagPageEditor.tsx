@@ -51,10 +51,8 @@ export function TagPageEditor({ onMessage }: TagPageEditorProps) {
   const [currentUrl, setCurrentUrl] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFormActions, setShowFormActions] = useState(false);
-  const [pageSetup, setPageSetup] = useState<'create' | 'merge'>('create');
   const [pageName, setPageName] = useState('');
   const [pageDescription, setPageDescription] = useState('');
-  const [ruleType, setRuleType] = useState<'suggested' | 'exact' | 'builder'>('suggested');
   const [selectionUrl, setSelectionUrl] = useState('');
   const [pageNameError, setPageNameError] = useState(false);
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
@@ -94,8 +92,6 @@ export function TagPageEditor({ onMessage }: TagPageEditorProps) {
     setSelectionUrl(getSuggestedSelectionUrl());
     setPageName('');
     setPageDescription('');
-    setPageSetup('create');
-    setRuleType('suggested');
     setPageNameError(false);
   }, []);
 
@@ -106,8 +102,6 @@ export function TagPageEditor({ onMessage }: TagPageEditorProps) {
     setSelectionUrl(page.slug || getSuggestedSelectionUrl());
     setPageName(page.name || '');
     setPageDescription(page.description || '');
-    setPageSetup('create');
-    setRuleType('suggested');
     setPageNameError(false);
   }, []);
 
@@ -360,19 +354,7 @@ export function TagPageEditor({ onMessage }: TagPageEditorProps) {
               <iconify-icon icon="mdi:arrow-left" /> Back
             </a>
             <div>
-              <div style={editorStyles.sectionLabel}>{editingPageId ? 'EDIT PAGE' : 'PAGE SETUP'}</div>
-              {!editingPageId && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                  <label style={editorStyles.radioLabel}>
-                    <input type="radio" name="pageSetup" value="create" checked={pageSetup === 'create'} onChange={() => setPageSetup('create')} style={{ accentColor: '#3b82f6' }} />
-                    <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Create New Page</span>
-                  </label>
-                  <label style={editorStyles.radioLabel}>
-                    <input type="radio" name="pageSetup" value="merge" checked={pageSetup === 'merge'} onChange={() => setPageSetup('merge')} style={{ accentColor: '#3b82f6' }} />
-                    <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Merge with Existing</span>
-                  </label>
-                </div>
-              )}
+              <div style={editorStyles.sectionLabel}>{editingPageId ? 'EDIT PAGE' : 'NEW PAGE'}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>
@@ -403,33 +385,13 @@ export function TagPageEditor({ onMessage }: TagPageEditorProps) {
             </div>
             <div>
               <div style={{ ...editorStyles.sectionLabel, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                INCLUDE PAGE RULES
-                <span style={{ color: '#94a3b8' }} title="Define how this page is identified">
+                PAGE URL
+                <span style={{ color: '#94a3b8' }} title="URL pattern used to identify this page">
                   <iconify-icon icon="mdi:information-outline" />
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#334155' }}>Include Rule 1</span>
-                <EditorButton variant="iconSm">
-                  <iconify-icon icon="mdi:delete-outline" />
-                </EditorButton>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                <label style={editorStyles.radioLabel}>
-                  <input type="radio" name="ruleType" value="suggested" checked={ruleType === 'suggested'} onChange={() => setRuleType('suggested')} style={{ accentColor: '#3b82f6' }} />
-                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Suggested Match</span>
-                </label>
-                <label style={editorStyles.radioLabel}>
-                  <input type="radio" name="ruleType" value="exact" checked={ruleType === 'exact'} onChange={() => setRuleType('exact')} style={{ accentColor: '#3b82f6' }} />
-                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Exact Match</span>
-                </label>
-                <label style={editorStyles.radioLabel}>
-                  <input type="radio" name="ruleType" value="builder" checked={ruleType === 'builder'} onChange={() => setRuleType('builder')} style={{ accentColor: '#3b82f6' }} />
-                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>Rule Builder</span>
-                </label>
-              </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Selection URL</label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>URL Pattern</label>
                 <EditorInput type="text" placeholder="e.g. //*/path/to/page" value={selectionUrl} onInput={(e) => setSelectionUrl((e.target as HTMLInputElement).value)} />
               </div>
             </div>
