@@ -8616,6 +8616,7 @@ class rr {
         r === 0 ? d = "first" : u && (d = "last");
         const p = {
           guide_id: i.guide_id,
+          step_index: r,
           template_id: a.template_id,
           map_id: a.map_id,
           step_order: a.step_order,

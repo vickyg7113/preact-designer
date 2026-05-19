@@ -115,6 +115,7 @@ export class DesignerSDK {
 
         const properties = {
           guide_id: guide.guide_id,
+          step_index: stepIndex,
           template_id: currentTemplate.template_id,
           map_id: currentTemplate.map_id,
           step_order: currentTemplate.step_order,
