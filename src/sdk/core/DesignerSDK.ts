@@ -271,13 +271,19 @@ export class DesignerSDK {
 
         // Write core context to sessionStorage for rg-web-sdk event builder
         // Done at response level — core_pages/core_features are independent of whether guides exist
-        const coreFeatureXpaths = (response.core_features || [])
-          .flatMap(f => f.rules.filter(r => r.selector_type === 'xpath' && r.is_active).map(r => r.selector_value));
+        const coreFeatures = (response.core_features || []).flatMap(f =>
+          f.rules
+            .filter(r => r.selector_type === 'xpath' && r.is_active)
+            .map(r => ({ xpath: r.selector_value, core_event_id: f.core_event_id, core_event_name: f.name }))
+        );
         sessionStorage.setItem('__rg_core_context', JSON.stringify({
           page_path: currentPage,
           is_core_page: (response.core_pages || []).length > 0,
-          core_feature_xpaths: coreFeatureXpaths,
+          core_event_id: (response.core_pages || [])[0]?.core_event_id ?? null,
+          core_event_name: (response.core_pages || [])[0]?.name ?? null,
+          core_features: coreFeatures,
         }));
+        window.dispatchEvent(new CustomEvent('rg:core_context_ready', { detail: { page_path: currentPage } }));
       }
 
       if (response && response.data) {

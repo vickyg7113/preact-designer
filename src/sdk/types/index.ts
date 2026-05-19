@@ -152,12 +152,13 @@ export interface CorePage {
   area_id: string | null;
   name: string;
   slug: string;
-  description: string;
+  description: string | null;
   status: string;
   created_at: string;
   created_by: string;
   updated_at: string;
   updated_by: string;
+  core_event_id: string;
 }
 
 export interface CoreFeatureRule {
@@ -180,12 +181,13 @@ export interface CoreFeature {
   area_id: string | null;
   name: string;
   slug: string;
-  description: string;
+  description: string | null;
   status: string;
   created_at: string;
   created_by: string;
   updated_at: string;
   updated_by: string;
+  core_event_id: string;
   rules: CoreFeatureRule[];
 }
 

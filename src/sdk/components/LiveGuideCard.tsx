@@ -25,6 +25,7 @@ const previewBoxStyle: Record<string, string | number> = {
     paddingLeft: '12px',
     minWidth: '420px',
     fontFamily: 'Montserrat, sans-serif',
+    maxWidth: '353px'
 };
 
 

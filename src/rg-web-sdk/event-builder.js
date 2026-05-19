@@ -110,7 +110,7 @@ class EventBuilder {
       latitude: null,
       longitude: null,
 
-      properties: eventData.custom_properties || null,
+      properties: eventData.custom_properties || {},
 
       interaction_type: eventData.interaction_type || 'normal',
 
@@ -131,14 +131,30 @@ class EventBuilder {
     if (coreCtx && coreCtx.page_path === window.location.pathname) {
       if (coreCtx.is_core_page) {
         event.is_core_event = true;
-      } else if (
-        coreCtx.core_feature_xpaths &&
-        coreCtx.core_feature_xpaths.length > 0 &&
+        event.properties = {
+          ...event.properties,
+          core_event_id: coreCtx.core_event_id || null,
+          core_event_name: coreCtx.core_event_name || null,
+        };
+      }
+
+      if (
+        coreCtx.core_features &&
+        coreCtx.core_features.length > 0 &&
         eventData.event_name === 'click' &&
-        eventData.element_xpath &&
-        coreCtx.core_feature_xpaths.includes(eventData.element_xpath)
+        eventData.element_xpath
       ) {
-        event.is_core_event = true;
+        const matchedFeature = coreCtx.core_features.find(
+          f => f.xpath === eventData.element_xpath
+        );
+        if (matchedFeature) {
+          event.is_core_event = true;
+          event.properties = {
+            ...event.properties,
+            core_event_id: matchedFeature.core_event_id || null,
+            core_event_name: matchedFeature.core_event_name || null,
+          };
+        }
       }
     }
 

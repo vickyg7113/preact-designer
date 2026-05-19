@@ -50,7 +50,10 @@ export function ActivationSettings({
 }: ActivationSettingsProps) {
   const [ignoreGlobalThrottle, setIgnoreGlobalThrottle] = useState(initialIgnoreThrottling);
   const [repeatDisplay, setRepeatDisplay] = useState(initialRepeatOnDismiss);
-  const [repeatEvery, setRepeatEvery] = useState(initialRepeatInterval);
+  const [repeatIntervalEnabled, setRepeatIntervalEnabled] = useState(
+    initialRepeatInterval != null && initialRepeatInterval > 0
+  );
+  const [repeatEvery, setRepeatEvery] = useState(initialRepeatInterval ?? 1);
   const [repeatUnit, setRepeatUnit] = useState<RepeatUnit>(initialRepeatUnit);
   const [expirationType, setExpirationType] = useState<ExpirationType>(initialExpirationType);
   const [expirationValue, setExpirationValue] = useState(initialExpirationValue);
@@ -63,9 +66,11 @@ export function ActivationSettings({
   const getSummary = (): string => {
     if (!repeatDisplay) return 'This guide appears on every page load. Dismissals are not tracked.';
 
-    const base = repeatEvery === 1
-      ? `This guide will reappear at most once per ${repeatUnit}`
-      : `This guide will reappear at most once every ${repeatEvery} ${repeatUnit}s`;
+    const base = !repeatIntervalEnabled
+      ? `This guide will reappear after dismissal (no time interval set)`
+      : repeatEvery === 1
+        ? `This guide will reappear at most once per ${repeatUnit}`
+        : `This guide will reappear at most once every ${repeatEvery} ${repeatUnit}s`;
 
     const daysPart = scheduleDaysEnabled && selectedDays.length > 0
       ? `, on ${selectedDays.map(d => DAYS.find(day => day.key === d)?.label ?? d).join(', ')}`
@@ -87,8 +92,8 @@ export function ActivationSettings({
       await onSave({
         ignore_throttling: ignoreGlobalThrottle,
         repeat_on_dismiss: repeatDisplay,
-        repeat_interval: repeatDisplay ? repeatEvery : null,
-        repeat_unit: repeatDisplay ? repeatUnit : null,
+        repeat_interval: repeatDisplay && repeatIntervalEnabled ? repeatEvery : null,
+        repeat_unit: repeatDisplay && repeatIntervalEnabled ? repeatUnit : null,
         expiration_type: repeatDisplay ? expirationType : null,
         expiration_value: repeatDisplay && expirationType === 'dismissals' ? expirationValue : null,
         repeat_days: scheduleDaysEnabled && selectedDays.length > 0 ? selectedDays : null,
@@ -213,29 +218,43 @@ export function ActivationSettings({
 
           {/* Repeat every */}
           <div style={editorStyles.section}>
-            <label style={editorStyles.label}>Show again every</label>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <label style={{ ...checkboxLabelStyle, marginBottom: '0.5rem' }}>
               <input
-                type="number"
-                min={1}
-                value={repeatEvery}
-                onChange={(e) => {
-                  const v = parseInt((e.target as HTMLInputElement).value) || 1;
-                  setRepeatEvery(Math.max(1, v));
-                }}
-                style={numberInputStyle}
+                type="checkbox"
+                checked={repeatIntervalEnabled}
+                onChange={() => setRepeatIntervalEnabled(v => !v)}
+                style={checkboxStyle}
               />
-              <select
-                value={repeatUnit}
-                onChange={(e) => setRepeatUnit((e.target as HTMLSelectElement).value as RepeatUnit)}
-                style={{ ...selectStyle, width: 'auto', flex: 1 }}
-              >
-                <option value="hour">Hour(s)</option>
-                <option value="day">Day(s)</option>
-                <option value="week">Week(s)</option>
-                <option value="month">Month(s)</option>
-              </select>
-            </div>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1e293b' }}>
+                Show again every
+              </span>
+            </label>
+            {repeatIntervalEnabled ? (
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  type="number"
+                  min={1}
+                  value={repeatEvery}
+                  onChange={(e) => {
+                    const v = parseInt((e.target as HTMLInputElement).value) || 1;
+                    setRepeatEvery(Math.max(1, v));
+                  }}
+                  style={numberInputStyle}
+                />
+                <select
+                  value={repeatUnit}
+                  onChange={(e) => setRepeatUnit((e.target as HTMLSelectElement).value as RepeatUnit)}
+                  style={{ ...selectStyle, width: 'auto', flex: 1 }}
+                >
+                  <option value="hour">Hour(s)</option>
+                  <option value="day">Day(s)</option>
+                  <option value="week">Week(s)</option>
+                  <option value="month">Month(s)</option>
+                </select>
+              </div>
+            ) : (
+              <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Not set — interval will not be applied</span>
+            )}
           </div>
 
           {/* Stop showing after */}

@@ -342,7 +342,10 @@ export class GuideRenderer {
 
       this.renderGuides(this.lastGuides);
     } else {
-      this.dismissTriggeredGuide();
+      // onNext already tracked 'completed' above — just clean up without firing dismissed
+      this.dismissedThisSession.add(this.triggeredGuide.guide_id);
+      this.triggeredGuide = null;
+      this.renderGuides(this.lastGuides);
     }
   }
 
@@ -350,9 +353,20 @@ export class GuideRenderer {
     if (this.triggeredGuide) {
       const guideData = this.triggeredGuide;
       const sIdx = this.currentStepIndex;
+      const activeTemplates = (guideData.templates || []).filter(t => t.is_active);
+      const sortedTemplates = [...activeTemplates].sort((a, b) => a.step_order - b.step_order);
+      const isLastStep = sIdx === sortedTemplates.length - 1;
+
       this.dismissedThisSession.add(guideData.guide_id);
-      this.onDismiss(guideData, sIdx);
       this.triggeredGuide = null;
+
+      if (isLastStep) {
+        // User dismissed at the last step — guide was fully seen, treat as completed
+        this.onNext(guideData, sIdx, sortedTemplates.length);
+      } else {
+        this.onDismiss(guideData, sIdx);
+      }
+
       this.renderGuides(this.lastGuides);
     }
   }
